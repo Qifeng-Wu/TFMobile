@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>QIS质量信息系统</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+<style>
+.mui-card-content-inner {
+	width: 100%;
+	padding-top: 2px;
+	padding-bottom: 5px;
+	height: 45px;
+}
+
+.mui-media-body {
+font-family: '微软雅黑';
+}
+
+#menu img{
+height: 56%;
+width: 62%;
+}
+
+#yewu img{
+height: 90%;
+width: 90%;
+}
+
+#menu li{
+width: 33%;
+margin-top: 10px;
+border: none;
+}
+#menu div{
+font-size: 15px;
+color: black;
+margin-top: 5px;
+font-family: '微软雅黑';
+}
+
+</style>
+</head>
+<body style="background-color:#fff;">
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;" id="muiContent">
+		<div>
+			<img src="../../static/mui/images/index.png" height="180px" width="100%"/>
+		
+		</div>
+		<div>
+		  <ul class="mui-table-view">
+		         <li class="mui-table-view-cell mui-media " style="margin-right: 15px;margin-top: -1%;height: 100%;">功能菜单</li>
+		         <ul class="mui-table-view mui-grid-view mui-grid-9" style="padding-bottom:25px;margin-top:8px;background-color: white;height: 100%;border: none;" id="menu">
+		            <li class="mui-table-view-cell mui-media mui-col-sm-3" style="border-bottom: none;"id="yicikaixiang">
+		                <img src="../../static/mui/images/sale/kaixiang_menu.png"/>
+		                <div class="mui-media-body">开箱合格</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="zaofan">
+		                <img src="../../static/mui/images/sale/zaofan_menu.png"/>
+		                <div class="mui-media-body">早返不良</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="guzhangyujing">
+		                <img src="../../static/mui/images/sale/guzhang_menu.png"/>
+		                <div class="mui-media-body">故障预警</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="zhuangkuang">
+		                <img src="../../static/mui/images/sale/zhiliang_menu.png"/>
+		                <div class="mui-media-body">质量状况</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media m mui-col-sm-3" style="border-bottom: none;" id="cailiaoruku">
+		                <img src="../../static/mui/images/sale/kesuchaxun_menu.png"/>
+		                <div class="mui-media-body">客诉查询</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="iqc">
+		                <img src="../../static/mui/images/sale/wode_menu.png"/>
+		                <div class="mui-media-body">我的客诉</div>
+		            </li>
+		         
+		          
+		           
+		        </ul> 
+	
+			</ul>
+			
+			<div style="text-align:center;padding-top:7%;background-color:#fff;color:#4093C6;font-size:14px">
+			   <div><span>同方计算机有限公司</span></div>
+			   <div>Copyright © 2018    无锡制造基地</div>
+			</div>
+		</div>					
+	</div>			
+</body>
+<script>
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(8);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+
+//网页授权完成再处理其他信息
+if(memberId){	
+   	//赋值完毕结束过场动画
+    setTimeout(function(){
+    	document.getElementById("loading").style.display="none";
+    	document.getElementById("muiContent").style.display="";
+   	}, 1);
+}
+
+
+//监听点击菜单栏事件
+document.getElementById('yicikaixiang').addEventListener('tap',function() {
+	if(department=="[13]"){
+		mui.toast("您无此操作权限！");
+	}else{
+		document.location.href = 'OpenPackageInspection.html';
+	}
+});
+document.getElementById('zaofan').addEventListener('tap',function() {
+	if(department=="[13]"){
+		mui.toast("您无此操作权限！");
+	}else{
+		document.location.href = 'EarlyReturn.html';
+	}	
+});
+document.getElementById('zhuangkuang').addEventListener('tap',function() {
+	if(department=="[13]"){
+		mui.toast("您无此操作权限！");
+	}else{
+		document.location.href = 'dataSelect.html';
+	}
+});
+document.getElementById('guzhangyujing').addEventListener('tap',function() {
+	if(department=="[13]"){
+		document.location.href = 'CustomerWarningList.html';
+	}else{
+		//document.location.href = 'productShipment.html';
+		document.location.href = 'CustomerWarningList.html';
+	}
+});
+document.getElementById('cailiaoruku').addEventListener('tap',function() {
+	if(department=="[13]"){
+		mui.toast("您无此操作权限！");
+	}else{
+		//document.location.href = 'specialOperation.html';
+		mui.toast("正在拼命开发中。。。");
+	}
+});
+document.getElementById('iqc').addEventListener('tap',function() {
+	if(department=="[13]"){
+		mui.toast("您无此操作权限！");
+	}else{
+		//document.location.href = 'IQCReport.html';
+		mui.toast("正在拼命开发中。。。");
+	}
+});
+</script>
+</html>

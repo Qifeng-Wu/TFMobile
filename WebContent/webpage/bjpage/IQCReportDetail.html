@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>物料到货信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<style>
+    	.span_color{
+    		color:#4093C6;
+    	}
+    </style>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+	<div style="margin-top:20px">
+		<div class="mui-card">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">
+				<span style="margin-left:39%">物料到货信息</span>
+			</div>
+			<ul class="mui-table-view">
+			<li class="mui-table-view-cell mui-media">		
+			<div class="mui-media-body" style="padding-left:12px;padding-top:6px">
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:58%;">报检日期：<span class="span_color" id="checkDate">2018-06-29</span></span><span style="width:42%;float:right;">厂&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;家：<span class="span_color" id="supplier">希捷</span></span></div>			
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:58%;">检验单号：<span class="span_color" id="checkSN">256609</span></span><span style="width:42%;float:right;">到货数量：<span class="span_color" id="arrivalQuantity">2000</span></span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:58%;">物料名称：<span class="span_color" id="materialName">显示器</span></span><span style="width:42%;float:right;">检验数量：<span class="span_color" id="checkQuantity">100</span></span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:58%;">料&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：<span class="span_color" id="sn">10770015ST00</span></span><span style="width:42%;float:right;">物料状态：<span class="span_color" id="status">入库</span></span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis">异常信息：<span class="span_color" id="checkSN">无</span></div>				
+			</div>
+			</li></ul>
+		</div>
+	</div>			
+	</div>			
+</body>
+<script type="text/javascript">
+mui.init();
+//从连接中获取数据
+var checkDate = getUrlParam("checkDate");
+var supplier = getUrlParam("supplier");
+var checkSN = getUrlParam("checkSN");
+var arrivalQuantity = getUrlParam("arrivalQuantity");
+var materialName = getUrlParam("materialName");
+var checkQuantity = getUrlParam("checkQuantity");
+var sn = getUrlParam("sn");
+var status = getUrlParam("status");
+var exceptionDescription = getUrlParam("exceptionDescription");
+
+$("#checkDate").text(checkDate);
+$("#supplier").text(decodeURI(supplier));
+$("#checkSN").text(checkSN);
+$("#arrivalQuantity").text(arrivalQuantity);
+$("#materialName").text(decodeURI(materialName));
+$("#checkQuantity").text(checkQuantity);
+$("#sn").text(sn);
+$("#status").text(decodeURI(status));
+if(exceptionDescription==""||exceptionDescription=="null"){
+	$("#exceptionDescription").val("无");
+}else{
+	$("#exceptionDescription").val(exceptionDescription);
+}
+
+//赋值完毕结束过场动画
+setTimeout(function(){
+	document.getElementById("loading").style.display="none";
+	$("body").css("background-color","#eee");
+	document.getElementById("muiContent").style.display="block";
+}, 1000);
+
+</script>
+</html>

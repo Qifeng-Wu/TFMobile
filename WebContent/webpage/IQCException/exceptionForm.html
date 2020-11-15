@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>物料异常通报信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">
+		
+		<!-- 问题描述 -->
+		<div class="mui-card">
+			<div id="finished_picture" style="position:absolute;margin:30% 30%;"><img src="../../static/mui/images/finished.png" style="max-width:10em; height:auto;"/></div>
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">问题描述
+				<span id="backBtn" style="display:none" class="mui-btn mui-btn-danger" onclick="window.history.go(-1)">返回<span class="mui-icon mui-icon-forward"></span></span>
+			</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">文件序号：</span><span class="mui-pull-right" id="serialNumber"></span></div>
+					<div><span style="color: gray">检验批号：</span><span class="mui-pull-right" id="inspectionNumber"></span></div>
+					<div><span style="color: gray">物料编号：</span><span class="mui-pull-right" id="materialCode"></span></div>
+					<div><span style="color: gray">到货数量：</span><span class="mui-pull-right" id="arrivalQuantity"></span></div>
+					<div><span style="color: gray">检验数量：</span><span class="mui-pull-right" id="inspectionQuantity"></span></div>
+					<div><span style="color: gray">不良数量：</span><span class="mui-pull-right" id="failuresQuantity"></span></div>
+					<div><span style="color: gray">到货日期：</span><span class="mui-pull-right" id="arrivalDate"></span></div>
+					<div><span style="color: gray">检验日期：</span><span class="mui-pull-right" id="inspectionDate"></span></div>
+					<div><span style="color: gray">供&nbsp;&nbsp;应&nbsp;&nbsp;商：</span><span class="mui-pull-right" id="supplier"></span></div>
+					<div><span style="color: gray">工&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;厂：</span><span class="mui-pull-right" id="factory"></span></div>
+					<div><span style="color: gray">检&nbsp;&nbsp;验&nbsp;&nbsp;员：</span><span class="mui-pull-right" id="inspector"></span></div>
+					<div><span style="color: gray">物料描述：</span><span id="materialDescription"></span></div>
+					<div><span style="color: gray">故障明细：</span><span id="description"></span></div>
+				</div>
+			</div>
+		<div class="mui-card-footer">
+			<span class="mui-card-link">发文人：<span id="reporter"></span></span>
+			<span class="mui-card-link">发文时间：<span id="reportTime"></span></span>			
+		</div>
+		<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+			<div id="reviewFoot" style="display:none">
+				<span class="mui-card-link">审核人：<span id="reviewer"></span></span>
+				<span class="mui-pull-right">审核时间：<span id="reviewTime"></span></span>
+			</div>
+			<div id="questionEditFoot" style="display:none">
+				<a class="mui-card-link mui-pull-right" onclick="questionEdit()">修改</a>
+			</div>
+		</div>
+		</div>
+		<div class="mui-card" id="questionTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待发文主管审核</div>
+		</div>
+		<div class="mui-card" id="handleTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待质量工程师处理</div>
+		</div>
+
+		<!-- 选择分配处理人员 -->
+		<div class="mui-card" id="chooseHandlerForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">审核并分配处理工程师</div>
+			<form class="mui-input-group">
+				<label id="handlerList" style="margin-left:42%;margin-top:30px;color:#4093C6"></label>
+						
+			</form>
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="questionConfirm">审核确认</a>
+			</div>
+		</div>
+		
+		<!-- 供应品质部意见 -->
+		<div class="mui-card" id="handleForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">供应品质部意见</div>
+				<form class="mui-input-group">
+					<label style="margin-left:42%;margin-top:30px;color:#4093C6">抄送部门</label>
+					<div class="mui-input-row mui-checkbox">
+						<label>无</label>
+						<input name="checkbox0" value="无" type="checkbox" id="checkbox_wu">
+					</div>
+					<div class="mui-input-row mui-checkbox">
+						<label>常规物料采购部</label>
+						<input name="checkbox0" value="常规物料采购部" type="checkbox" >
+					</div>
+					<div class="mui-input-row mui-checkbox">
+						<label>研发部</label>
+						<input name="checkbox0" value="研发部" type="checkbox">
+					</div>				
+					<div class="mui-input-row mui-checkbox">
+						<label>工程部</label>
+						<input name="checkbox0" value="工程部" type="checkbox">
+					</div>				
+					<div class="mui-input-row mui-checkbox">
+						<label>生产部</label>
+						<input name="checkbox0" value="生产部" type="checkbox">
+					</div>
+					<div class="mui-input-row mui-checkbox">
+						<label>质量部</label>
+						<input name="checkbox0" value="质量部" type="checkbox">
+					</div>
+					<div class="mui-input-row mui-checkbox">
+						<label>储运部</label>
+						<input name="checkbox0" value="储运部" type="checkbox">
+					</div>			
+				</form>
+				<div class="mui-input-row" style="margin: 5px 5px;">
+					<textarea id="handleDescription" rows="5" maxlength="300" placeholder="输入处理意见"></textarea>
+				</div>	
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="handleSubmit">立即提交</a>
+			</div>
+		</div>
+		
+		<div class="mui-card" id="handleCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">供应品质部意见</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">抄送部门：</span><span class="mui-pull-right" id="needSignDepartment"></span></div>
+					<div><span style="color: gray">处理意见：</span><span class="" id="handleDescriptionShow"></span></div>					
+				</div>
+			</div>
+			<div class="mui-card-footer">
+				<span class="mui-card-link">处理人：<span id="handler"></span></span>
+				<span class="mui-card-link">处理时间：<span id="handleTime"></span></span>	
+			</div>
+		</div>
+				
+		<!-- 会签部门处理 -->
+		<div class="mui-card" id="huiqianForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">相关部门意见</div>
+				<div class="mui-input-row" style="margin: 13px 5px -10px 5px;">
+				<textarea id="signHandleDescription" rows="5" maxlength="100" placeholder="输入处理意见"></textarea>
+			</div>	
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="huiqianSubmit">立即提交</a>
+			</div>
+		</div>
+		<!-- 部门会签确认-->	
+		<div class="mui-card" id="huiqianCard" style="$("#huiqianForm").attr("style","display:block");">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">相关部门意见</div>
+				<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">抄送部门：</span><span class="mui-pull-right" id="needSignDepartmentShow"></span></div>				
+					<div><span style="color: gray">已会签部门：</span><span class="mui-pull-right"></span></div>
+				<div id="finishHuiqianDiv">
+					<!-- <div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">产品</a>
+						<div class="mui-table-view mui-table-view-chevron">
+						<div class="mui-table-view-cell">						
+							<div><span style="color: gray">处理人：</span><span class="mui-pull-right">张三</span></div>
+							<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">2015-02-05 05:25:33</span></div>
+							<div><span style="color: gray">处理描述：</span><span>撒欢地沙对安徽省代表是东方闪电借壳上市</span></div>
+							<div style="width:95%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>
+							<div><span style="color: gray">审核人：</span><span class="mui-pull-right">李四</span></div>
+							<div><span style="color: gray">审核时间：</span><span class="mui-pull-right">2015-02-05 05:25:33</span></div>
+							<div><span style="color: gray">审核意见：</span><span>暗示对爱的哈US好嗲是对暗示对啊是的</span></div>
+						</div>			
+						</div>
+					</div>		 -->								
+				</div>
+				</div>
+			</div>		
+			<div class="mui-card-footer" id="huiqianFoot" style="display:none">
+				<a class=""><span id="huiqianEdit"></span></a>
+				<a class="" id="huiqianConfirm" style="float:right">确认会签</a>
+			</div>
+		</div>
+		<div class="mui-card" id="signTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:28%">待相关部门会签处理</div>
+		</div>
+		<!-- IQC处理结果 -->
+		<div class="mui-card" id="iqcHandleForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">IQC处理结果</div>
+				<div class="mui-input-row" style="margin: 13px 5px -10px 5px;">
+				<textarea id="iqcHandleDescription" rows="5" maxlength="300" placeholder="输入处理结果"></textarea>
+			</div>
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="iqcHandleSubmit">立即提交</a>
+			</div>
+		</div>
+		
+		<div class="mui-card" id="iqcHandleCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">IQC处理结果</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">	
+					<div><span style="color: gray">处理结果：</span><span class="" id="iqcHandleDescriptionShow"></span></div>											
+				</div>
+			</div>		
+			<div class="mui-card-footer">
+				<span class="mui-card-link">处理人：<span id="iqcHandler"></span></span>
+				<span class="mui-card-link">处理时间：<span id="iqcHandleTime"></span></span>
+			</div>
+			<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+				<div id="iqcHandleConfirmSpan" style="display:none">
+					<span class="mui-card-link">审核人：<span id="iqcReviewer"></span></span>
+					<span class="mui-pull-right">审核时间：<span id="iqcReviewTime"></span></span>
+				</div>
+				<div id="iqcHandleConfirmFoot" style="display:none">
+					<a class="mui-pull-right" id="iqcHandleConfirm">立即审核</a>
+			</div>
+			</div>
+		</div>
+		<div class="mui-card" id="iqcHandleTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:32%">待IQC处理验证</div>
+		</div>
+		<div class="mui-card" id="iqcHandleConfirmTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待IQC处理验证审核</div>
+		</div>
+	</div>
+	<!-- 放隐藏域的地方 重要-->	
+	<input type="hidden" id="nextPersonHidden">
+	<input type="hidden" id="reportUserIdHidden">
+	<input type="hidden" id="purchaseSignInfoHidden">
+	<input type="hidden" id="engineeringSignInfoHidden">
+	<input type="hidden" id="productionSignInfoHidden">
+	<input type="hidden" id="qualitySignInfoHidden">
+	<input type="hidden" id="stSignInfoHidden">
+	<input type="hidden" id="rdSignInfoHidden">
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(9);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+//本地环境调试使用
+//var memberId = "23";  		
+//var userId = "WangWei";  		
+//var name = "王维";  		
+//var department = "[5]"; 
+//var position = "质量控制部经理"; 
+//var isleader = "1";
+
+//var memberId = "64";  		
+//var userId = "NanJuXianSheng";  		
+//var name = "邵宝林";  		
+//var department = "[5]"; 
+//var position = "品质工程师"; 
+//var isleader = "0";
+
+//var memberId = "20";  		
+//var userId = "XuFeng";  		
+//var name = "许峰";  		
+//var department = "[3]"; 
+//var position = "工程部经理"; 
+//var isleader = "1";
+
+//var memberId = "4";  		
+//var userId = "ZhangJunJie";  		
+//var name = "张俊杰";  		
+//var department = "[3]"; 
+//var position = "制程工程师"; 
+//var isleader = "0";
+
+var departmentJson = JSON.parse(department); 
+//获取url中的参数
+var exceptionId = getUrlParam("exceptionId");
+//var exceptionId = getUrlParam(QCIQC2004004);
+
+//判断是从列表页面过来的则有显示返回按钮
+var back = getUrlParam("back");
+if(back==1){
+	$("#backBtn").attr("style","display:block");
+}
+
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取异常问题表单信息
+	var status = findExceptionInfo(exceptionId);
+	if(status!=null || status!="null"){
+			//赋值完毕结束过场动画
+	   	setTimeout(function(){
+	   		document.getElementById("loading").style.display="none";
+	   		$("body").css("background-color","#eee");
+	   		document.getElementById("muiContent").style.display="";
+	   	}, 500);
+	}
+	//根据这个status判断异常通报的状态
+	if(status!=6){
+		$("#finished_picture").attr("style","display:none");//隐藏已完成图片
+	}
+	if(status==0){
+		//判断是否为发文人员 否则隐藏修改按钮
+		var pass = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5 && position=="品质工程师"){
+				pass = true;
+			}			
+		}
+		if(!pass){
+			if(department=='[5]' && position=="IQC组组长"){
+				$("#questionEditFoot").attr("style","display:block");
+				$("#questionTip").attr("style","display:block");	
+			}else{
+				$("#questionTip").attr("style","display:block");	
+			}		
+		}else{//展示质量工程师人员列表
+			$("#chooseHandlerForm").attr("style","display:block");
+			var list = findQualityEngineer();
+			if(list!=null && list!="null" && list!="" && list.length>0){
+				for(var i=0;i<list.length;i++){
+					var html =  '<div class="mui-input-row mui-checkbox">'+
+									'<label>'+list[i].name+'</label>'+
+									'<input name="checkbox" value="'+list[i].memberId+'" type="checkbox">'+
+								'</div>';
+					$("#handlerList").after(html);			
+				}
+			}
+		}
+				
+	}else if(status==1){
+		$("#reviewFoot").attr("style","display:block");
+		var nextPerson = $("#nextPersonHidden").val();
+		if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+			if(isExist(memberId,nextPerson)){
+				$("#handleForm").attr("style","display:block");
+			}else{
+				$("#handleTip").attr("style","display:block");
+			}				
+		}else{
+			mui.toast("系统出错啦！");
+		}
+	}else if(status==2){
+		$("#reviewFoot").attr("style","display:block");
+		$("#handleCard").attr("style","display:block");
+		var nextPerson = $("#nextPersonHidden").val();
+		if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+			if(isExist(memberId,nextPerson)){
+				$("#huiqianForm").attr("style","display:block");
+			}else{
+				$("#signTip").attr("style","display:block");
+			}				
+		}else{
+			mui.toast("系统出错啦！");
+		}
+	}else if(status==3){
+		$("#reviewFoot").attr("style","display:block");
+		$("#handleCard").attr("style","display:block");
+		$("#huiqianCard").attr("style","display:block");
+		//解析各部门会签信息
+		parseSignInfo();
+		var nextPerson = $("#nextPersonHidden").val();
+		if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+			if(isExist(memberId,nextPerson)  ){
+				if(isleader=="1" ){
+					$("#huiqianFoot").attr("style","display:block");
+				}
+				else if(isleader!="1"){
+					$("#huiqianForm").attr("style","display:block");
+				}
+			
+			}else{
+				$("#signTip").attr("style","display:none");
+			}				
+		}else{
+			mui.toast("系统出错啦！");
+		}
+	}else if(status==4){
+		$("#reviewFoot").attr("style","display:block");
+		$("#handleCard").attr("style","display:block");
+		$("#huiqianCard").attr("style","display:block");
+		//解析各部门会签信息
+		parseSignInfo();				
+		var nextPerson = $("#nextPersonHidden").val();
+		if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+			if(isExist(memberId,nextPerson)){
+				$("#iqcHandleForm").attr("style","display:block");
+			}else{
+				$("#iqcHandleTip").attr("style","display:block");
+			}				
+		}else{
+			mui.toast("系统出错啦！");
+		}
+	}else if(status==5){
+		$("#reviewFoot").attr("style","display:block");
+		$("#handleCard").attr("style","display:block");
+		$("#huiqianCard").attr("style","display:block");
+		$("#iqcHandleCard").attr("style","display:block");
+		//解析各部门会签信息
+		parseSignInfo();				
+		var nextPerson = $("#nextPersonHidden").val();
+		if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+			if(isExist(memberId,nextPerson)){
+				$("#iqcHandleConfirmFoot").attr("style","display:block");
+			}else{
+				$("#iqcHandleConfirmTip").attr("style","display:block");
+			}				
+		}else{
+			mui.toast("系统出错啦！");
+		}
+	}else if(status==6){
+		$("#reviewFoot").attr("style","display:block");
+		$("#handleCard").attr("style","display:block");
+		$("#huiqianCard").attr("style","display:block");
+		$("#iqcHandleCard").attr("style","display:block");
+		$("#iqcHandleConfirmSpan").attr("style","display:block");
+		//解析各部门会签信息
+		parseSignInfo();				
+	}
+}
+
+//解析各部门会签信息
+function parseSignInfo(){
+	//解析会签信息
+	var purchaseSignInfo = $("#purchaseSignInfoHidden").val();//常规物料采购部
+	var rdSignInfo = $("#rdSignInfoHidden").val();//研发部
+	var engineeringSignInfo = $("#engineeringSignInfoHidden").val();//工程部
+	var productionSignInfo = $("#productionSignInfoHidden").val();//常生产部
+	var qualitySignInfo = $("#qualitySignInfoHidden").val();//质量部
+	var stSignInfo = $("#stSignInfoHidden").val();//储运部
+	//常规物料采购部会签信息解析
+	if(purchaseSignInfo){		
+		var purchaseSignInfoJson = JSON.parse(purchaseSignInfo);
+		if(purchaseSignInfoJson.length==1){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">常规物料采购部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(purchaseSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+purchaseSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+purchaseSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color:#cf5753">经理尚未审核！</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);	
+		}else if(purchaseSignInfoJson.length==2){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">常规物料采购部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(purchaseSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+purchaseSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+purchaseSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color: gray">审核人：</span><span class="mui-pull-right">'+getInfo(purchaseSignInfoJson[1][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">审核时间：</span><span class="mui-pull-right">'+purchaseSignInfoJson[1][1]+'</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}	
+	}
+	//研发部会签信息解析
+	if(rdSignInfo){
+		var rdSignInfoJson = JSON.parse(rdSignInfo);
+		if(rdSignInfoJson.length==1){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">研发部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(rdSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+rdSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+rdSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color:#cf5753">经理尚未审核！</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);	
+		}else if(rdSignInfoJson.length==2){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">研发部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(rdSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+rdSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+rdSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color: gray">审核人：</span><span class="mui-pull-right">'+getInfo(rdSignInfoJson[1][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">审核时间：</span><span class="mui-pull-right">'+rdSignInfoJson[1][1]+'</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}	
+	}
+	//工程部会签信息解析
+	if(engineeringSignInfo){
+		var engineeringSignInfoJson = JSON.parse(engineeringSignInfo);
+		if(engineeringSignInfoJson.length==1){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">工程部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(engineeringSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+engineeringSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+engineeringSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color:#cf5753">经理尚未审核！</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}else if(engineeringSignInfoJson.length==2){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">工程部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(engineeringSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+engineeringSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+engineeringSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color: gray">审核人：</span><span class="mui-pull-right">'+getInfo(engineeringSignInfoJson[1][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">审核时间：</span><span class="mui-pull-right">'+engineeringSignInfoJson[1][1]+'</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}	
+	}
+	//生产部会签信息解析
+	if(productionSignInfo){
+		var productionSignInfoJson = JSON.parse(productionSignInfo);
+		if(productionSignInfoJson.length==1){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">生产部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(productionSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+productionSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+productionSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color:#cf5753">经理尚未审核！</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);	
+		}else if(productionSignInfoJson.length==2){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">生产部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(productionSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+productionSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+productionSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color: gray">审核人：</span><span class="mui-pull-right">'+getInfo(productionSignInfoJson[1][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">审核时间：</span><span class="mui-pull-right">'+productionSignInfoJson[1][1]+'</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}	
+	}		
+	//质量部会签信息解析
+	if(qualitySignInfo){
+		var qualitySignInfoJson = JSON.parse(qualitySignInfo);
+		if(qualitySignInfoJson.length==1){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">质量部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(qualitySignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+qualitySignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+qualitySignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color:#cf5753">经理尚未审核！</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}else if(qualitySignInfoJson.length==2){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">质量部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(qualitySignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+qualitySignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+qualitySignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color: gray">审核人：</span><span class="mui-pull-right">'+getInfo(qualitySignInfoJson[1][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">审核时间：</span><span class="mui-pull-right">'+qualitySignInfoJson[1][1]+'</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}	
+	}
+	//储运部会签信息解析
+	if(stSignInfo){
+		var stSignInfoJson = JSON.parse(stSignInfo);
+		if(stSignInfoJson.length==1){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">质量部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(stSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+stSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+stSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color:#cf5753">经理尚未审核！</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}else if(stSignInfoJson.length==2){
+			var html ='<div class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">常规物料采购部</a>'+
+						'<div class="mui-table-view mui-table-view-chevron">'+
+							'<div class="mui-table-view-cell">'+						
+								'<div><span style="color: gray">处理人：</span><span class="mui-pull-right">'+getInfo(stSignInfoJson[0][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">处理时间：</span><span class="mui-pull-right">'+stSignInfoJson[0][1]+'</span></div>'+
+								'<div><span style="color: gray">处理描述：</span><span>'+stSignInfoJson[0][2]+'</span></div>'+
+								'<div style="width:100%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>'+
+								'<div><span style="color: gray">审核人：</span><span class="mui-pull-right">'+getInfo(stSignInfoJson[1][0])[1]+'</span></div>'+
+								'<div><span style="color: gray">审核时间：</span><span class="mui-pull-right">'+stSignInfoJson[1][1]+'</span></div>'+
+							'</div>'+			
+							'</div>'+
+						'</div>';						
+			$("#finishHuiqianDiv").append(html);
+		}	
+	}
+}
+
+
+function findExceptionInfo(exceptionId){
+	var state = null;
+	if(exceptionId){
+		mui.ajax('/TFMobile/tf-api/iqc-exception/findInfo', {
+			data : {
+				exceptionId : exceptionId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					state = result.body.exception.state;//获取异常状态（非常重要）
+					//问题描述内容
+					$("#serialNumber").text(result.body.exception.serialNumber);
+			   		$("#inspectionNumber").text(result.body.exception.inspectionNumber);
+			   		$("#materialCode").text(result.body.exception.materialCode);
+			   		$("#arrivalQuantity").text(result.body.exception.arrivalQuantity);
+			   		$("#inspectionQuantity").text(result.body.exception.inspectionQuantity);
+			   		$("#failuresQuantity").text(result.body.exception.failuresQuantity);
+			   		$("#arrivalDate").text(parseDate(result.body.exception.arrivalDate));
+			   		$("#inspectionDate").text(parseDate(result.body.exception.inspectionDate));
+			   		$("#supplier").text(result.body.exception.supplier);
+			   		$("#factory").text(result.body.exception.factory);
+			   		$("#inspector").text(result.body.exception.inspector);
+			   		$("#materialDescription").text(result.body.exception.materialDescription);
+			   		$("#description").text(result.body.exception.description);
+			   		$("#reportUserIdHidden").val(getInfo(result.body.exception.reporter)[0]);
+		
+			   		$("#reporter").text(getInfo(result.body.exception.reporter)[1]);
+			   		$("#reportUserIdHidden").val(getInfo(result.body.exception.reporter)[0]);
+			   		$("#reportTime").text(getDate(result.body.exception.reportTime));			   									
+					$("#reviewer").text(getInfo(result.body.exception.reviewer)[1]);
+					$("#reviewTime").text(getDate(result.body.exception.reviewTime));
+					$("#nextPersonHidden").val(result.body.exception.nextPerson);
+					
+					//供应品质部意见
+					$("#handleDescriptionShow").text(result.body.exception.handleDescription);
+					$("#needSignDepartment").text(result.body.exception.needSignDepartment);
+					$("#handler").text(getInfo(result.body.exception.handler)[1]);
+					$("#handleTime").text(getDate(result.body.exception.handleTime));
+					
+					//会签信息
+					
+					$("#needSignDepartmentShow").text(result.body.exception.needSignDepartment);
+					$("#purchaseSignInfoHidden").val(result.body.exception.purchaseSignInfo);
+					$("#engineeringSignInfoHidden").val(result.body.exception.engineeringSignInfo);
+					$("#productionSignInfoHidden").val(result.body.exception.productionSignInfo);
+					$("#qualitySignInfoHidden").val(result.body.exception.qualitySignInfo);
+					$("#stSignInfoHidden").val(result.body.exception.stSignInfo);
+					$("#rdSignInfoHidden").val(result.body.exception.rdSignInfo);
+					
+					//IQC处理结果
+					$("#iqcHandleDescriptionShow").text(result.body.exception.iqcHandleDescription);
+					$("#iqcHandler").text(getInfo(result.body.exception.iqcHandler)[1]);
+					$("#iqcHandleTime").text(getDate(result.body.exception.iqcHandleTime));
+					$("#iqcReviewer").text(getInfo(result.body.exception.iqcReviewer)[1]);
+					$("#iqcReviewTime").text(getDate(result.body.exception.iqcReviewTime));
+
+					
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");
+			}
+		});
+	}
+	return state;
+}
+
+//1.问题描述部门经理审核确认
+var flag = true;	
+document.getElementById('questionConfirm').addEventListener('tap',function() { 		
+	//判断当前成员是否为发件部门的品质工程师
+	var pass = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==5 && position=="品质工程师"){
+			pass = true;
+		}			
+	}
+	if(!pass){
+		mui.toast("您暂无操作权限！");	
+		return;
+	}
+	
+	  var str = "";
+	  var handler = "";
+	  $("#chooseHandlerForm input:checkbox").each(function(){
+	    if(true == $(this).is(':checked')){
+	      str+=$(this).val()+",";
+	    }
+	  });
+	  if(str.substr(str.length-1)== ','){
+		  handler = str.substr(0,str.length-1);
+	  }
+	  if(handler == ""){
+		mui.toast("请选择处理工程师");
+   		return;
+	  }
+	  
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var inspectionNumber = $("#inspectionNumber").text();//从文本中获取检验批号	
+	var description = $("#description").text();//从文本中获取故障明细
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/iqc-exception/reportReview', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 1,
+						serialNumber : serialNumber,
+						inspectionNumber : inspectionNumber,
+						description : description,
+						handler : handler
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});	
+			}
+		}
+	});
+});
+
+//2.供应品质部处理意见保存
+//表单提交
+document.getElementById('handleSubmit').addEventListener('tap',function() {
+	//判断当前成员是否有权限处理
+	var pass = false;
+	var nextPerson = $("#nextPersonHidden").val();
+	if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+		if(isExist(memberId,nextPerson)){
+			pass = true;
+		}				
+	}else{
+		mui.toast("系统出错啦！");
+	}	
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	
+  	var handleDescription = $("#handleDescription").val().replace(/ /g,'');
+ 	var strs="";
+  	var needSignDepartment="";
+  	$("#handleForm input:checkbox").each(function(){
+  	  if(true == $(this).is(':checked')){
+  	    strs+=$(this).val()+",";
+ 	   }
+ 	 });
+ 	if(strs.substr(strs.length-1)== ','){
+		needSignDepartment = strs.substr(0,strs.length-1);
+ 	}
+  	if(needSignDepartment==null||needSignDepartment==""){
+		mui.toast("请选择抄送部门");
+  			return;
+  	}
+	if(handleDescription==null||handleDescription==""){
+		mui.toast("请输入处理意见");
+		return;
+	}
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var inspectionNumber = $("#inspectionNumber").text();//从文本中获取检验批号	
+	var description = $("#description").text();//从文本中获取故障明细
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/iqc-exception/handle', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 2,
+						serialNumber : serialNumber,
+						inspectionNumber : inspectionNumber,
+						description : description,
+						handleDescription : handleDescription,
+						needSignDepartment : needSignDepartment
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("提交信息成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});
+			}
+		}
+	});
+});	
+	
+//3.会签处理意见保存
+//表单提交
+document.getElementById('huiqianSubmit').addEventListener('tap',function() {
+	//判断当前成员是否有权限处理
+	var pass = false;
+	var nextPerson = $("#nextPersonHidden").val();
+	if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+		if(isExist(memberId,nextPerson)){
+			pass = true;
+		}				
+	}else{
+		mui.toast("系统出错啦！");
+	}	
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	
+  	var signHandleDescription = $("#signHandleDescription").val().replace(/ /g,'');
+	if(signHandleDescription==null||signHandleDescription==""){
+		mui.toast("请输入处理意见");
+		return;
+	}
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var inspectionNumber = $("#inspectionNumber").text();//从文本中获取检验批号	
+	var description = $("#description").text();//从文本中获取故障明细
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/iqc-exception/signHandle', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 3,
+						serialNumber : serialNumber,
+						inspectionNumber : inspectionNumber,
+						description : description,
+						signHandleDescription : signHandleDescription,
+						department : department
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("提交信息成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});
+			}
+		}
+	});
+});	
+//4.会签审核确认
+document.getElementById('huiqianConfirm').addEventListener('tap',function() {
+	//判断当前成员是否有权限处理
+	var pass = false;
+	var nextPerson = $("#nextPersonHidden").val();
+	if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+		if(isExist(memberId,nextPerson)){
+			pass = true;
+		}				
+	}else{
+		mui.toast("系统出错啦！");
+	}	
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var inspectionNumber = $("#inspectionNumber").text();//从文本中获取检验批号	
+	var description = $("#description").text();//从文本中获取故障明细
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/iqc-exception/signConfirm', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 3,
+						serialNumber : serialNumber,
+						inspectionNumber : inspectionNumber,
+						description : description,
+						department : department
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});
+			}
+		}
+	});
+});	
+//5.iQC处理结果信息保存
+document.getElementById('iqcHandleSubmit').addEventListener('tap',function() {
+	//判断当前成员是否有权限处理
+	var pass = false;
+	var nextPerson = $("#nextPersonHidden").val();
+	if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+		if(isExist(memberId,nextPerson)){
+			pass = true;
+		}				
+	}else{
+		mui.toast("系统出错啦！");
+	}	
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	
+  	var iqcHandleDescription = $("#iqcHandleDescription").val().replace(/ /g,'');
+	if(iqcHandleDescription==null||iqcHandleDescription==""){
+		mui.toast("请输入处理结果");
+		return;
+	}
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var inspectionNumber = $("#inspectionNumber").text();//从文本中获取检验批号	
+	var description = $("#description").text();//从文本中获取故障明细
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/iqc-exception/iqcHandle', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 5,
+						serialNumber : serialNumber,
+						inspectionNumber : inspectionNumber,
+						description : description,
+						iqcHandleDescription : iqcHandleDescription,
+						department : department
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("提交信息成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});
+			}
+		}
+	});
+});	
+//6.iQC处理结果审核
+document.getElementById('iqcHandleConfirm').addEventListener('tap',function() {
+	//判断当前成员是否有权限处理
+	var pass = false;
+	var nextPerson = $("#nextPersonHidden").val();
+	if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+		if(isExist(memberId,nextPerson)){
+			pass = true;
+		}				
+	}else{
+		mui.toast("系统出错啦！");
+	}	
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	
+	var needSignDepartment = $("#needSignDepartment").text();//需要会签部门	
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var inspectionNumber = $("#inspectionNumber").text();//从文本中获取检验批号	
+	var description = $("#description").text();//从文本中获取故障明细
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/iqc-exception/iqcHandleConfirm', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 6,
+						serialNumber : serialNumber,
+						inspectionNumber : inspectionNumber,
+						description : description,
+						needSignDepartment : needSignDepartment
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});
+			}
+		}
+	});
+});	
+	
+//9.根据主键memberId获取企业成员信息
+function getInfo(memberId){
+	var userId = null;
+	var name = null;
+	var department = null;
+	var position = null;
+	var isleader = null;
+	if(memberId==null || memberId=="" || memberId=="null"){
+		return [userId, name, department, position, isleader];
+	}
+	mui.ajax('/TFMobile/tf-api/member/getInfo', {
+		data : {
+			memberId : memberId			
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				userId = result.body.member.userId;
+				name = result.body.member.name;
+				department = result.body.member.department;
+				position = result.body.member.position;
+				isleader = result.body.member.isleader;
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");
+		}
+	});
+	return [userId, name, department, position, isleader];
+} 
+
+//10跳转到修改问题描述页面
+function questionEdit(){	
+	//判断当前成员是否有权限处理（是否为发文人员）
+	var reporter = $("#reportUserIdHidden").val();//发文人UserId
+	if(reporter!=userId){
+		mui.toast("仅有发文人员才可修改！");
+		return;
+	}
+	document.location.href = 'exceptionEdit.html?exceptionId='+ exceptionId;
+}
+
+//获取质量部工程师列表
+function findQualityEngineer(){
+	var list = null;
+	mui.ajax('/TFMobile/tf-api/iqc-exception/findQualityEngineer', {
+		data : {},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				list = result.body.list;
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");
+		}
+	});
+	return list;
+}
+
+//1点击选择会签选项无时触发事件
+$(function(){  
+	$("#handleForm input:checkbox").click(function(){
+		if($(this).val()=="无"){
+			if($(this).is(':checked')==true){
+				 $("#handleForm input:checkbox").prop("checked",false);
+				 $(this).prop("checked",true);
+			}
+		}else{
+			$("#checkbox_wu").prop("checked",false);		
+		}
+
+	});
+});	
+
+function isExist(str,strs){
+	var exist = false;
+	if(str!=null&&str!="null"&&str!=""&&strs!=null&&strs!="null"&&strs!=""){
+		if(strs.indexOf(",")>0){
+			var strsArray = strs.split(",");
+			for(var i=0;i<strsArray.length;i++){
+				if(str==strsArray[i]){
+					
+					exist = true;
+					break;
+				}
+			}
+		}else{
+			if(str==strs){
+				exist = true;
+			}
+		}
+	}
+	return exist;
+}
+</script>
+
+</html>

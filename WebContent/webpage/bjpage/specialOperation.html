@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>制程异常</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+     <style>
+    	.mui-card{
+    		background-color:#4093C6;
+    	}
+    	.span_color_blue{
+    		color:#4093C6;
+    	}
+    	.span_color_green{
+    		color:#228B22;
+    	}
+    	.span_color_red{
+    		color:#990000;
+    	}
+    </style> 
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+		<div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入订单号、订单状态查询">
+		</div>
+	<div style="margin-top:-10px" id="specialOperationList">
+		<!--<div class="mui-card">
+			<ul class="mui-table-view">
+			<li class="mui-table-view-cell mui-media">		
+			<div class="mui-media-body" style="padding-left:12px;padding-top:6px">
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">订&nbsp;&nbsp;单&nbsp;&nbsp;号：<span class="span_color">700157552</span></span><span style="width:40%;float:right;">订单进度：<span class="span_color">投产中</span></span></div>			
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">主机名称：<span class="span_color">超越E500-7689</span></span><span style="width:40%;float:right;">数量：<span class="span_color">2000</span></span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">负&nbsp;&nbsp;责&nbsp;&nbsp;人：<span class="span_color">谢寅虎</span></span><span style="width:40%;float:right;">机箱：<span class="span_color">P25</span></span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis">特殊操作：<span class="span_color">使用手拧螺钉</span></div>				
+			<div style="font-size:14px;" class="mui-ellipsis">备&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注：<span class="span_color">周二入库</span></div>				
+			</div>
+			</li></ul>
+		</div> -->
+	</div>
+	<div id="loadText" style="text-align:center;display:none;">
+			<span id="text" style="font-size:15px;color:#6D6D72;font-family:'Microsoft YaHei';">正在加载......</span>
+	</div>				
+	</div>			
+</body>
+<script type="text/javascript">
+mui.init();
+var OrderNumber = getUrlParam("OrderNumber");
+if(OrderNumber!=null&&OrderNumber!=""&&OrderNumber!="null"){
+	searchFunction(OrderNumber);
+}else{
+	var page= 0;
+	//获取数据页面赋值
+	setSpecialOperationList(page);	
+}
+//获取数据页面赋值
+function setSpecialOperationList(page){
+	var list = findSpecialOperationList(page);
+	if(list.length>0){
+		for(var i=0;i< list.length;i++){
+			var span_color = "";
+			if(list[i].Rate=="放行"){
+				span_color = "span_color_green";
+			}else if(list[i].Rate=="变更"){
+				span_color = "span_color_blue";
+			}else if(list[i].Rate=="暂停"){
+				span_color = "span_color_red";
+			}else if(list[i].Rate=="投产中"){
+				span_color = "span_color_green";
+			}else if(list[i].Rate=="待上线"){
+				span_color = "span_color_red";
+			}  
+			var remark = list[i].Remark;
+			if(remark=="" || remark=="null"){
+				remark = "无";
+			}			
+			
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+						'<li class="mui-table-view-cell mui-media">'+		
+							'<div class="mui-media-body" style="padding-left:12px;padding-top:6px">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">订&nbsp;&nbsp;单&nbsp;&nbsp;号：<span class="'+span_color+'">'+list[i].OrderNumber+'</span></span><span style="width:40%;float:right;">订单状态：<span class="'+span_color+'">'+list[i].Rate+'</span></span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;箱：<span class="'+span_color+'">'+list[i].CaseNum+'</span></span><span style="width:40%;float:right;">数&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;量：<span class="'+span_color+'">'+list[i].MCount+'</span></span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">主机名称：<span class="'+span_color+'">'+list[i].MName+'</span></div>'+				
+							'<div style="font-size:14px;" class="mui-ellipsis">负&nbsp;&nbsp;责&nbsp;&nbsp;人：<span class="'+span_color+'">'+list[i].Head+'</span></div>'+				
+							'<div style="font-size:14px;" class="mui-ellipsis">异常现象：<span class="'+span_color+'">'+list[i].SOperation+'</span></div>'+				
+							'<div style="font-size:14px;" class="mui-ellipsis">异常原因：<span class="'+span_color+'">'+remark+'</span></div>'+				
+							'</div>'+
+						'</li></ul>'+
+						'</div>';
+			$("#specialOperationList").append(html);
+		}
+	} else if(page==0){
+		$("#specialOperationList").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">暂无特殊订单信息！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	}
+}
+//获取所有的记录列表
+function findSpecialOperationList(page){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/bj-mobile/specialOperation/findList', {
+			data : {
+				page : page
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						document.getElementById("loading").style.display="none";
+						$("body").css("background-color","#eee");
+						document.getElementById("muiContent").style.display="";
+					}, 1000);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+		return list;
+}
+
+//触发搜索框事件
+$("#keyword").on('keypress',function(e) {  
+    var keycode = e.keyCode;  
+    var searchName = $(this).val();
+/* 	if(searchName.replace(/ /g,'')==""){
+		mui.toast("请输入查询内容");
+		$("#specialOperationList").empty();
+		return;
+	} */
+    if(keycode=='13') {  
+        e.preventDefault();    
+        searchFunction(searchName);        
+    }  
+ })
+
+ 
+ //搜索查询请求方法
+ function searchFunction(searchName){
+    //请求搜索接口  
+	mui.ajax('/TFMobile/tf-api/bj-mobile/specialOperation/searchList', {
+		data : {
+			searchName : searchName
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			$("#specialOperationList").empty();
+			document.getElementById("loadText").style.display="none";
+			if(result.success == true){
+				//赋值完毕结束过场动画
+				setTimeout(function(){
+					document.getElementById("loading").style.display="none";
+					$("body").css("background-color","#eee");
+					document.getElementById("muiContent").style.display="";
+				}, 1000);
+				var list = result.body.list;
+				if(list.length>0){
+					for(var i=0;i< list.length;i++){
+						var span_color = "";
+						if(list[i].Rate=="放行"){
+							span_color = "span_color_green";
+						}else if(list[i].Rate=="变更"){
+							span_color = "span_color_blue";
+						}else if(list[i].Rate=="暂停"){
+							span_color = "span_color_red";
+						}else if(list[i].Rate=="投产中"){
+							span_color = "span_color_green";
+						}else if(list[i].Rate=="待上线"){
+							span_color = "span_color_red";
+						}  
+						var remark = list[i].Remark;
+						if(remark=="" || remark=="null"){
+							remark = "无";
+						}
+						var html = '<div class="mui-card">'+
+									'<ul class="mui-table-view">'+
+									'<li class="mui-table-view-cell mui-media">'+		
+										'<div class="mui-media-body" style="padding-left:12px;padding-top:6px">'+
+										'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">订&nbsp;&nbsp;单&nbsp;&nbsp;号：<span class="'+span_color+'">'+list[i].OrderNumber+'</span></span><span style="width:40%;float:right;">订单状态：<span class="'+span_color+'">'+list[i].Rate+'</span></span></div>'+			
+										'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;箱：<span class="'+span_color+'">'+list[i].CaseNum+'</span></span><span style="width:40%;float:right;">数&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;量：<span class="'+span_color+'">'+list[i].MCount+'</span></span></div>'+	
+										'<div style="font-size:14px;" class="mui-ellipsis">主机名称：<span class="'+span_color+'">'+list[i].MName+'</span></div>'+				
+										'<div style="font-size:14px;" class="mui-ellipsis">负&nbsp;&nbsp;责&nbsp;&nbsp;人：<span class="'+span_color+'">'+list[i].Head+'</span></div>'+				
+										'<div style="font-size:14px;" class="mui-ellipsis">异常现象：<span class="'+span_color+'">'+list[i].SOperation+'</span></div>'+				
+										'<div style="font-size:14px;" class="mui-ellipsis">异常原因：<span class="'+span_color+'">'+remark+'</span></div>'+				
+										'</div>'+
+									'</li></ul>'+
+									'</div>';
+						$("#specialOperationList").append(html);
+					}
+					
+				}else{
+					$("#specialOperationList").append('<div style="padding-top:100px;text-align: center;">'+
+							'<span style="color: #696969;">没有查询到特殊订单信息！</span><br><br>'+
+							'<span style="color: #696969;">（⊙o⊙）</span></div>');
+				}
+			}else{
+				mui.toast(result.message);
+			}								
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");						
+		}
+	});
+}
+ 
+/**
+* 刷新功能
+*/
+//获取滚动条当前的位置 
+   function getScrollTop() {
+   	var scrollTop = 0;
+    if (document.documentElement && document.documentElement.scrollTop) {
+    	scrollTop = document.documentElement.scrollTop;
+    }
+    else if (document.body) {
+    	scrollTop = document.body.scrollTop;
+    }
+   	return scrollTop;
+   }
+ 		
+ 	//获取当前可视范围的高度 
+   function getClientHeight() {
+   	var clientHeight = 0;
+    if (document.body.clientHeight && document.documentElement.clientHeight) {
+    	clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight);
+    }else {
+    	clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+    }
+   	return clientHeight
+   }
+ 	
+ 	//获取文档完整的高度 
+   function getScrollHeight() {
+   	return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+   }
+	
+	window.onscroll = function () {
+  		//显示加载提醒
+  		if(getScrollHeight()>window.innerHeight){
+  			$("#loadText").css("display","block");
+  		}
+  		if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+    		page ++;
+    		setSpecialOperationList(page);
+		}		
+	}
+</script>
+</html>

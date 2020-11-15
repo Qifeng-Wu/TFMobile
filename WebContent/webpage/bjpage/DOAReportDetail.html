@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>DOA到货信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+	<style>
+    	.span_color{
+    		color:#4093C6;
+    	}
+    </style>
+    <style type="text/css">
+    	.mytable {
+		        border: 2px solid #cad9ea;
+		        font-size:13px;
+		        background-repeat: repeat-x;
+		        text-align:center;
+		        width:100%
+    		}
+
+		.mytable thead {
+		        color: #FFF;
+		        background-color: #4093c6
+		    }
+		
+		.mytable td,th {
+		        border: 1px solid #FFF;
+		        padding: 0 1em 0;
+		        height: 36px
+		    }
+		.tr_color_1{
+    		background-color:#D2DEEF;
+    	}
+    	.tr_color_2{
+    		background-color:#EAEFF7;
+    	} 
+    </style>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+	<div style="margin-top:20px">
+		<div class="mui-card">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">
+				<span style="margin-left:30%" id="doa_title">DOA信息</span>
+			</div>
+	<div>
+        <table class="mytable" style="margin-top:5px">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>机型</th>
+	            	<th>数量</th>
+	            	<!-- <th>退货人</th> -->
+            	</tr>
+            </thead>
+            <tbody>
+                <!-- <tr style="background-color:#D2DEEF">
+                	<td>超越</td>
+                	<td>100</td>
+                	<td>张三</td>
+                </tr>
+                <tr style="background-color:#EAEFF7">
+                	<td>精锐</td>
+                	<td>50</td>
+                	<td>李四</td>
+                </tr> -->
+            </tbody>
+        </table>
+    </div>
+		</div>
+	</div>			
+	</div>			
+</body>
+<script type="text/javascript">
+mui.init();
+//从连接中获取数据
+var ProductCategory = decodeURI(getUrlParam("ProductCategory"));
+var ArriveCategory = decodeURI(getUrlParam("ArriveCategory"));
+$("#doa_title").text(ProductCategory+" * "+ArriveCategory);
+//获取数据页面赋值
+setList(ProductCategory,ArriveCategory);
+
+function setList(ProductCategory,ArriveCategory){
+	var list = findList(ProductCategory,ArriveCategory);
+	if(list.length>0){
+		$("tbody").empty();
+		for(var i=0;i< list.length;i++){
+			var tr_color = "";
+			if(i%2==0){
+				tr_color = "tr_color_1";
+			}else{
+				tr_color = "tr_color_2";
+			} 		
+			var html = '<tr class="'+tr_color+'">'+
+			            	'<td>'+list[i].Model+'</td>'+
+                			'<td>'+list[i].number+'</td>'+
+			            '</tr>';
+			$("tbody").append(html);
+		}
+	}
+}
+
+//获取所有的记录列表
+function findList(ProductCategory,ArriveCategory){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/bj-mobile/DOAReport/detail', {
+			data : {
+				ProductCategory : ProductCategory,
+				ArriveCategory : ArriveCategory
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						document.getElementById("loading").style.display="none";
+						$("body").css("background-color","#eee");
+						document.getElementById("muiContent").style.display="";
+					}, 1000);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+		return list;
+}
+
+</script>
+</html>

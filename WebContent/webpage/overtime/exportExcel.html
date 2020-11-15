@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>加班单Excel导出</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;padding-bottom:15px" id="muiContent">
+		<div style="padding: 15px 30% 0 30%;">
+			<span>加班日期：</span><span id="choose"><input id="dateTime" type="text" value="" placeholder="点击选择导出日期" readonly="readonly" /></span>			
+		</div>
+	</div>
+	<nav class="mui-bar mui-bar-tab" style="background-color:#8a6de9">
+			<a class="mui-tab-item mui-active" onclick="exportExcel()">
+				<span class="mui-tab-label" style="font-size:18px;color:#fff">立即导出</span>
+			</a>
+		</nav>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(11);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+
+if(memberId && (position.indexOf('助理')!=-1 || isleader==1)){
+	document.getElementById("loading").style.display="none";
+	document.getElementById("muiContent").style.display="";
+	var departmentName;
+	if(department=="[2]"){
+		departmentName="工业技术部";
+	}else if(department=="[3]"){
+		departmentName="工程部";
+	}else if(department=="[4]"){
+		departmentName="生产部";
+	}else if(department=="[5]"){
+		departmentName="质量部";
+	}else if(department=="[7]"){
+		departmentName="研发部";
+	}else if(department=="[11]"){
+		departmentName="仓储部";
+	}
+}else{
+	wx.closeWindow();
+}
+
+ function exportExcel(){
+	 //判断有没有选择开始日期
+	 var dateTime = document.getElementById("dateTime").value;
+	 if(dateTime==""){
+		 mui.toast("请输入加班日期");
+		 return;
+	 }	 
+	 mui.toast("正在导出，请稍等。。。"); 
+    //请求接口  
+	mui.ajax('/TFMobile/tf-api/overtime/excel/export', {
+		data : {
+			department : departmentName,
+			date : dateTime
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				var downUrl = result.body.excelPath;
+				window.location.href = downUrl;
+				mui.toast("导出EXCEL成功！");
+			}else{
+				mui.toast(result.message);
+			}								
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("系统出错啦，请联系管理员");						
+		}
+	});
+}
+</script>
+<script>
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("dateTime");　　　　
+	$(choose)[0].addEventListener('tap', function() {　
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2019";　　　　　　
+		options.beginMonth = "05";　　　　　　
+		options.beginDay = "01";　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+		  result.value = rs.text;　　　　　　　　
+		  picker.dispose();	 
+		});　　　　
+	}, false);　　　　
+})(mui);
+</script>
+</html>

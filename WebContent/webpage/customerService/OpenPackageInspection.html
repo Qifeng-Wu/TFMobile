@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>一次开箱合格率</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>   
+</head>
+<body>
+	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+    <div class="mui-content" style="display:none;background-color:#eee;"id="muiContent">
+   	<div class="mui-card" >
+   	  <div class="mui-card-content">
+             <div class="mui-card-content-inner">
+               <div>
+                   <span id="chooseTime"><input style="background-color:#eee" id="inqueryDate" type="text" value="" placeholder="点击选择查询日期"  /></span>  
+               </div>
+               <div>
+                   <h5 class="mui-content-padded" style="margin-top:-7px;">产品类型</h5>
+                   <select style="background-color:#eee;" id="productTyle">
+                     <option value="">选择产品类型（必填项）</option>
+                     <option value="台式机">台式机</option>
+                     <option value="一体机">一体机</option>
+                     <option value="服务器">服务器</option>
+                     <option value="笔记本">显示器</option>
+                  </select>
+               </div>
+               <div>
+                   <h5 class="mui-content-padded" style="margin-top:-7px">产品平台</h5>
+                   <select style="background-color:#eee"  id="productPlatform" disabled="disabled">
+                      <option value="">选择产品平台（非必填项）</option>
+                  </select>
+               </div>
+              <div>
+                  <button type="button" id="submitBtn" style="float:right;margin-bottom:4%;" class="mui-btn mui-btn-danger pull-right"  disabled="disabled">查询</button>                      
+              </div>
+           </div>
+         </div>
+       </div>
+       <div class="mui-card">
+         <div class="mui-card-content">
+           <div class="mui-card-content-inner">
+                 <!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+               <div id="Chart" style="width:100%;height:500px;"></div>  
+           </div>
+         </div>
+       </div>  
+    </div>
+
+    <script type="text/javascript">
+        
+    mui.init();
+  	//赋值完毕结束过场动画
+  	setTimeout(function(){
+  		document.getElementById("loading").style.display="none";
+  		document.getElementById("muiContent").style.display="";
+  	}, 500);
+  	
+      
+        // 基于准备好的dom，初始化echarts实例
+        function chart(DateList,ResultList,RemarksList,Index,Min){          
+          
+          var myChart = echarts.init(document.getElementById('Chart'));
+            // 指定图表的配置项和数据
+            var option = {
+              //标题
+                title: {
+                    text: '开箱合格率'
+                },
+                tooltip: {
+                    trigger: 'axis', //坐标轴触发
+                    //formatter:'{b0}<br/>{a0}:{c0}%<br/>',
+                    formatter: function (params,ticket,callback) {
+                        console.log(params)
+                        var res =  params[0].name;
+                        console.log(" name"+params[0].name);
+                        //使用for可以将需要的数据全部加到res 
+                        //注意下边的<br/>  
+                        for (var i = 0, l = params.length; i < l; i++) {
+                                        res += '<br/>' + params[i].seriesName + ' : ' + params[i].value+'%';
+                                        res += '<br/>' + "目标值 ：" + Index+'%';
+                                        
+                                        if(params[i].value<Index){
+                                        	for(var j=0;j<DateList.length;j++){
+                                        		if(params[0].name==DateList[j]){
+                                        			res += '<br/>' + "未达到目标值的原因: ";                                                	
+                                                	var list=RemarksList[j].split('\n');
+                                                	//alert(list);
+                                                	for (var v=0;v<list.length;v++){
+                                                		for(var k=0;k<list[v].length/20;k++){
+                                                    		res += '<br/>' + list[v].substring(k*20,k*20+20);
+                                                    	}
+                                                	}
+                                        		}
+                                        		 
+                                        	}
+                                        	
+                                        }
+                                        else{
+                                        	res += '<br/>' + "达标 ";
+                                        }             
+                        }          
+                        return res;
+                    }
+                },
+                legend: {
+                    data:['']
+                },
+                grid: {
+                    left: '1%',
+                    right: '1%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+              //工具框，可以选择
+               
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        dataView: {readOnly: false},
+                        magicType: {type: ['line', 'bar']},
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                //X轴
+                xAxis: {
+                  type: 'category',
+                  //boundaryGap: false,  //从坐标中起点开始 
+                  //data: ["201801","201802","201803","201804","201805","201806"],
+                  data: DateList,
+                    
+                },
+                //y轴
+                yAxis: {
+                   type: 'value',
+                    // y轴数据,根据数据的最大最小之进行计算
+                   scale: true,
+                   min:Min,
+                   axisLabel: {
+                         formatter: function (value, index) {
+                              return value.toFixed(1)+'%';     
+                        }               
+                     },                  
+                },
+                
+                //dataZoom 组件 用于区域缩放
+                 dataZoom: [{
+                    type: 'inside',
+                    throttle: 50
+                }],
+                
+                series: [{
+                    name: '合格率',
+                    type: 'line', //图标类型：bar柱状图 ；line折线图
+                    //data: [5.01, 20.03, 36.02, 10.09, 10.05, 20.03], //数据填充
+                    data: ResultList,//数据填充                    
+                    markLine: {
+                        data: [
+                            { name: '目标值 ',
+                              yAxis: Index}
+                        ]
+                    },
+                    //以百分比的形式显示
+                    itemStyle: {  
+                        normal: {  
+                            label: {  
+                                show: true,  
+                                position: 'top',  
+                                //formatter: '{b}\n{c}%'  
+                                formatter: '{c}%'  //显示具体数值在点的上方
+                            }  
+                        }  
+                    },  
+                    
+                }]
+            };
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        }
+       
+  
+  	//时间控件 
+ 	(function($) {				　　　　
+ 			$.init();　　　　
+ 			var result = document.getElementById("inqueryDate");　　　　
+ 			$(chooseTime)[0].addEventListener('tap', function() {　
+ 				var optionsJson = this.getAttribute('data-options') || '{"type":"month"}';　　　　　　
+ 				var options = JSON.parse(optionsJson);　　　　
+ 				options.beginYear = "2017";　　　　　　
+ 				options.beginMonth = "07";　　　　　　
+ 				//options.beginDay = "01";　　
+
+ 			
+ 				var picker = new $.DtPicker(options);　　　　　　
+ 				picker.show(function(rs) {　　
+ 					result.value = rs.text;　　　　　　　　
+ 					picker.dispose();
+ 			 });　　　　
+ 			}, false);　　　　
+ 		})(mui);
+        
+     	function p(s) {
+     	    return s < 10 ? '0' + s: s;
+     	}
+        //在页面加载后，给绑定事件
+    	$(function(){
+    		// 给账号文本框绑定 change 事件
+      		$("#productTyle"). change(check_ProductTyle);
+    		//给提交按钮 绑定 查询 事件
+    		$("#submitBtn").click(Inquery); 
+    		
+    		// 页面一 加载就初始值
+    		var myDate = new Date();
+			var year=myDate.getFullYear();//获取当前年
+			var month=myDate.getMonth();//获取当前月			
+    		$("#inqueryDate").val(year+"-"+p(month));
+    		$("#productTyle").val("台式机");
+    		$("#productTyle").trigger("change");
+    		setTimeout(function(){
+    			$("#submitBtn").trigger("click");
+    	  	}, 500);
+
+    	});
+    
+    	// 给账号文本框绑定 change 事件
+    	function check_ProductTyle() {
+    		//1.获取账号的值
+      		var value=$("#productTyle").val();
+    		$("#submitBtn").removeAttr("disabled");
+    		$("#productPlatform").removeAttr("disabled");
+    		
+    		var productTyle=$("#productTyle").val();
+    		productPlatformInit(productTyle);
+    		
+		}
+    	
+    	//根据月份、产品类型、产品类别 查询一次开箱合格率的值 
+      	function Inquery(){
+    		//1获取参数值     
+    		var inqueryDate = $("#inqueryDate").val();
+      		var productTyle=$("#productTyle").val();
+      		var productPlatform;
+    		if($("#productPlatform").val()=="选择产品平台（非必填项）")
+    			{
+    				productPlatform="";
+    			}
+    		else{
+    			productPlatform=$("#productPlatform").val();
+    		}
+      		
+    		//alert(productPlatform);
+      		
+       	   //2.验证数据有效性：查询月份最近的月份只能是上个月，不能是当月或还没有到的月份
+       	   inqueryDate = inqueryDate.replace("-","");
+	       //alert(inqueryDate)
+          	//1)获取当前 月份 
+            var date=new Date;
+            var year=date.getFullYear(); 
+            var month=date.getMonth()+1;
+            month =(month<10 ? "0"+month:month); 
+            var mydate = (year.toString()+month.toString());
+            //2)获取查询的年月
+            var inqueryYear=inqueryDate.substring(0,4);
+            var inqueryMonth=inqueryDate.substring(4,7);
+            //3）检验 月份
+     		 if(inqueryYear>year){
+     			mui.toast("不提供该月份的数据查询,请重新选择月份！");
+     		 }
+     		 else if(inqueryYear==year && inqueryMonth>=month ){
+     			mui.toast("不提供该月份的数据查询,请重新选择月份！ ");
+    		 }
+     		 else{
+     			$("#Chart").css("visibility","visible");
+     			var list= findList(inqueryDate,productTyle,productPlatform);
+     			if(list[0].length==0 || list[1].length==0){
+     				
+     				//alert("需要隐藏！ ");
+     				$("#Chart").attr("style","visibility:hidden;");
+     				return;
+     			}
+     			$("#Chart").css("visibility","visible");
+     			var DateList = list[0];
+     			mui.toast("1111");
+          		var ResultList = list[1];
+          		var RemarksList = list[2];
+          		var Index=list[3]*10000/100;//注意： list[3]*100 会出现小数精度 不准确的问题。因此， 通过放大倍数，再缩小倍数的方法可以解决 list[3]*10000/100
+          		        		
+        		
+          		//计算出折线图的y轴的 最小值 
+          		var templist=findList(inqueryDate,productTyle,productPlatform)[1];
+          		var listMin=templist.sort(function(a,b) {
+           			return a - b;
+           		})[0];
+             	//alert(listMin);
+             	var YMin=null;
+             	if(listMin>Index) {
+             		YMin=Index-0.01;
+             	}
+             	else {
+             		YMin=listMin;
+             	}
+          		//展示图表     
+          		chart(DateList,ResultList,RemarksList,Index,YMin);
+     		 }
+    	}
+    	
+    	
+       //获取一次开箱 信息记录
+      	function findList(inqueryDate,productTyle,productPlatform){
+    	    
+      		var DateList = null;
+      		var ResultList = null;
+      		var RemarksList=null;
+      		var Index=null;
+      			mui.ajax('/TFMobile/tf-api/customerService/OpenPackageInspection/data/findResultList ', {
+      				data : {
+      					inqueryDate : inqueryDate,
+      					productTyle : productTyle,
+      					productPlatform : productPlatform
+      				},
+      				dataType : 'json',//服务器返回json格式数据
+      				type : 'post',//HTTP请求类型
+      				async : false,
+      				success : function(result) {
+      					if(result.success == true){
+      						DateList = result.body.DateList;
+      						ResultList= result.body.ResultList;
+      						RemarksList= result.body.RemarksList;
+      						Index=result.body.Index;
+      						alert(DateList);
+      						//alert(ResultList);
+      						//赋值完毕结束过场动画
+      						/*setTimeout(function(){
+      							document.getElementById("loading").style.display="none";
+      							$("body").css("background-color","#eee");
+      							document.getElementById("muiContent").style.display="";
+      						}, 1000);*/
+      					}
+      					else{
+      						$("#Chart").attr("style","visibility:hidden;");
+      						mui.toast(result.message);
+      						
+      					}				
+      				},
+      				error : function(xhr, type, errorThrown) {
+      					mui.toast("网络出错了");						
+      				}
+      			});
+      		return [DateList,ResultList,RemarksList,Index];
+      	}
+       
+      	
+      	
+      	function productPlatformInit(productTyle){
+       			//alert("11");
+      		    $("#productPlatform").empty();//清空select列表数据  		  
+      		    $("#productPlatform").append("<option >选择产品平台（非必填项）</option>");
+      		    
+      		    var platformList=null;
+      			mui.ajax('/TFMobile/tf-api/customerService/OpenPackageInspection/data/findPlatformList', {
+      			data : {
+      					productTyle : productTyle
+      			},
+      			dataType : 'json',//服务器返回json格式数据
+      			type : 'post',//HTTP请求类型
+      			async : false,
+      			success : function(result) {
+      					if(result.success == true){
+      			      	　　　platformList = result.body.platformList;　
+      			      	
+      						for (var i = 0; i < platformList.length; i++) {
+      							//alert(platformList[i]);
+                                //var html = '<option value="'+platformList[i]+'">'+platformList[i]+'</option>';
+      			      	　　　　    //$("#productPlatform").append(html);
+      			                $("#productPlatform").append('<option value="'+platformList[i]+'">'+platformList[i]+'</option>');
+      			            
+      						}
+      					}else{
+      						mui.toast(result.message);
+      						//alert(result.message);
+      					}				
+      				},
+      				error : function(xhr, type, errorThrown) {
+      					mui.toast("获取数据失败");	
+      				}
+      			});
+      			
+      			 // 绑定点击事件
+      	      //$("#productPlatform").change(function(){
+      	      //    var item = $("#productPlatform").val();
+      	      //    alert(item);
+      	     // });
+      		
+      	}
+       
+      </script>  
+  <script src="../../static/js/echarts.js"></script>        
+</body>
+</html>

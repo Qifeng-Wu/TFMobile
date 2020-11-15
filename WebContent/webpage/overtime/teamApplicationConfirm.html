@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>班组加班申请确认</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script> 
+    <style type="text/css">
+    	.mytable {
+		        border: 2px solid #cad9ea;
+		        font-size:12px;
+		        background-repeat: repeat-x;
+		        text-align:center;
+		        width:100%;
+    		}
+		.mytable thead {
+		        color: #FFF;
+		        background-color: #4093c6;
+		    }		
+		.mytable td,th {
+		        border: 1px solid #FFF;
+		        height: 36px
+		    }		    
+		.tr_color_1{
+    		background-color:#D2DEEF;
+    	}
+    	.tr_color_2{
+    		background-color:#EAEFF7;
+    	}    
+    </style>  
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	
+		<div class="mui-content" id="muiContent" style="display: none">
+			<div style="margin:2.5%; text-align: center; opacity: 1; color: #FFF; font-size: 18px; background-color: #4093C6; padding: 10px;">
+				<span>班组加班申请确认</span><br>
+			</div>
+
+			<h5 style="margin-top: 10px;margin-left:12px">申请加班名单</h5>
+			<div class="mui-card">
+				<ul class="mui-table-view mui-table-view-chevron" id="teamList">
+				</ul>
+			</div>
+			
+			<div style="margin:0 10px -13px 10px;" id="applicant_reason_div">
+				<h5 style="margin-top: 20px">申请加班理由</h5>
+				<div class="mui-input-row">
+					<textarea id="applicant_reason" maxlength="50" rows="3" placeholder="请填写加班理由"></textarea>
+				</div>
+			</div>
+			
+			<div style="position: fixed;bottom:0;z-index:10;text-align: center; margin-bottom:6px; margin-top:-18px; border-bottom-left-radius:20px; border-bottom-right-radius:20px; width:94%; margin-left:3%;">
+				<a type="button" href="#modal"
+					style="width:45%; background: #4093C6; border: 0; height: 40px; margin-bottom: 3px; font-size: 18px; margin-top: 30px"
+					class="mui-btn mui-btn-danger">添加人员</a>
+				<button type="button" onclick="submit()" style="width:45%;background: #4093C6; border: 0; height: 40px; margin-bottom: 3px; font-size: 18px; margin-top: 30px"
+					   class="mui-btn mui-btn-danger">提交申请</button>
+			</div>
+	</div>
+	<!-- 模态框 -->	
+	<div id="modal" class="mui-modal" style="overflow-y: scroll">
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-icon mui-icon-close mui-pull-right" href="#modal"></a>
+			<h1 class="mui-title">选择添加人员</h1>
+		</header>
+		<div class="mui-content">
+			<div class="mui-input-row mui-search" style="margin:5px 10px -10px 10px;">
+					<input type="search" id="keyword" class="mui-input-clear" placeholder="输入人员姓名、班组定位">
+					<a id="positioning" type="hidden"></a>
+					<script type="text/javascript">
+					//触发positioning定位
+					$("#keyword").on('keypress',function(e) {  
+					    var keycode = e.keyCode;  				   
+					    if(keycode=='13') {  
+					        e.preventDefault();
+							if($(this).val().replace(/ /g,'')==""){
+								mui.toast("请输入定位名称");
+								return;
+							}else{						
+								$("#positioning").attr("href","#"+$(this).val());
+								document.location.href = $("#positioning").attr("href");
+							}
+					    }
+					});
+					</script>
+				</div>
+				<div style="padding: 0 10px 0 10px;margin-bottom:-10px">		
+					<span id="chooseTime"><input id="endTime" style="width:50%;" type="text" value="" placeholder="加班结束时间" readonly="readonly"/></span>
+					<span id="chooseTime1"><input id="startTime" style="width:50%;float: left;" type="text" value="" placeholder="加班开始时间" readonly="readonly"/></span>
+				</div>
+				<div class="mui-card">
+					<form class="mui-input-group">
+						<div class="mui-input-row mui-checkbox">
+							<label style="color:#4093C6">全选</label>
+							<input name="checkbox" value="全选" type="checkbox" id="checkbox_all">
+						</div>
+						<div>
+							<ul class="mui-table-view mui-table-view-chevron" id="list">
+			       
+							</ul>
+						</div>
+					</form>
+				</div>
+			<div  style="text-align:center;margin-bottom: 10px;border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;width:94%;margin-left:3%;">
+					<button type="button" onclick="confirmChoose()" style="width:95%;background:#4093C6;border:0;height:40px;font-size: 18px;"
+					class="mui-btn mui-btn-danger">确认选择</button>		
+				</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(11);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5]; 
+
+var department_no = getUrlParam("departmentNo");
+var date = getUrlParam("date");
+
+var departmentName;
+
+if(userId){
+	if(department=="[2]"){
+		departmentName="工业技术部";
+	}else if(department=="[3]"){
+		departmentName="工程部";
+	}else if(department=="[4]"){
+		departmentName="生产部";
+	}else if(department=="[5]"){
+		departmentName="质量部";
+	}else if(department=="[7]"){
+		departmentName="研发部";
+	}else if(department=="[11]"){
+		departmentName="仓储部";
+	}
+	if(department==department_no && position.indexOf('助理')!=-1){
+		if(department=="[4]"){
+			$("#applicant_reason_div").hide();
+		}
+		setList();
+		setMemberList(departmentName);
+	}else{
+		mui.alert('您无此操作权限！', '提示', function() {
+			wx.closeWindow();
+		});
+	}
+}else{
+	setTimeout(function(){
+		location.reload(); 
+	}, 1000);
+}
+//列表赋值
+function setList(){
+	var list = findList();
+	if(list.length>0){
+		var html;
+		for(var i=0;i< list.length;i++){
+			html = '<li class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">'+list[i][0].team+'</a>'+
+					'<ul class="mui-table-view mui-table-view-chevron">'+
+					'<table class="mytable" id="'+list[i][0].teamApplicationId+'">'+
+		        		'<thead>'+
+							'<tr style="background-color:#5B9BD5">'+
+						    	'<th>序号</th>'+
+						    	'<th>姓名</th>'+
+						    	'<th>工号</th>'+
+						    	'<th>开始时间</th>'+
+						    	'<th>结束时间</th>'+
+						    	'<th>操作</th>'+
+							'</tr>'+
+						'</thead>'+
+						'<tbody id="ta'+list[i][0].teamApplicationId+'">'+
+						
+						'</tbody>'+
+					'</table>'+
+					'</ul>'+
+				   '</li>';
+			$("#teamList").append(html);	
+			if(list[i].length>0){
+				var a = 0;
+				for(var j=0;j<list[i].length;j++){	
+					if(a%2==0){
+						tr_color = "tr_color_1";
+					}else{
+						tr_color = "tr_color_2";
+					}
+					a++;
+					var htmls = '<tr class="'+tr_color+'" id="'+list[i][j].wxId+'" onclick="deleteMember(this,'+list[i][j].wxId+',\''+list[i][j].name+'\')">'+
+					            	'<td>'+a+'</td>'+
+					            	'<td>'+list[i][j].name+'</td>'+
+					            	'<td>'+list[i][j].no+'</td>'+
+					            	'<td>'+getDate(list[i][j].start_time)+'</td>'+
+					            	'<td>'+getDate(list[i][j].end_time)+'</td>'+
+					            	'<td><span style="color:red"><u>删除</u></span></td>'+
+					            '</tr>';	
+					$("#ta"+list[i][j].teamApplicationId+"").append(htmls);
+				}
+			}
+		}
+		
+		//赋值完毕结束过场动画
+		setTimeout(function(){
+			$("#loading").hide();
+			$("#muiContent").show();
+			$("body").css("background-color","#eee");						
+		}, 1000);
+	} else{
+		mui.alert('该条班组加班单已处理！', '提示', function() {
+			wx.closeWindow();
+		});
+	}
+}
+//获取部门下加班人员信息
+function findList(){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/overtime/findListByDepartment', {
+			data : {
+				departmentName : departmentName,
+				date : date
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦");						
+			}
+		});
+	return list;
+}
+
+//提交申请
+var flag = true;
+function submit(){
+	//获取加班人主键
+   var wxIds = "";
+   var membersArray = new Array();
+   var wxId,stime,etime;
+   var i = 0;
+   $("#teamList tbody tr").each(function(){
+   		var memberArray = new Array();
+	    if($(this).attr('id')){
+	    	wxIds += $(this).attr('id')+",";
+	    	wxId = $(this).attr('id');
+	    	stime = $(this).children().eq(3).text();
+	    	etime = $(this).children().eq(4).text();
+	    	memberArray[0] = wxId;
+	    	memberArray[1] = stime;
+	    	memberArray[2] = etime;
+	    }
+	    membersArray[i] = memberArray;
+	    i++;
+	  });
+   var members = {"members":membersArray};
+   var membersJSONString = JSON.stringify(members);
+   if(wxIds.substr(wxIds.length-1)== ','){
+	   wxIds = wxIds.substr(0,wxIds.length-1);
+	}
+   if(wxIds==""){
+		mui.toast("无班组加班人员！");
+		return;
+	}
+   //获取班组加班主键
+   var teamApplicationIds = "";
+    $("table").each(function(){
+    	if($(this).attr("id")){
+    		 teamApplicationIds += $(this).attr("id")+",";
+    	}	  
+ 	  });
+    if(teamApplicationIds.substr(teamApplicationIds.length-1)== ','){
+ 	   teamApplicationIds = teamApplicationIds.substr(0,teamApplicationIds.length-1);
+ 	}
+    alert(teamApplicationIds)
+    var applicant_reason = $("#applicant_reason").val();
+    if(applicant_reason==""){
+ 	   if(department=="[4]"){
+ 		  //生产部助理不需要填写加班理由 
+ 	   }else{
+ 			mui.toast("请填写加班理由");
+ 			return;  
+ 	   }
+ 	}
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;					
+				setTimeout(function(){
+					mui.ajax('/TFMobile/tf-api/overtime/applyConfirm', {
+						data : {
+							applicant : memberId,
+							department : department,
+							members : membersJSONString,
+							teamApplicationIds : teamApplicationIds
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {
+							if(result.success == true){
+								setTimeout(function(){
+									document.location.href = 'myApplicationList.html';
+								}, 1000);				
+								mui.toast("信息提交成功！");
+							}else{
+								mui.toast(result.message);
+							}
+							flag = true;
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦！");
+							flag = true;	
+						}
+					});
+				 }, 10); 
+			}
+		}
+	});
+}
+
+//删除加班人员
+function deleteMember(thiss,wxId,memberName){
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认删除 '+memberName+' 吗？',btnArray,function(e) {
+		if(e.index == 1){
+			$(thiss).remove();
+		}
+	});
+}
+//禁止点击table收起ul
+$(function(){ 
+　　  $("li ul").click(function(){
+    	$(this).parent().attr("class","mui-table-view-cell mui-collapse mui-active");
+	});
+}); 
+
+
+//列表赋值
+function setMemberList(departmentName){
+	var list = findMemberList(departmentName);
+	if(list.length>0){
+		var html;
+		for(var i=0;i< list.length;i++){
+			html = '<li class="mui-table-view-cell mui-collapse"  id="'+list[i][0].team+'"><a class="mui-navigate-right" style="color:#4093C6" href="#">'+list[i][0].team+'</a>'+
+					'<ul class="mui-table-view mui-table-view-chevron">'+
+						'<li class="mui-table-view-cell" style="padding-right:13px" id="t'+i+'">'+
+						'</li>'+
+					'</ul>'+
+				   '</li>';
+			$("#list").append(html);		
+			if(list[i].length>0){
+				for(var j=0;j<list[i].length;j++){	
+					var htmls = '<div class="mui-input-row mui-checkbox" id="'+list[i][j].name+'">'+
+					   '<label>'+list[i][j].name+' （'+list[i][j].no+'）&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+list[i][j].team+'</label>'+
+					   '<input name="checkbox" value="'+list[i][j].wxId+'" type="checkbox">'+
+				   '</div>';
+					$("#t"+i+"").append(htmls);
+				}
+			}
+		}
+	} else{
+		$("#list").prev().remove();
+		$("#list").append('<div style="padding-top:50px;padding-bottom:50px;text-align: center;">'+
+				'<span style="color: #696969;">无人员信息！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	}
+}
+
+//获取人员信息
+function findMemberList(departmentName){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/wx-member/findList', {
+			data : {
+				department : departmentName,
+				team : ""
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						$("#loading").hide();
+						$("#muiContent").show();
+						$("body").css("background-color","#eee");						
+					}, 10);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦");						
+			}
+		});
+	return list;
+}
+
+//点击全选时触发事件
+$(function(){  
+	$("input:checkbox").click(function(){
+		if($(this).val()=="全选"){
+			if($(this).is(':checked')==true){
+				 $("input:checkbox").prop("checked",true);
+				 $(this).prop("checked",true);
+			}else{
+				$("input:checkbox").prop("checked",false);
+				 $(this).prop("checked",false);
+			}
+		}else{
+			$("#checkbox_all").prop("checked",false);		
+		}
+	});
+});	
+
+//确认选择
+var addMember_flag = false;
+var a_number = 0;
+function confirmChoose(){
+	var wxId,name,stime,etime,html,htm;
+	
+	if($("#startTime").val==""){
+		mui.toast("请选择加班开始时间");return;
+	}else if($("#endTime").val()==""){
+		mui.toast("请选择加班结束时间");return;
+	}else{
+		stime = $("#startTime").val();
+		etime = $("#endTime").val();
+	}
+	
+	$("#teamList tbody").each(function(){
+		if($(this).attr('id')=="add_members_tbody"){
+			addMember_flag = true
+		}
+	});	 
+	 
+	 if(!addMember_flag){
+		 html = '<li class="mui-table-view-cell mui-collapse"><a class="mui-navigate-right" href="#">增加人员</a>'+
+			'<ul class="mui-table-view mui-table-view-chevron">'+
+			'<table class="mytable">'+
+	 		'<thead>'+
+					'<tr style="background-color:#5B9BD5">'+
+				    	'<th>序号</th>'+
+				    	'<th>姓名</th>'+
+				    	'<th>工号</th>'+
+				    	'<th>开始时间</th>'+
+				    	'<th>结束时间</th>'+
+				    	'<th>操作</th>'+
+					'</tr>'+
+				'</thead>'+
+				'<tbody id="add_members_tbody">'+
+				
+				'</tbody>'+
+			'</table>'+
+			'</ul>'+
+		   '</li>';
+		$("#teamList").append(html); 
+	 }
+		//筛选重复的人
+	   var wxIds = "";
+	   $("#teamList tbody tr").each(function(){
+		    if($(this).attr('id')){
+		    	wxIds += $(this).attr('id')+",";
+		    }
+		  });
+	   if(wxIds.substr(wxIds.length-1)== ','){
+		   wxIds = wxIds.substr(0,wxIds.length-1);
+		}
+
+	   $("#list input:checkbox").each(function(){
+		    if(true == $(this).is(':checked')){
+		    	wxId = $(this).val();
+		    	name = $(this).parent().attr("id");
+		    	if(!isExist(wxId,wxIds)){
+		    		if(a_number%2==0){
+						tr_color = "tr_color_1";
+					}else{
+						tr_color = "tr_color_2";
+					}
+		    		a_number++;
+			    	htm = '<tr class="'+tr_color+'" id="'+wxId+'" onclick="deleteMember(this,'+wxId+',\''+name+'\')">'+
+			            	'<td>'+a_number+'</td>'+
+			            	'<td>'+name+'</td>'+
+			            	'<td></td>'+
+			            	'<td>'+stime+'</td>'+
+			            	'<td>'+etime+'</td>'+
+			            	'<td><span style="color:red"><u>删除</u></span></td>'+
+	            		  '</tr>';
+			    	$("#add_members_tbody").append(htm);
+		    	}		    	
+		    }
+		  });
+	   $("#modal").attr("class","mui-modal");
+}
+
+function isExist(str,strs){
+	var exist = false;
+	if(str!=null&&str!="null"&&str!=""&&strs!=null&&strs!="null"&&strs!=""){
+		if(strs.indexOf(",")>0){
+			var strsArray = strs.split(",");
+			for(var i=0;i<strsArray.length;i++){
+				if(str==strsArray[i]){
+					exist = true;
+					break;
+				}
+			}
+		}else{
+			if(str==strs){
+				exist = true;
+			}
+		}
+	}
+	return exist;
+}
+</script>
+<script>
+(function($) {				　　　　
+	$.init();　
+	//获取当前时间年月日
+	var now = new Date();
+	var date = now.getDate();	
+	var year = now.getFullYear();
+	var month = now.getMonth() +1;
+	var day = now.getDate();
+	var hour = now.getHours();
+	　　　
+	var result = document.getElementById("endTime");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+		var optionsJson = this.getAttribute('data-options') || '{}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = year;　　　　　　
+		options.beginMonth = month;　　　　　　
+		options.beginDay = day;　　　　　　　
+		options.beginHours = hour;
+		options.beginMinutes = "00";　　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　
+
+			 result.value = rs.text;　
+			 picker.hide();　　　　　　　　
+			 picker.dispose();
+			 //判断有没有选择开始时间
+			 var startTime = document.getElementById("startTime").value;
+			 var endTime = document.getElementById("endTime").value;
+			 if(startTime==""){
+				 document.getElementById("endTime").value = '';
+				 mui.toast("请选择开始时间"); 
+			 }else if(startTime>=endTime){
+				 mui.toast("结束时间不能小于开始时间"); 
+				 document.getElementById("endTime").value = '';
+			 }
+		});
+		
+	}, false);　　
+	var result1 = document.getElementById("startTime");　　　　
+	$(chooseTime1)[0].addEventListener('tap', function() {　
+		var optionsJson1 = this.getAttribute('data-options') || '{}';　　　　　　
+		var options1 = JSON.parse(optionsJson1);　　　　
+		options1.beginYear = year;　　　　　　
+		options1.beginMonth = month;　　　　　　
+		options1.beginDay = day;　　　　　　　
+		options1.beginHours = hour;
+		options1.beginMinutes = "00";　　　　　
+		var picker1 = new $.DtPicker(options1);　　　　　　
+		picker1.show(function(rs) {　　
+			result1.value = rs.text;　　　　　　　　
+			picker1.dispose();
+			 //点击开始时间就把结束时间清空
+			 document.getElementById("endTime").value = '';
+		 });　　　　
+	}, false);　　
+})(mui);
+</script>
+</html>

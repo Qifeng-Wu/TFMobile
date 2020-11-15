@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>改善提案</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/flowChart.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script src="../../static/js/jquery-1.8.3.min.js"></script>
+    <script src="../../static/js/exif.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.zoom.js"></script>
+    <script src="../../static/mui/js/mui.previewimage.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+ 	<style type="text/css">
+		.mui-preview-image.mui-fullscreen {
+			position: fixed;
+			z-index: 20;
+			background-color: #000;
+		}
+		.mui-preview-header,
+		.mui-preview-footer {
+			position: absolute;
+			width: 100%;
+			left: 0;
+			z-index: 10;
+		}
+		.mui-preview-header {
+			height: 44px;
+			top: 0;
+		}
+		.mui-preview-footer {
+			height: 50px;
+			bottom: 0px;
+		}
+		.mui-preview-header .mui-preview-indicator {
+			display: block;
+			line-height: 25px;
+			color: #fff;
+			text-align: center;
+			margin: 15px auto 4;
+			width: 70px;
+			background-color: rgba(0, 0, 0, 0.4);
+			border-radius: 12px;
+			font-size: 16px;
+		}
+		.mui-preview-image {
+			display: none;
+			-webkit-animation-duration: 0.5s;
+			animation-duration: 0.5s;
+			-webkit-animation-fill-mode: both;
+			animation-fill-mode: both;
+		}
+		.mui-preview-image.mui-preview-in {
+			-webkit-animation-name: fadeIn;
+			animation-name: fadeIn;
+		}
+		.mui-preview-image.mui-preview-out {
+			background: none;
+			-webkit-animation-name: fadeOut;
+			animation-name: fadeOut;
+		}
+		.mui-preview-image.mui-preview-out .mui-preview-header,
+		.mui-preview-image.mui-preview-out .mui-preview-footer {
+			display: none;
+		}
+		.mui-zoom-scroller {
+			position: absolute;
+			display: -webkit-box;
+			display: -webkit-flex;
+			display: flex;
+			-webkit-box-align: center;
+			-webkit-align-items: center;
+			align-items: center;
+			-webkit-box-pack: center;
+			-webkit-justify-content: center;
+			justify-content: center;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			-webkit-backface-visibility: hidden;
+		}
+		.mui-zoom {
+			-webkit-transform-style: preserve-3d;
+			transform-style: preserve-3d;
+		}
+		.mui-slider .mui-slider-group .mui-slider-item img {
+			width: auto;
+			height: auto;
+			max-width: 100%;
+			max-height: 100%;
+		}
+		.mui-android-4-1 .mui-slider .mui-slider-group .mui-slider-item img {
+			width: 100%;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-slider-group .mui-slider-item {
+			display: inline-table;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-zoom-scroller img {
+			display: table-cell;
+			vertical-align: middle;
+		}
+		.mui-preview-loading {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			display: none;
+		}
+		.mui-preview-loading.mui-active {
+			display: block;
+		}
+		.mui-preview-loading .mui-spinner-white {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin-left: -25px;
+			margin-top: -25px;
+			height: 50px;
+			width: 50px;
+		}
+		.mui-preview-image img.mui-transitioning {
+			-webkit-transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+			transition: transform 0.5s ease, opacity 0.5s ease;
+		}
+		@-webkit-keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@-webkit-keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		@keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		p img {
+			max-width: 100%;
+			height: auto;
+		}
+	</style>
+    <style>
+		.upload{
+			height:100px;
+			margin-top:7px;
+			margin-bottom:20px;
+			position:relative;
+		}
+		.upload>p{
+			width:40%;
+			height:100px;
+			line-height:100px;
+			padding:5px;
+			text-align:center;
+		}
+		.index1{
+			border:2px dashed #888;
+		}
+		.index2{
+			border:0;
+		}
+		.index2>img{
+			width:98%;
+			height:98%;
+			margin:1% 1%;
+		}
+		.icon1,.img1,.input1{
+			position:absolute;
+			top:0;
+			left:5%;
+		}
+		.index1 span{
+			font-size:50px;
+			color:#888;
+		}
+		.index3{
+			opacity:0;
+			border:0;
+		}
+		.index3 input{
+			border:0;
+			width:100%;
+			height:100px;
+			margin:0 auto;
+		}
+	</style>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">	
+		<div style="position:fixed;background-color:#cf5753;height:32px;width:100%;color:#fff;text-align:center;margin:-13px 0 10px 0;padding:7px 0;z-index:1">
+			<span style="font-size:16px"id="state_tip"></span>
+		</div>	
+		<!-- 提案基本信息 -->
+		<div class="mui-card">
+			<div class="mui-card-header" style="margin-top:20px;background-color:#4093C6;color:#fff">基本信息</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">提案部门：</span><span class="mui-pull-right" id="department"></span></div>
+					<div><span style="color: gray">提案名称：</span><span class="mui-pull-right" id="title"></span></div>
+					<div><span style="color: gray">目前做法：</span><span id="current_measure"></span></div>
+					<div><span style="color: gray">改善办法：</span><span id="improve_measure"></span></div>
+					<div><span style="color: gray">预期效果：</span><span id="anticipate_effect"></span></div>
+					<div><span style="color: gray">图片信息：</span><span class="mui-pull-right" id="pictureTip"></span>	
+						<img style="display:none" id="picture" src="" data-preview-src="" data-preview-group="1" width="100%" height="150px">
+					</div>
+				</div>
+			</div>
+			<div class="mui-card-footer">
+				<span class="mui-card-link">提案人：<span id="proposer"></span></span>
+				<span class="mui-card-link">提案时间：<span id="proposer_time"></span></span>			
+			</div>
+		</div>
+
+		<!-- 工业主管处理-->
+		<div class="mui-card" id="IEHandleForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">工业主管处理</div>
+				<div class="mui-input-row" style="margin-top:10px">
+					<label>是否采纳</label>
+					<select class="mui-btn-block" id="isAdopt" onchange="isAdoptChoose()">
+						<option value="">点击选择是否采纳</option>
+						<option value="是">采纳</option>
+						<option value="否">不采纳</option>
+					</select>
+				</div>
+				<script type="text/javascript">
+					function isAdoptChoose(){
+						if($("#isAdopt").val()=="是"){
+							$("#ie_adopt_info_div").show();
+						}else{
+							$("#ie_adopt_info_div").hide();
+						}
+					}
+				</script>
+				<div class="mui-input-row" style="margin: 17px 5px -10px 5px;">
+					<textarea id="handle_info" rows="4" maxlength="200" placeholder="请填写采纳或不采纳原因"></textarea>
+				</div>
+				<div style="display:none" id="ie_adopt_info_div">
+					<h5 style="margin-top: -2px;margin-left:10px">实 施 人</h5>
+					<div class="mui-input-row mui-password" style="padding: 0 10px 0 10px;">
+						<input type="text" class="mui-input" maxlength="10" id="implement_person">
+					</div>
+					<h5 style="margin-top: -2px;margin-left:10px">希望完成日期</h5>
+					<div style="padding: 0 10px 0 10px;margin-bottom:-10px">		
+						<span id="chooseTime"><input id="expect_finished_date" type="text" placeholder="选择希望完成日期" readonly="readonly"/></span>
+				    </div>	
+				</div>			
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" onclick="IESupervisorConfirm()">提交信息</a>
+			</div>
+		</div>	
+		
+		<!-- 审批进度-->
+		<div class="mui-card" style="display:none" id="process_div">
+			<div class="mui-card-header"
+				style="background-color: #4093C6; color: #fff">流程进度</div>
+			<!--事件时间轴-->
+			<div class="flowChart">
+				<!--左侧轴-->
+				<div class="flowChart-left">
+					<!--虚线-->
+					<div class="dashed"></div>
+				</div>
+				<!--右侧内容-->
+				<div class="flowChart-right" id="stateList">
+					
+				</div>
+			</div>
+		</div>
+		<!-- 被驳回后，提案人处理-->
+		<div style="display:none;padding-top:25px;padding-bottom:20px;" id="proposer_confirm_div">
+			<button class="mui-btn mui-btn-danger"style="position: fixed;bottom:0;z-index:10;margin-left:30px;margin-top:20px;margin-bottom:10px" onclick="proposerConfirm(0);">撤销</button>
+			<button class="mui-btn mui-btn-success" style="position: fixed;bottom:0;z-index:10;right:0px;margin-right:30px;margin-bottom:10px" onclick="proposerConfirm(1);">修改</button>
+		</div>
+		<!-- 主管审核-->
+		<div style="display:none;padding-top:25px;padding-bottom:20px;" id="supervisor_confirm_div">
+			<button class="mui-btn mui-btn-danger"style="position: fixed;bottom:0;z-index:10;margin-left:30px;margin-top:20px;margin-bottom:10px" onclick="supervisorConfirm(0);">驳回</button>
+			<button class="mui-btn mui-btn-success" style="position: fixed;bottom:0;z-index:10;right:0px;margin-right:30px;margin-bottom:10px" onclick="supervisorConfirm(1);">确认</button>
+		</div>
+		<!-- 部门经理审核-->
+		<div style="display:none;padding-top:25px;padding-bottom:20px;" id="manager_confirm_div">
+			<button class="mui-btn mui-btn-danger"style="position: fixed;bottom:0;z-index:10;margin-left:30px;margin-top:20px;margin-bottom:10px" onclick="managerConfirm(0);">驳回</button>
+			<button class="mui-btn mui-btn-success" style="position: fixed;bottom:0;z-index:10;right:0px;margin-right:30px;margin-bottom:10px" onclick="managerConfirm(1);">确认</button>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+mui.previewImage();//图片预览
+var picturePath = "http://www.stephen7.top/";
+//获取企业成员信息
+var memberInfo = getAnotherMemberInfo(2);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+//获取url中的参数
+var improvementId = getUrlParam("improvementId");
+var style_no = 0;
+
+//网页授权完成再处理其他信息
+if(memberId){
+	if(improvementId){
+		//获取信息
+		var type,state,proposerId,supervisorId,managerId,ie_supervisorId,submitDepartmentName;
+		findImprovementInfo(improvementId);		
+	}else{
+		mui.alert('该改善提案不存在或已被删除！', '提示', function() {
+			wx.closeWindow();
+		});
+	}	
+}
+
+//获取改善提案信息
+function findImprovementInfo(improvementId){
+	if(improvementId){
+		mui.ajax('/TFMobile/tf-api/improvement/findInfo', {
+			data : {
+				improvementId : improvementId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {			
+				if(result.success == true){
+					var improvement = result.body.improvement;
+					if(improvement!=null && improvement!="null" && improvement!=""){	
+						state = improvement.state;//获取状态（非常重要）
+						type = improvement.type;//提交类型
+						var delete_flag = improvement.delete_flag;//删除标记
+						if(delete_flag==1){
+							mui.alert('该改善提案不存在或已被撤销！', '提示', function() {
+								wx.closeWindow();
+							});
+							return;
+						}
+						
+						$("#department").text(improvement.department);
+						$("#title").text(improvement.title);
+						$("#current_measure").text(improvement.current_measure);
+						$("#improve_measure").text(improvement.improve_measure);
+						$("#anticipate_effect").text(improvement.anticipate_effect);
+						var picture = improvement.picture;
+				   		if(picture!=null&&picture!=""&&picture!="null"){
+				   			$("#picture").attr("src",picturePath+picture);
+				   			$("#picture").show();
+				   		}else{			   			
+				   			$("#pictureTip").text("未上传");
+				   		}
+				   		$("#proposer").text(getInfo(improvement.proposer)[1]);
+				   		$("#proposer_time").text(getDate(improvement.proposer_time));
+				   		
+				   		//赋值全局变量
+				   		proposerId = improvement.proposer;
+				   		supervisorId = improvement.supervisor;
+				   		managerId = improvement.manager;
+				   		ie_supervisorId = improvement.ie_supervisor;				   		
+				   		submitDepartmentName = improvement.department;				   		
+				   		
+				   		//流程处理人信息
+				   		var proposer = improvement.proposer;
+				   		var proposer_time = getDate(improvement.proposer_time);
+				   		var supervisor = improvement.supervisor;
+				   		var supervisor_time = getDate(improvement.supervisor_time);
+				   		var supervisor_refused_reason = improvement.supervisor_refused_reason;
+				   		var manager = improvement.manager;
+				   		var manager_time = getDate(improvement.manager_time);
+				   		var manager_refused_reason = improvement.manager_refused_reason;
+				   		var ie_supervisor = improvement.ie_supervisor;
+				   		var ie_supervisor_time = getDate(improvement.ie_supervisor_time);
+				   		
+						//状态解析
+						var isAdopt = improvement.isAdopt;
+						var handle_info = improvement.handle_info;
+						var expect_finished_date = improvement.expect_finished_date;
+						var implement_person = improvement.implement_person;
+						
+						var department_name = improvement.department;
+						var team_name = improvement.team;
+						
+						statuseParse(type,state,proposer,proposer_time,supervisor,supervisor_time,supervisor_refused_reason,
+								manager,manager_time,manager_refused_reason,ie_supervisor,ie_supervisor_time,isAdopt,
+								handle_info,expect_finished_date,implement_person,department_name,team_name);
+						
+						//赋值完毕结束过场动画
+					   	setTimeout(function(){
+					   		document.getElementById("loading").style.display="none";
+					   		$("body").css("background-color","#eee");
+					   		document.getElementById("muiContent").style.display="";
+					   	}, 10);	
+					}else{
+						mui.toast("系统出错啦，请联系管理员");
+					}
+
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦，请联系管理员");
+			}
+		});
+	}
+}
+
+//状态解析
+function statuseParse(type,state,proposer,proposer_time,supervisor,supervisor_time,supervisor_refused_reason,
+		manager,manager_time,manager_refused_reason,ie_supervisor,ie_supervisor_time,isAdopt,
+		handle_info,expect_finished_date,implement_person,department_name,team_name){
+	if(type==0){//普通员工提交
+		if(state==1){//普通员工提交初始插入，待对应主管审核
+			$("#state_tip").text("待主管确认");
+			if(position.indexOf("主管")!=-1 && position.indexOf(team_name)!=-1){
+				$("#supervisor_confirm_div").show();
+			}			
+		}else if(state==2){
+			$("#state_tip").text("提案已被主管驳回，待提案人处理");
+			$("#process_div").show();
+			if(proposerId==memberId){
+				$("#proposer_confirm_div").show();
+			}
+			//解析流程进度
+			progressParse(supervisor,supervisor_time,supervisor_refused_reason,"驳回");
+			progressParse(proposer,proposer_time,"提案信息见上方提案基本信息","提案");
+		}else if(state==3){
+			$("#state_tip").text("待部门经理审核");		
+			$("#process_div").show();
+			var pass = false;
+			switch(department_name){
+				case "工业技术部": if(department=="[2]"){pass =true;}break;
+				case "工程部": if(department=="[3]"){pass =true;}break;
+				case "生产部": if(department=="[4]"){pass =true;}break;
+				case "质量部": if(department=="[5]"){pass =true;}break;
+				default: pass = false;
+			}
+			if(pass && isleader==1){
+				$("#manager_confirm_div").show();
+			}
+			//解析流程进度
+			progressParse(supervisor,supervisor_time,"已确认","确认");
+			progressParse(proposer,proposer_time,"提案信息见上方提案基本信息","提案");
+		}else if(state==4){
+			$("#state_tip").text("提案已被部门经理驳回，待主管处理");
+			$("#process_div").show();
+			if(position.indexOf("主管")!=-1 && position.indexOf(team_name)!=-1){
+				$("#supervisor_confirm_div").show();
+			}
+			//解析流程进度
+			progressParse(manager,manager_time,manager_refused_reason,"驳回");
+			progressParse(supervisor,supervisor_time,"已确认","确认");
+			progressParse(proposer,proposer_time,"提案信息见上方基本信息","提案");
+		}else if(state==5){
+			$("#state_tip").text("待工业主管处理");
+			$("#process_div").show();			
+			if(position.indexOf("工业主管")!=-1 && department=="[2]"){
+				$("#IEHandleForm").show();
+			}			
+			//解析流程进度
+			progressParse(manager,manager_time,"已审核","审核");
+			progressParse(supervisor,supervisor_time,"已确认","确认");
+			progressParse(proposer,proposer_time,"提案信息见上方基本信息","提案");
+		}else if(state==0){
+			$("#state_tip").text("提案流程已完结");
+			$("#process_div").show();
+			//解析流程进度
+			var isAdoptKey="";
+			var isAdoptDesc="";
+			if(isAdopt=="是"){
+				isAdoptKey = "采纳";
+				isAdoptDesc = '<p>处理描述：'+handle_info+'<p/><p>实施人：'+implement_person+'<p/><p>希望完成日期：'+expect_finished_date+'<p/>';
+			}else{
+				isAdoptKey = "摈弃";
+				isAdoptDesc = handle_info;
+			}
+			progressParse(ie_supervisor,ie_supervisor_time,isAdoptDesc,isAdoptKey);
+			progressParse(manager,manager_time,"已审核","审核");
+			progressParse(supervisor,supervisor_time,"已确认","确认");
+			progressParse(proposer,proposer_time,"提案信息见上方基本信息","提案");
+		}		
+	}else if(type==1){ //主管或工程师提交
+		if(state==1){//主管或工程师提交初始插入，待部门经理审核
+			$("#state_tip").text("待部门经理审核");
+			var pass = false;
+			switch(department_name){
+				case "工业技术部": if(department=="[2]"){pass =true;}break;
+				case "工程部": if(department=="[3]"){pass =true;}break;
+				case "生产部": if(department=="[4]"){pass =true;}break;
+				case "质量部": if(department=="[5]"){pass =true;}break;
+				default: pass = false;
+			}
+			if(pass && isleader==1){
+				$("#manager_confirm_div").show();
+			}
+		}else if(state==2){
+			$("#process_div").show();
+			$("#state_tip").text("提案已被部门经理驳回，待提案人处理");
+			if(proposerId==memberId){
+				$("#proposer_confirm_div").show();
+			}
+			//解析流程进度
+			progressParse(manager,manager_time,manager_refused_reason,"驳回");
+			progressParse(proposer,proposer_time,"提案信息见上方提案基本信息","提案");
+		}else if(state==3){
+			$("#process_div").show();
+			$("#state_tip").text("待工业主管处理");
+			if(position.indexOf("工业主管")!=-1 && department=="[2]"){
+				$("#IEHandleForm").show();
+			}	
+			//解析流程进度
+			progressParse(manager,manager_time,"已审核","审核");
+			progressParse(proposer,proposer_time,"提案信息见上方提案基本信息","提案");
+		}else if(state==0){
+			$("#process_div").show();
+			$("#state_tip").text("提案流程已完结");
+			//解析流程进度
+			var isAdoptKey="";
+			var isAdoptDesc="";
+			if(isAdopt=="是"){
+				isAdoptKey = "采纳";
+				isAdoptDesc = '<p>处理描述：'+handle_info+'<p/><p>实施人：'+implement_person+'<p/><p>希望完成日期：'+expect_finished_date+'<p/>';
+			}else{
+				isAdoptKey = "摈弃";
+				isAdoptDesc = handle_info;
+			}
+			progressParse(ie_supervisor,ie_supervisor_time,isAdoptDesc,isAdoptKey);
+			progressParse(manager,manager_time,"已审核","审核");
+			progressParse(proposer,proposer_time,"提案信息见上方提案基本信息","提案");
+		}
+	}
+}
+
+var flag = true;	
+//1.主管审核确认或驳回（para：0驳回，1确认）
+function supervisorConfirm(para){
+	if(para==0){//驳回
+		var supervisor_refused_reason = "";						
+		var btnArray = ['取消', '确认'];
+		mui.prompt('请输入驳回原因：', '', '', btnArray, function(e) {
+			if(e.index == 1){
+				supervisor_refused_reason = e.value;
+				if(supervisor_refused_reason==""){
+					mui.toast("请输入驳回原因！");
+					return;
+				}
+				if(flag==false){
+					return;
+				}else{
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/improvement/supervisorRefuse', {
+						data : {
+							improvementId : improvementId,
+							supervisor : memberId,
+							proposer : proposerId,//提案人主键
+							supervisor_refused_reason : supervisor_refused_reason							
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("驳回成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;	
+						}
+					});				
+				}
+			}
+		});
+	}else if(para==1){//确认
+		var btnArray = [ '取消', '确认' ];
+		mui.confirm('', '确认审核吗？', btnArray, function(e) {
+			if (e.index == 1) {
+				if (flag == false) {
+					return;
+				} else {
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/improvement/supervisorConfirm', {
+						data : {
+							improvementId : improvementId,
+							supervisor : memberId,
+							department : department
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {
+							if (result.success == true) {
+								mui.toast("确认成功！");
+								setTimeout(function() {
+									location.reload();
+								}, 1000);
+							} else {
+								mui.toast(result.message);
+								flag = true;
+							}
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;
+						}
+					});
+				}
+			}
+		});
+	}	
+}
+//2.被驳回后，提案人撤销或修改（para：0撤销，1修改）
+function proposerConfirm(para){
+	if(para==0){//撤销
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认撤销吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{					
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/improvement/delete', {
+						data : {
+							improvementId : improvementId
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.alert('提案撤销成功，点击确定关闭窗口', '提示', function() {
+									wx.closeWindow();
+								});
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;	
+						}
+					});				
+				}
+			}
+		});
+	}else if(para==1){//修改
+		document.location.href = 'improvementEdit.html?improvementId='+ improvementId;
+	}	
+}
+//3.部门经理审核确认或驳回（para：0驳回，1确认）
+function managerConfirm(para){
+	if(para==0){//驳回
+		var manager_refused_reason = "";						
+		var btnArray = ['取消', '确认'];
+		mui.prompt('请输入驳回原因：', '', '', btnArray, function(e) {
+			if(e.index == 1){
+				manager_refused_reason = e.value;
+				if(manager_refused_reason==""){
+					mui.toast("请输入驳回原因！");
+					return;
+				}
+				if(flag==false){
+					return;
+				}else{
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/improvement/managerRefuse', {
+						data : {
+							improvementId : improvementId,
+							type : type,
+							manager : memberId,
+							supervisor : supervisorId,
+							manager_refused_reason : manager_refused_reason							
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("驳回成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;	
+						}
+					});				
+				}
+			}
+		});
+	}else if(para==1){//确认
+		var btnArray = [ '取消', '确认' ];
+		mui.confirm('', '确认审核吗？', btnArray, function(e) {
+			if (e.index == 1) {
+				if (flag == false) {
+					return;
+				} else {
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/improvement/managerConfirm', {
+						data : {
+							improvementId : improvementId,
+							type : type,
+							manager : memberId,
+							submitDepartmentName : submitDepartmentName
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {
+							if (result.success == true) {
+								mui.toast("确认成功！");
+								setTimeout(function() {
+									location.reload();
+								}, 1000);
+							} else {
+								mui.toast(result.message);
+								flag = true;
+							}
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;
+						}
+					});
+				}
+			}
+		});
+	}	
+}
+
+//4.IE主管确认处理
+function IESupervisorConfirm(){
+	var isAdopt = $("#isAdopt").val();
+	var handle_info = $("#handle_info").val();
+	var expect_finished_date = $("#expect_finished_date").val();
+	var implement_person = $("#implement_person").val();
+	
+	if(isAdopt==""){
+		mui.toast("请选择是否采纳");
+		return;
+	}
+	if(handle_info==""){
+		mui.toast("请填写采纳或不采纳原因");
+		return;
+	}
+	if(isAdopt=="是"){
+		if(implement_person==""){
+			mui.toast("请填写实施人姓名");
+			return;
+		}
+		if(expect_finished_date==""){
+			mui.toast("请选择希望完成时间");
+			return;
+		}
+	}
+	
+	var btnArray = [ '取消', '确认' ];
+	mui.confirm('', '确认提交信息吗？', btnArray, function(e) {
+		if (e.index == 1) {
+			if (flag == false) {
+				return;
+			} else {
+				flag = false;
+				mui.ajax('/TFMobile/tf-api/improvement/IESupervisorConfirm', {
+					data : {
+						improvementId : improvementId,
+						ie_supervisor : memberId,
+						isAdopt : isAdopt,
+						handle_info : handle_info,
+						implement_person : implement_person,
+						expect_finished_date : expect_finished_date,
+						proposer : proposerId,
+						supervisor : supervisorId,
+						manager : managerId
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {
+						if (result.success == true) {
+							mui.toast("提交信息成功！");
+							setTimeout(function() {
+								location.reload();
+							}, 1000);
+						} else {
+							mui.toast(result.message);
+							flag = true;
+						}
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("系统出错啦，请联系管理员");
+						flag = true;
+					}
+				});
+			}
+		}
+	});
+}
+
+//解析加班流程进度(其中position_no参数是放置位置号)
+function progressParse(member_id, time, desctiption, position_no) {
+	var member = getInfo(member_id);
+	var check_style = "";
+	style_no++;
+	if (style_no % 5 == 0) {
+		check_style = "";
+	} else if (style_no % 5 == 1) {
+		check_style = "check-prime";
+	} else if (style_no % 5 == 2) {
+		check_style = "check-success";
+	} else if (style_no % 5 == 3) {
+		check_style = "check-warning";
+	} else if (style_no % 5 == 4) {
+		check_style = "check-danger";
+	}
+	var html = '';
+	html += '<div class="oneNode">';
+	html += '<div class="check '+check_style+'">' + position_no + '</div>';
+	html += '<div class="tag-boder">';
+	html += '<div class="tag"></div>';
+	html += '</div>';
+	html += '<div class="NodeDetail">';
+	html += '<div class="NodeDetail-title">';
+	html += '<img src="'+member[5]+'"/>';
+	html += '<div class="details">';
+	html += '<h4>' + member[1] + '</h4>';
+	html += '<p style="margin-bottom:-5px;">' + member[3] + '</p>';
+	html += '</div>';
+	html += '</div>';
+	html += '<div class="NodeDetail-content">';
+	html += '<p style="color:black">' + desctiption + '</p>';
+	html += '</div>';
+	html += '<div class="NodeDetail-footer">';
+	html += '<span>' + time + '</span>';
+	html += '</div>';
+	html += '</div>';
+	html += '</div>';
+	$("#stateList").append(html);
+}
+
+//根据主键memberId获取企业成员信息
+function getInfo(memberId){
+	var userId = null;
+	var name = null;
+	var department = null;
+	var position = null;
+	var isleader = null;
+	var avatar = null;
+	if(memberId==null || memberId=="" || memberId=="null"){
+		return [userId, name, department, position, isleader, avatar];
+	}
+	mui.ajax('/TFMobile/tf-api/improvement/member/getInfo', {
+		data : {
+			memberId : memberId			
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				userId = result.body.member.userId;
+				name = result.body.member.name;
+				department = result.body.member.department;
+				position = result.body.member.position;
+				isleader = result.body.member.isleader;
+				avatar = result.body.member.avatar;
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("系统出错啦，请联系管理员！");
+		}
+	});
+	return [userId, name, department, position, isleader, avatar];
+}
+</script>
+<script>
+(function($) {				　　　　
+	$.init();　
+	//获取当前时间年月日
+	var now = new Date();
+	var date = now.getDate();	
+	var year = now.getFullYear();
+	var month = now.getMonth() +1;
+	var day = now.getDate();　　　
+	var result = document.getElementById("expect_finished_date");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = year;　　　　　　
+		options.beginMonth = month;　　　　　　
+		options.beginDay = day;　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+		  result.value = rs.text;　　　　　　　　
+		  picker.dispose();	 
+		});　　　　
+	}, false);　　　　
+})(mui);
+</script>
+</html>

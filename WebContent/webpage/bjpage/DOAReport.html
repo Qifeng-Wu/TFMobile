@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>DOA信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <style type="text/css">
+    	.mytable {
+		        border: 2px solid #cad9ea;
+		        font-size:13px;
+		        background-repeat: repeat-x;
+		        text-align:center;
+		        width:100%
+    		}
+
+		.mytable thead {
+		        color: #FFF;
+		        background-color: #4093c6
+		    }
+		
+		.mytable td,th {
+		        border: 1px solid #FFF;
+		        padding: 0 1em 0;
+		        height: 36px
+		    }
+		.tr_color_1{
+    		background-color:#D2DEEF;
+    	}
+    	.tr_color_2{
+    		background-color:#EAEFF7;
+    	} 
+    </style>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+		<div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入产品类型、退货原因查询">
+		</div>
+	<div style="padding: 0 2% 0 2%;">
+        <table class="mytable">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>产品类型</th>
+	            	<th>退货原因</th>
+	            	<th>到货数量</th>
+	            	<th>到货详情</th>
+            	</tr>
+            </thead>
+            <tbody>
+              <!--   <tr style="background-color:#D2DEEF">
+                	<td>台式机</td>
+                	<td>京东七天</td>
+                	<td>100</td>
+                	<td><span onclick="goDetail()"><u>详情</u></span></td>
+                </tr>
+                <tr style="background-color:#EAEFF7">
+                	<td>台式机</td>
+                	<td>特批退货</td>
+                	<td>20</td>
+                	<td><span onclick="goDetail()"><u>详情</u></span></td>
+                </tr> -->
+            </tbody>
+
+        </table>
+    </div>
+					
+	</div>			
+</body>
+<script type="text/javascript">
+mui.init();
+var searchName = "";
+
+//获取数据页面赋值
+setList(searchName);
+
+function setList(searchName){
+	var list = findList(searchName);
+	if(list.length>0){
+		$("thead").show();
+		$("tbody").empty();
+		$("tbody").next().remove();
+		for(var i=0;i< list.length;i++){
+			var tr_color = "";
+			if(i%2==0){
+				tr_color = "tr_color_1";
+			}else{
+				tr_color = "tr_color_2";
+			} 		
+			var html = '<tr class="'+tr_color+'">'+
+			            	'<td>'+list[i].ProductCategory+'</td>'+
+                			'<td>'+list[i].ArriveCategory+'</td>'+
+                			'<td>'+list[i].number+'</td>'+
+                			'<td><span onclick="goDetail(\''+list[i].ProductCategory+'\',\''+list[i].ArriveCategory+'\')"><u>详情</u></span></td>'+
+			            '</tr>';
+			$("tbody").append(html);
+		}
+	}else{
+		$("thead").hide();//隐藏
+		$("tbody").empty();//清空
+		var tip = '<div class="mui-card">'+
+					'<ul class="mui-table-view">'+
+						'<li class="mui-table-view-cell mui-media">'+	
+						'<div class="mui-media-body" style="text-align:center">'+
+						'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+						'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无数据信息哦！</span></div>'+	
+						'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+						'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+						'</div>'+
+						'</li></ul>'+
+					'</div>';
+		$("table").append(tip);
+	}
+}
+
+//获取所有的记录列表
+function findList(searchName){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/bj-mobile/DOAReport/findList', {
+			data : {
+				searchName:searchName
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						document.getElementById("loading").style.display="none";
+						$("body").css("background-color","#eee");
+						document.getElementById("muiContent").style.display="";
+					}, 1000);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+		return list;
+}
+
+//触发搜索框事件
+$("#keyword").on('keypress',function(e) {  
+    var keycode = e.keyCode;  
+    var searchName = $(this).val();
+    if(keycode=='13') {  
+        e.preventDefault();    
+        setList(searchName); 
+    }  
+ })
+ 
+//跳转详细界面
+function goDetail(ProductCategory,ArriveCategory){
+	ProductCategory= encodeURI(encodeURI(ProductCategory));
+	ArriveCategory= encodeURI(encodeURI(ArriveCategory));
+	document.location.href = 'DOAReportDetail.html?ProductCategory='+ProductCategory+'&ArriveCategory='+ArriveCategory;
+}
+</script>
+</html>

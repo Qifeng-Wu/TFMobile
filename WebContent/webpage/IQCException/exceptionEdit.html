@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>物料异常通报信息修改</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	
+	<div class="mui-content" id="muiContent" style="display:none">
+		<div class="mui-card">
+			<form class="mui-input-group">
+				<div style="text-align: center;opacity:1;color: #FFF;font-size:20px; background-color: #4093C6;padding:18px 20px 18px 20px;">
+					<span>物料异常通报表</span><br>
+				</div>
+				<div class="mui-input-row">
+					<label>文件序号</label>
+					<input type="text" id="serialNumber" name="serialNumber" readOnly maxlength="12">
+				</div>
+								<div class="mui-input-row" >
+					<label>检验批号</label>
+					<input type="text" id="inspectionNumber" placeholder="输入检验批号 " maxlength="12">
+				</div>
+				<div class="mui-input-row">
+					<label>物料编号</label>
+					<input type="text" id="materialCode" placeholder="输入物料编号" maxlength="15">
+				</div>
+				<div class="mui-input-row">
+					<label>到货数量</label>
+					<input type="text" id="arrivalQuantity" placeholder="输入到货数量 " maxlength="6">
+				</div>
+				<div class="mui-input-row">
+					<label>检验数量</label>
+					<input type="text" id="inspectionQuantity" placeholder="输入检验数量 " maxlength="6">
+				</div>
+				<div class="mui-input-row">
+					<label>不良数量</label>
+					<input type="text" id="failuresQuantity" placeholder="输入不良数量 " maxlength="6">
+				</div>
+				<div class="mui-input-row">
+					<label>到货日期</label>
+					<span id="chooseTime"><input id="arrivalDate" style="width:60%;margin-left:-16px;" type="text" value="" placeholder="选择到货日期" readonly="readonly" /></span>			
+				</div>
+				<div class="mui-input-row">
+					<label>检验日期</label>
+					<span id="chooseTime1"><input id="inspectionDate" style="width:60%;margin-left:-16px;" type="text" value="" placeholder="选择检验日期" readonly="readonly" /></span>			
+				</div>
+				<div class="mui-input-row">
+					<label>供&nbsp;&nbsp;应&nbsp;&nbsp;商</label>
+					<input type="text" id="supplier" placeholder="输入供应商 " maxlength="30">
+				</div>
+				<div class="mui-input-row">
+					<label>工&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;厂</label>
+					<input type="text" id="factory" placeholder="输入工厂" maxlength="10">
+				</div>
+				<div class="mui-input-row">
+					<label>检&nbsp;&nbsp;验&nbsp;&nbsp;员</label>
+					<input type="text" id="inspector" placeholder="输入检验员" maxlength="6">
+				</div>
+				<div class="mui-input-row" style="height:120px">
+					<label>物料描述</label>
+					<textarea id="materialDescription" rows="3" placeholder="输入物料描述" maxlength="300"></textarea>
+				</div>	
+				<div class="mui-input-row" style="height:120px">
+					<label>故障明细</label>
+					<textarea id="description" rows="5" placeholder="输入故障明细" maxlength="300"></textarea>
+				</div>	
+			</form>
+			<div  style="text-align:center;margin-bottom: 10px;margin-top: -10px;border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;width:94%;margin-left:3%;">
+				<button type="button" id="submitBtn" style="width:95%;background:#4093C6;border:0;height:40px;margin-bottom: 20px;font-size: 18px;margin-top: 30px "
+				class="mui-btn mui-btn-danger grad1">提交信息</button>		
+			</div> 
+		</div>
+	</div>
+
+	
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(9);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+//获取url中的参数
+var exceptionId = getUrlParam("exceptionId");
+
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取异常问题表单信息
+	var status = findExceptionInfo(exceptionId);
+	if(status!=null && status!="null"){
+	   	//赋值完毕结束过场动画
+	    setTimeout(function(){
+	   		document.getElementById("loading").style.display="none";
+	   		$("body").css("background-color","#eee");
+	   		document.getElementById("muiContent").style.display="";
+	   	}, 1);
+	}
+
+}
+
+function findExceptionInfo(exceptionId){
+	var state = null;
+	if(exceptionId){
+		mui.ajax('/TFMobile/tf-api/iqc-exception/findInfo', {
+			data : {
+				exceptionId : exceptionId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					state = result.body.exception.state;//获取异常状态（非常重要）
+					//问题描述内容
+					$("#serialNumber").val(result.body.exception.serialNumber);
+			   		$("#inspectionNumber").val(result.body.exception.inspectionNumber);
+			   		$("#materialCode").val(result.body.exception.materialCode);
+			   		$("#arrivalQuantity").val(result.body.exception.arrivalQuantity);
+			   		$("#inspectionQuantity").val(result.body.exception.inspectionQuantity);
+			   		$("#failuresQuantity").val(result.body.exception.failuresQuantity);
+			   		$("#arrivalDate").val(findDate(result.body.exception.arrivalDate));
+			   		$("#inspectionDate").val(findDate(result.body.exception.inspectionDate));
+			   		$("#supplier").val(result.body.exception.supplier);
+			   		$("#factory").val(result.body.exception.factory);
+			   		$("#inspector").val(result.body.exception.inspector);
+			   		$("#materialDescription").val(result.body.exception.materialDescription);
+			   		$("#description").val(result.body.exception.description);
+			   		
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				//mui.toast("网络出错了");
+			}
+		});
+	}
+	return state;
+}
+
+//表单提交
+var flag = true;
+document.getElementById('submitBtn').addEventListener('tap',function() {
+
+	//判断当前成员是否有权限处理
+	var pass = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==5 && position=='IQC组组长'){
+			pass = true;
+		}			
+	}
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+		
+		var serialNumber = $("#serialNumber").val().replace(/ /g,'');
+		var inspectionNumber = $("#inspectionNumber").val().replace(/ /g,'');
+		var materialCode = $("#materialCode").val().replace(/ /g,'');
+		var arrivalQuantity = $("#arrivalQuantity").val().replace(/ /g,'');
+		var inspectionQuantity = $("#inspectionQuantity").val().replace(/ /g,'');
+		var failuresQuantity = $("#failuresQuantity").val().replace(/ /g,'');
+		var arrivalDate = $("#arrivalDate").val().replace(/ /g,'');
+		var inspectionDate = $("#inspectionDate").val().replace(/ /g,'');
+		var supplier = $("#supplier").val().replace(/ /g,'');
+		var factory = $("#factory").val().replace(/ /g,'');   		
+		var inspector = $("#inspector").val().replace(/ /g,'');
+		var materialDescription = $("#materialDescription").val().replace(/ /g,'');
+		var description = $("#description").val().replace(/ /g,'');
+		var re = /^[1-9]\d*$/;//正整数正则
+
+		if(inspectionNumber==null||inspectionNumber==""){
+			mui.toast("请输入检验批号");
+			return;
+		}
+		if(materialCode==null||materialCode==""){
+			mui.toast("请输入物料编号");
+			return;
+		}
+		if(arrivalQuantity==null||arrivalQuantity==""){
+			mui.toast("请输入到货数量");
+			return;
+		}
+		if(!re.test(arrivalQuantity)){
+			mui.toast("到货数量请输入正整数");
+			return;
+		}
+		if(inspectionQuantity==null||inspectionQuantity==""){
+			mui.toast("请输入检验数量");
+			return;
+		}
+		if(!re.test(inspectionQuantity)){
+			mui.toast("检验数量请输入正整数");
+			return;
+		}
+		if(failuresQuantity==null||failuresQuantity==""){
+			mui.toast("请输入不良数量");
+			return;
+		}
+		if(!re.test(failuresQuantity)){
+			mui.toast("不良数量请输入正整数");
+			return;
+		}
+		if(arrivalDate==null||arrivalDate==""){
+			mui.toast("请选择到货日期");
+			return;
+		}
+		if(inspectionDate==null||inspectionDate==""){
+			mui.toast("请选择检验日期");
+			return;
+		}
+		if(supplier==null||supplier==""){
+			mui.toast("请输入供应商");
+			return;
+		}
+		if(factory==null||factory==""){
+			mui.toast("请输入工厂");
+			return;
+		}
+		if(inspector==null||inspector==""){
+			mui.toast("请输入检验员");
+			return;
+		}
+		if(materialDescription==null||materialDescription==""){
+			mui.toast("请输入物料描述");
+			return;
+		} 		
+		if(description==null||description==""){
+			mui.toast("请输入故障明细");
+			return;
+		} 		
+
+				
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				exceptionSave(memberId,serialNumber,inspectionNumber,materialCode,arrivalQuantity,inspectionQuantity,
+							failuresQuantity,arrivalDate,inspectionDate,supplier,factory,inspector,materialDescription,description);
+				return;
+			}
+		}
+	});
+});
+
+
+//保存提交内容
+function exceptionSave(memberId,serialNumber,inspectionNumber,materialCode,arrivalQuantity,inspectionQuantity,
+		failuresQuantity,arrivalDate,inspectionDate,supplier,factory,inspector,materialDescription,description){
+
+	mui.ajax('/TFMobile/tf-api/iqc-exception/exceptionEdit', {
+		data : {
+			exceptionId : exceptionId,
+			memberId : memberId,
+			reporter : name,//发文人姓名
+			serialNumber : serialNumber,
+			inspectionNumber : inspectionNumber,
+			materialCode : materialCode,
+			arrivalQuantity : arrivalQuantity,
+			inspectionQuantity : inspectionQuantity,
+			failuresQuantity : failuresQuantity,
+			arrivalDate : arrivalDate,
+			inspectionDate : inspectionDate,
+			supplier : supplier,
+			factory : factory,
+			inspector : inspector,
+			materialDescription : materialDescription,
+			description : description,
+			touser : "NanJuXianSheng"
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				setTimeout(function(){
+					document.location.href = 'exceptionForm.html?exceptionId='+exceptionId; 
+				}, 1000);				
+				mui.toast("提交成功！");
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");
+		}
+	});
+}
+
+//2.js解析时间
+function findDate(tm){
+	if(tm != ""){
+		var date = new Date(tm);
+		Y = date.getFullYear() + '-';
+		M =((date.getMonth()+1) < 10 ? '0'+(date.getMonth()+1) : (date.getMonth()+1)) + '-';
+		D = (date.getDate() < 10 ? ('0'+date.getDate()) : date.getDate()) + ' ';
+		var ndate = Y+M+D
+		return ndate;
+	}
+	return "";
+}
+</script>
+<script>
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("arrivalDate");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2018";　　　　　　
+		options.beginMonth = "01";　　　　　　
+		options.beginDay = "01";　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+			result.value = rs.text;　　　　　　　　
+			picker.dispose();
+	 });　　　　
+	}, false);　　
+	　　
+	var result1 = document.getElementById("inspectionDate");　　　　
+	$(chooseTime1)[0].addEventListener('tap', function() {　
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2018";　　　　　　
+		options.beginMonth = "01";　　　　　　
+		options.beginDay = "01";　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+			result1.value = rs.text;　　　　　　　　
+			picker.dispose();
+	 });　　　　
+	}, false);　　　　
+})(mui);
+</script>
+</html>

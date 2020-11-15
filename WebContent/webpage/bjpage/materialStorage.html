@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>材料到货生产入库信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <style>
+    	.mui-card{
+    		background-color:#4093C6;
+    	}
+    	.span_color{
+    		color:#4093C6;
+    	}
+    	.span_color2{
+    		color:#339900;
+    	}
+    	.span_color3{
+    		color:#990000;
+    	}
+    </style>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+		<div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入采购订单号查询">
+		</div>
+	<div style="margin-top:-10px" id="list">
+		<div class="mui-card">
+			<ul class="mui-table-view">
+			<li class="mui-table-view-cell mui-media">
+			<div class="mui-media-body" style="text-align:center">
+			<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>			
+			<div style="font-size:14px;" class="mui-ellipsis"><span id="notice">输入采购订单号查询</span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>		
+			<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>		
+			</div>
+			</li></ul>
+		</div>	
+		<!-- <div class="mui-card">
+			<ul class="mui-table-view">
+			<li class="mui-table-view-cell mui-media">		
+			<div class="mui-media-body" style="padding-left:12px;padding-top:6px">
+			<div style="font-size:14px;" class="mui-ellipsis">采购订单：<span class="span_color">4000059050</span></div>				
+			<div style="font-size:14px;" class="mui-ellipsis">行项目号：<span class="span_color">1000</span></div>				
+			<div style="font-size:14px;" class="mui-ellipsis">采购数量：<span class="span_color">1000</span></div>				
+			<div style="font-size:14px;" class="mui-ellipsis">实到数量：<span class="span_color">1000</span></div>				
+			<div style="font-size:14px;" class="mui-ellipsis">报检数量：<span class="span_color">1000</span></div>				
+			<div style="font-size:14px;" class="mui-ellipsis">检验入库数量：<span class="span_color">1000</span></div>				
+			</div>
+			</li></ul>
+		</div>		 -->
+	</div>			
+	</div>			
+</body>
+<script type="text/javascript">
+//赋值完毕结束过场动画
+setTimeout(function(){
+	document.getElementById("loading").style.display="none";
+	$("body").css("background-color","#eee");
+	document.getElementById("muiContent").style.display="";
+}, 700);
+//触发搜索框事件
+$("#keyword").on('keypress',function(e) {  
+    var keycode = e.keyCode;  
+    var searchName = $(this).val();
+	if(searchName.replace(/ /g,'')==""){
+		mui.toast("请输入查询内容");
+		return;
+	} 
+    if(keycode=='13') {  
+        e.preventDefault();    
+        searchFunction(searchName);        
+    }  
+ })
+
+ 
+ //搜索查询请求方法
+ function searchFunction(searchName){
+    //请求搜索接口  
+	mui.ajax('/TFMobile/tf-api/bj-mobile/materialStorage/findList', {
+		data : {
+			searchName : searchName
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){				
+				var list = result.body.list;
+				if(list.length>0){
+					$("#list").empty();
+					var html = '<div class="mui-card">'+
+									'<ul class="mui-table-view">'+
+									'<li class="mui-table-view-cell mui-media">'+		
+									'<div class="mui-media-body" style="padding-left:12px;padding-top:6px">'+
+									'<div style="font-size:14px;" class="mui-ellipsis">采购订单：<span class="span_color">'+list[0]+'</span></div>'+				
+									'<div style="font-size:14px;" class="mui-ellipsis">行项目号：<span class="span_color">'+list[1]+'</span></div>'+				
+									'<div style="font-size:14px;" class="mui-ellipsis">采购数量：<span class="span_color">'+list[2]+'</span></div>'+				
+									'<div style="font-size:14px;" class="mui-ellipsis">实到数量：<span class="span_color">'+list[3]+'</span></div>'+				
+									'<div style="font-size:14px;" class="mui-ellipsis">报检数量：<span class="span_color">'+list[4]+'</span></div>'+				
+									'<div style="font-size:14px;" class="mui-ellipsis">检验入库数量：<span class="span_color">'+list[5]+'</span></div>'+				
+									'</div>'+
+									'</li></ul>'+
+								'</div>';
+					$("#list").append(html);
+				}else{
+					$("#notice").text("没有查询到任何结果！");
+				}
+			}else{
+				mui.toast(result.message);
+			}								
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");						
+		}
+	});
+}
+ 
+</script>
+</html>

@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>SFC跳站信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">
+		<div class="mui-card" id="wentimiaoshu">
+			<div id="finished_picture" style="position:absolute;margin:18% 30%;"><img src="../../static/mui/images/finished.png" style="max-width:10em; height:auto;"/></div>
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">SFC跳站信息
+				<span id="backBtn" style="display:none" class="mui-btn mui-btn-danger" onclick="window.history.go(-1)">返回<span class="mui-icon mui-icon-forward"></span></span>
+			</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">制令单号：</span><span class="mui-pull-right" id="ordermakingShow"></span></div>
+					<div><span style="color: gray">SN 编码：</span><span class="mui-pull-right" id="snShow"></span></div>
+					<div><span style="color: gray">当前站点：</span><span class="mui-pull-right" id="presentStationShow"></span></div>
+					<div><span style="color: gray">跳至站点：</span><span class="mui-pull-right" id="toStationShow"></span></div>
+					<div><span style="color: gray">跳站原因：</span><span id="reasonShow"></span></div>
+				</div>
+			</div>
+		<div class="mui-card-footer">
+			<span class="mui-card-link">发文人：<span id="submitMan"></span></span>
+			<span class="mui-card-link">发文时间：<span id="submitTime"></span></span>			
+		</div>
+		<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+			<div id="submitLeaderFoot" style="display:none">
+				<span class="mui-card-link">审核人：<span id="submitLeader"></span></span>
+				<span class="mui-pull-right">审核时间：<span id="submitLeaderTime"></span></span>
+			</div>
+			<div id="submitConfirmFoot" style="display:none">
+				<a class="mui-pull-left" id="jumpStationEdit">跳站修改</a>
+				<a class="mui-pull-right" id="submitConfirm">审核确认</a>
+			</div>
+		</div>
+		</div>
+		<!-- 生产部发文人员和经理修改跳站信息 -->
+		<div class="mui-card" id="jumpStationEditForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">SFC跳站信息修改</div>
+				<div class="mui-input-row" >
+					<label>制令单号</label>
+					<input type="text" id="ordermaking" placeholder="输入制令单号 " maxlength="15">
+				</div>
+				<div class="mui-input-row">
+					<label>SN编码</label>
+					<input type="text" id="sn" placeholder="输入SN编码 " maxlength="19">
+				</div>			
+				<div class="mui-input-row">
+					<label>当前站点</label>
+					<select class="mui-btn-block" id="presentStation">
+						<option value="">选择当前站点</option>
+						<option value="装配">装配</option>
+						<option value="高温">高温</option>
+						<option value="终检">终检</option>
+						<option value="安规">安规</option>
+						<option value="包装">包装</option>
+						<option value="OQC">OQC</option>
+					</select>
+				</div>
+				<div class="mui-input-row">
+					<label>跳至站点</label>
+					<select class="mui-btn-block" id="toStation">
+						<option value="">选择跳至站点</option>
+						<option value="高温">高温</option>
+						<option value="终检">终检</option>
+						<option value="安规">安规</option>
+						<option value="包装">包装</option>
+						<option value="OQC">OQC</option>
+					</select>
+				</div>
+				<div class="mui-input-row" style="height:120px">
+					<label>跳站原因</label>
+					<textarea id="reason" rows="5" placeholder="输入跳站原因" maxlength="350"></textarea>
+				</div>				
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="jumpStationEditSubmit">立即提交</a>
+			</div>
+		</div>
+		<div class="mui-card" id="submitTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff;padding-left:30%">待生产部经理审核</div>
+		</div>
+		<div class="mui-card" id="signTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff;padding-left:20%">待工程部和质控部会签确认</div>
+		</div>
+		<!-- 工程部会签确认信息展示 -->
+		<div class="mui-card" id="gongchengCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">工程部会签确认信息</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">会签确认描述：</span><span id="engineeringHandlerNoteShow"></span></div>
+				</div>
+			</div>
+			<div class="mui-card-footer">
+				<span class="mui-card-link">确认人：<span id="engineeringHandler"></span></span>
+				<span class="mui-card-link">确认时间：<span id="engineeringHandlerTime"></span></span>			
+			</div>
+			<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+				<div id="engineeringLeaderFoot" style="display:none">
+					<span class="mui-card-link">审核人：<span id="engineeringLeader"></span></span>
+					<span class="mui-pull-right">审核时间：<span id="engineeringLeaderTime"></span></span>
+				</div>
+				<div id="engineeringConfirmFoot" style="display:none">
+					<a class="mui-pull-left"></a>
+					<a class="mui-pull-right" id="engineeringLeaderConfirm">审核确认</a>
+				</div>
+			</div>
+		</div>	
+		<!-- 质量控制部会签确认信息展示 -->
+		<div class="mui-card" id="zhikongCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">质量控制部会签确认信息</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">会签确认描述：</span><span id="qualityHandlerNoteShow"></span></div>
+				</div>
+			</div>
+			<div class="mui-card-footer">
+				<span class="mui-card-link">确认人：<span id="qualityHandler"></span></span>
+				<span class="mui-card-link">确认时间：<span id="qualityHandlerTime"></span></span>			
+			</div>
+			<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+				<div id="qualityLeaderFoot" style="display:none">
+					<span class="mui-card-link">审核人：<span id="qualityLeader"></span></span>
+					<span class="mui-pull-right">审核时间：<span id="qualityLeaderTime"></span></span>
+				</div>
+				<div id="qualityConfirmFoot" style="display:none">
+					<a class="mui-pull-left"></a>
+					<a class="mui-pull-right" id="qualityLeaderConfirm">审核确认</a>
+				</div>
+			</div>
+		</div>
+			
+		<div class="mui-card" id="gongchengTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff;padding-left:30%">待工程部会签确认</div>
+		</div>		
+		<div class="mui-card" id="zhikongTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff;padding-left:25%">待质量控制部会签确认</div>
+		</div>
+		<div class="mui-card" id="gongchengConfirmTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff;padding-left:30%">待工程部经理审核</div>
+		</div>		
+		<div class="mui-card" id="zhikongConfirmTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff;padding-left:25%">待质量控制部经理审核</div>
+		</div>		
+		<!-- 工程部会签确认 -->
+		<div class="mui-card" id="gongchengForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">工程部会签确认</div>
+				<div class="mui-input-row" style="margin: 12px 5px;">
+				<textarea id="engineeringHandlerNote" rows="5" maxlength="90" placeholder="输入会签描述"></textarea>
+				</div>		
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="engineeringHandlerSubmit">立即提交</a>
+			</div>
+		</div>
+		<!-- 质量控制部会签确认 -->
+		<div class="mui-card" id="zhikongForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">质量控制部会签确认</div>
+				<div class="mui-input-row" style="margin: 12px 5px;">
+				<textarea id="qualityHandlerNote" rows="5" maxlength="90" placeholder="输入会签描述"></textarea>
+				</div>		
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="qualityHandlerSubmit">立即提交</a>
+			</div>
+		</div>	
+	</div>
+	
+<input type="hidden" id="engineeringSignFlagHidden">		
+<input type="hidden" id="qualitySignFlagHidden">		
+<input type="hidden" id="submitManHidden">		
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(6);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+//获取url中的参数
+var jumpId = getUrlParam("jumpId");
+
+//判断是从列表页面过来的则有显示返回按钮
+var back = getUrlParam("back");
+if(back==1){
+	$("#backBtn").attr("style","display:block");
+}
+
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取异常问题表单信息
+	var status = findJumpStationInfo(jumpId);
+	if(status!=null || status!="null"){
+			//赋值完毕结束过场动画
+	   	setTimeout(function(){
+	   		document.getElementById("loading").style.display="none";
+	   		$("body").css("background-color","#eee");
+	   		document.getElementById("muiContent").style.display="";
+	   	}, 500);
+	}
+	
+	//状态判断解析
+	if(status!=0){
+		$("#finished_picture").attr("style","display:none");
+	}
+	if(status==0){//流程完结	
+		$("#gongchengCard").attr("style","display:block");	
+		$("#zhikongCard").attr("style","display:block");
+		$("#submitLeaderFoot").attr("style","display:block");
+		$("#engineeringLeaderFoot").attr("style","display:block");
+		$("#qualityLeaderFoot").attr("style","display:block");
+	}else if(status==1){//初始发文后（待发文经理审核）
+		//判断是否是生产部经理
+		var ps1 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==4){
+				ps1 = true;
+			}
+		}
+		if(!ps1 || isleader!=1){
+			$("#submitTip").attr("style","display:block");	
+		}else{
+			$("#submitConfirmFoot").attr("style","display:block");				
+		}
+		
+	}else if(status==2){	
+		$("#submitLeaderFoot").attr("style","display:block");	
+		//判断是否是工程部工程师以上级别
+		var ps2 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){
+				ps2 = true;
+			}
+		}
+		if(ps2 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+			$("#gongchengForm").attr("style","display:block");	
+		}
+				
+		//判断是否是质量控制部
+		var pss2 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pss2 = true;
+			}
+		}
+		if(pss2 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+			$("#zhikongForm").attr("style","display:block");
+		}
+		if((!ps2 || (!endWith(position,"工程师")&&!endWith(position,"主管")&&!endWith(position,"经理"))) && (!pss2 && (!endWith(position,"工程师")&&!endWith(position,"PQC组组长")&&!endWith(position,"经理")))){
+			$("#signTip").attr("style","display:block");	
+		}
+		
+	}else if(status==3){//会签	
+		$("#submitLeaderFoot").attr("style","display:block");
+		var engineeringSignFlag = $("#engineeringSignFlagHidden").val();
+		var qualitySignFlag = $("#qualitySignFlagHidden").val();
+		if(engineeringSignFlag==0){			
+			//质控部门状态
+			if(qualitySignFlag==0){//质控部未会签处理
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps0){
+					$("#gongchengForm").attr("style","display:block");	
+				}else if(ps1){
+					$("#zhikongForm").attr("style","display:block");	
+				}else if(!ps0&&!ps1){
+					$("#signTip").attr("style","display:block");	
+				}
+			}else if(qualitySignFlag==1){//质控部已会签处理但未审核
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps0){
+					$("#gongchengForm").attr("style","display:block");	
+				}else if(ps1){
+					$("#zhikongConfirmTip").attr("style","display:block");
+					$("#zhikongCard").attr("style","display:block");
+					if(isleader==1){
+						$("#qualityConfirmFoot").attr("style","display:block");	
+					}					
+				}else if(!ps0&&!ps1){
+					$("#signTip").attr("style","display:block");	
+				}
+			}else if(qualitySignFlag==2){//质控部已会签审核
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps0){
+					$("#gongchengForm").attr("style","display:block");	
+				}else{
+					$("#zhikongCard").attr("style","display:block");	
+					$("#qualityLeaderFoot").attr("style","display:block");	
+					$("#gongchengTip").attr("style","display:block");	
+				}
+			}		
+		}else if(engineeringSignFlag==1){//工程已会签处理			
+			//质控部门状态
+			if(qualitySignFlag==0){//质控部未会签处理
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps0){
+					$("#gongchengConfirmTip").attr("style","display:block");
+					$("#gongchengCard").attr("style","display:block");
+					if(isleader==1){
+						$("#engineeringConfirmFoot").attr("style","display:block");	
+					}	
+				}else if(ps1){
+					$("#zhikongForm").attr("style","display:block");	
+				}else if(!ps0&&!ps1){
+					$("#signTip").attr("style","display:block");	
+				}
+			}else if(qualitySignFlag==1){//质控部已会签处理但未审核
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps0){
+					$("#gongchengConfirmTip").attr("style","display:block");
+					$("#gongchengCard").attr("style","display:block");
+					if(isleader==1){
+						$("#engineeringConfirmFoot").attr("style","display:block");	
+					}
+				}else if(ps1){
+					$("#zhikongConfirmTip").attr("style","display:block");
+					$("#zhikongCard").attr("style","display:block");
+					if(isleader==1){
+						$("#qualityConfirmFoot").attr("style","display:block");	
+					}					
+				}else if(!ps0&&!ps1){
+					$("#signTip").attr("style","display:block");	
+				}
+			}else if(qualitySignFlag==2){//质控部已会签审核
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps0){
+					$("#gongchengConfirmTip").attr("style","display:block");	
+					$("#zhikongCard").attr("style","display:block");	
+					$("#qualityLeaderFoot").attr("style","display:block");
+					$("#gongchengCard").attr("style","display:block");	
+					if(isleader==1){
+						$("#engineeringConfirmFoot").attr("style","display:block");	
+					}	
+				}else{
+					$("#zhikongCard").attr("style","display:block");	
+					$("#qualityLeaderFoot").attr("style","display:block");	
+					$("#gongchengTip").attr("style","display:block");	
+				}
+			}		
+		}else if(engineeringSignFlag==2){//工程已会签审核			
+			//质控部门状态
+			if(qualitySignFlag==0){//质控部未会签处理
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps1){
+					$("#zhikongForm").attr("style","display:block");	
+				}else{
+					$("#gongchengCard").attr("style","display:block");	
+					$("#engineeringLeaderFoot").attr("style","display:block");	
+					$("#zhikongTip").attr("style","display:block");	
+				}
+			}else if(qualitySignFlag==1){//质控部已会签处理但未审核
+				//工程部门状态
+				var ps0 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3 && (isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+						ps0 = true;
+					}
+				}
+				//质控部门状态
+				var ps1 = false;
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5 && (isleader==1||endWith(position,"工程师")||endWith(position,"PQC组组长")||endWith(position,"经理"))){
+						ps1 = true;
+					}
+				}
+							
+				if(ps1){
+					$("#gongchengCard").attr("style","display:block");	
+					$("#engineeringLeaderFoot").attr("style","display:block");
+					$("#zhikongConfirmTip").attr("style","display:block");
+					$("#zhikongCard").attr("style","display:block");
+					if(isleader==1){
+						$("#qualityConfirmFoot").attr("style","display:block");	
+					}
+				}else{
+					$("#gongchengCard").attr("style","display:block");	
+					$("#engineeringLeaderFoot").attr("style","display:block");	
+					$("#zhikongTip").attr("style","display:block");	
+				}
+			}
+			//end
+		}
+	}
+}
+
+function findJumpStationInfo(jumpId){
+	var state = null;
+	if(jumpId){
+		mui.ajax('/TFMobile/tf-api/jumpStation/findInfo', {
+			data : {
+				jumpId : jumpId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					state = result.body.jumpStation.state;//获取状态（非常重要）
+					$("#engineeringSignFlagHidden").val(result.body.jumpStation.engineeringSignFlag);
+					$("#qualitySignFlagHidden").val(result.body.jumpStation.qualitySignFlag);
+					$("#submitManHidden").val(result.body.jumpStation.submitMan);
+					//发文信息
+			   		$("#ordermakingShow").text(result.body.jumpStation.ordermaking);
+			   		$("#snShow").text(result.body.jumpStation.sn);
+			   		$("#presentStationShow").text(result.body.jumpStation.presentStation);
+			   		$("#toStationShow").text(result.body.jumpStation.toStation);
+			   		$("#reasonShow").text(result.body.jumpStation.reason);
+		
+			   		$("#submitMan").text(getInfo(result.body.jumpStation.submitMan)[1]);
+			   		$("#submitTime").text(getDate(result.body.jumpStation.submitTime));	
+			   		$("#submitLeader").text(getInfo(result.body.jumpStation.submitLeader)[1]);
+			   		$("#submitLeaderTime").text(getDate(result.body.jumpStation.submitLeaderTime));
+			   		
+			   		//工程会签确认信息
+			   		$("#engineeringHandlerNoteShow").text(result.body.jumpStation.engineeringHandlerNote);
+			   		$("#engineeringHandler").text(getInfo(result.body.jumpStation.engineeringHandler)[1]);
+			   		$("#engineeringHandlerTime").text(getDate(result.body.jumpStation.engineeringHandlerTime));
+			   		$("#engineeringLeader").text(getInfo(result.body.jumpStation.engineeringLeader)[1]);
+			   		$("#engineeringLeaderTime").text(getDate(result.body.jumpStation.engineeringLeaderTime));
+			   		
+			   		//质量控制部会签确认信息
+			   		$("#qualityHandlerNoteShow").text(result.body.jumpStation.qualityHandlerNote);
+			   		$("#qualityHandler").text(getInfo(result.body.jumpStation.qualityHandler)[1]);
+			   		$("#qualityHandlerTime").text(getDate(result.body.jumpStation.qualityHandlerTime));			   		
+			   		$("#qualityLeader").text(getInfo(result.body.jumpStation.qualityLeader)[1]);
+			   		$("#qualityLeaderTime").text(getDate(result.body.jumpStation.qualityLeaderTime));			   		
+
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				//mui.toast("网络出错了");
+			}
+		});
+	}
+	return state;
+}
+
+//1.发文部门经理审核确认
+var flag = true;	
+document.getElementById('submitConfirm').addEventListener('tap',function() { 		
+	//判断当前成员是否为生产部经理即是否有权限确认审核
+	var pass1 = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==4){
+			pass1 = true;
+		}
+	}
+	if(!pass1 || isleader!=1){
+	    mui.toast("您暂无此操作权限！");
+		return;
+	}
+	var ordermaking = $("#ordermakingShow").text();
+	var sn = $("#snShow").text();
+	var presentStation = $("#presentStationShow").text();
+	var toStation = $("#toStationShow").text();
+	var reason = $("#reasonShow").text();
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/jumpStation/submitConfirm', {
+					data : {
+						jumpId : jumpId,
+						memberId : memberId,
+						state : 2,
+						ordermaking : ordermaking,
+						sn : sn,
+						presentStation : presentStation,
+						toStation : toStation,
+						reason : reason
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast("审核成功！");
+							//mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});	
+			}
+		}
+	});
+});
+
+//2.工程部会签确认
+document.getElementById('engineeringHandlerSubmit').addEventListener('tap',function() { 		
+	//判断当前成员是否为生产部经理即是否有权限确认审核
+	var pass2 = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==3){
+			pass2 = true;
+		}
+	}
+	if(!pass2 || !(isleader==1||endWith(position,"工程师")||endWith(position,"主管")||endWith(position,"经理"))){
+	    mui.toast("您暂无此操作权限！");
+		return;
+	}
+	var engineeringHandlerNote =  $("#engineeringHandlerNote").val().replace(/ /g,'');
+	if(engineeringHandlerNote==null||engineeringHandlerNote==""){
+		mui.toast("请输入会签确认描述");
+		return;
+	}
+	
+	var ordermaking = $("#ordermakingShow").text();
+	var sn = $("#snShow").text();
+	var presentStation = $("#presentStationShow").text();
+	var toStation = $("#toStationShow").text();
+	var reason = $("#reasonShow").text();
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/jumpStation/engineeringHandle', {
+					data : {
+						jumpId : jumpId,
+						memberId : memberId,
+						state : 3,
+						engineeringHandlerNote : engineeringHandlerNote,
+						ordermaking : ordermaking,
+						sn : sn,
+						presentStation : presentStation,
+						toStation : toStation,
+						reason : reason
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("提交成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});	
+			}
+		}
+	});
+});
+//3.工程部会签审核
+document.getElementById('engineeringLeaderConfirm').addEventListener('tap',function() { 		
+	//判断当前成员是否为工程部经理即是否有权限确认审核
+	var pass = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==3){
+			pass = true;
+		}
+	}
+	if(!pass || isleader!=1){
+	    mui.toast("您暂无此操作权限！");
+		return;
+	}
+	
+	var ordermaking = $("#ordermakingShow").text();
+	var sn = $("#snShow").text();
+	var presentStation = $("#presentStationShow").text();
+	var toStation = $("#toStationShow").text();
+	var reason = $("#reasonShow").text();
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/jumpStation/engineeringConfirm', {
+					data : {
+						jumpId : jumpId,
+						memberId : memberId,
+						ordermaking : ordermaking,
+						sn : sn,
+						presentStation : presentStation,
+						toStation : toStation,
+						reason : reason
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});	
+			}
+		}
+	});
+});
+
+//4.质量控制部会签处理
+document.getElementById('qualityHandlerSubmit').addEventListener('tap',function() { 		
+	//判断当前成员是否为质控部即是否有权限确认审核
+	var pass3 = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==5){
+			pass3 = true;
+		}
+	}
+	if(!pass3 || !(isleader==1||endWith(position,"工程师")||endWith(position,"PQC")||endWith(position,"经理"))){
+	    mui.toast("您暂无此操作权限！");
+		return;
+	}
+	var qualityHandlerNote = $("#qualityHandlerNote").val().replace(/ /g,'');
+	if(qualityHandlerNote==null||qualityHandlerNote==""){
+		mui.toast("请输入会签确认描述");
+		return;
+	}
+	
+	var ordermaking = $("#ordermakingShow").text();
+	var sn = $("#snShow").text();
+	var presentStation = $("#presentStationShow").text();
+	var toStation = $("#toStationShow").text();
+	var reason = $("#reasonShow").text();
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/jumpStation/qualityHandle', {
+					data : {
+						jumpId : jumpId,
+						memberId : memberId,
+						state : 3,
+						qualityHandlerNote : qualityHandlerNote,
+						ordermaking : ordermaking,
+						sn : sn,
+						presentStation : presentStation,
+						toStation : toStation,
+						reason : reason
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("提交成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});	
+			}
+		}
+	});
+});
+
+//5.质量控制部会签审核
+document.getElementById('qualityLeaderConfirm').addEventListener('tap',function() { 		
+	//判断当前成员是否为工程部经理即是否有权限确认审核
+	var pass = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==5){
+			pass = true;
+		}
+	}
+	if(!pass || isleader!=1){
+	    mui.toast("您暂无此操作权限！");
+		return;
+	}
+	
+	var ordermaking = $("#ordermakingShow").text();
+	var sn = $("#snShow").text();
+	var presentStation = $("#presentStationShow").text();
+	var toStation = $("#toStationShow").text();
+	var reason = $("#reasonShow").text();
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/jumpStation/qualityConfirm', {
+					data : {
+						jumpId : jumpId,
+						memberId : memberId,
+						ordermaking : ordermaking,
+						sn : sn,
+						presentStation : presentStation,
+						toStation : toStation,
+						reason : reason
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});	
+			}
+		}
+	});
+});
+
+//6.点击跳站修改事件
+document.getElementById('jumpStationEdit').addEventListener('tap',function() { 		
+	//判断当前成员是否为发文人 （修改权限）
+	var submitMan = $("#submitManHidden").val();
+	if(submitMan!=memberId){
+	    mui.toast("仅发文人才可修改！");
+		return;
+	}
+	$("#jumpStationEditForm").attr("style","display:block");
+});
+
+//7.跳站信息修改提交事件
+document.getElementById('jumpStationEditSubmit').addEventListener('tap',function() { 		
+	//判断当前成员是否为发文人 （修改权限）
+	var submitMan = $("#submitManHidden").val();
+	if(submitMan!=memberId){
+		mui.toast("仅发文人才可修改！");
+		return;
+	}
+	var ordermaking = $("#ordermaking").val().replace(/ /g,'');
+	var sn = $("#sn").val().replace(/ /g,'');  		
+	var presentStation = $("#presentStation").val().replace(/ /g,'');
+	var toStation = $("#toStation").val().replace(/ /g,'');
+	var reason = $("#reason").val().replace(/ /g,'');
+	var reg = /\d{9}$/;//19位正整数正则/^[0-9]\d{19}$/
+	var re = /\d{19}$/;//19位正整数正则/^[0-9]\d{19}$/
+
+	if(ordermaking==null||ordermaking==""){
+		mui.toast("请输入制令单号");
+		return;
+	}
+	if(!reg.test(ordermaking)){
+		mui.toast("制令单号格式不正确");
+		return;
+	}
+	if(sn==null||sn==""){
+		mui.toast("请输入SN");
+		return;
+	}
+	if(!re.test(sn)){
+		mui.toast("SN码格式不正确");
+		return;
+	}
+	if(presentStation==null||presentStation==""){
+		mui.toast("请选择当前站点");
+		return;
+	}
+	if(toStation==null||toStation==""){
+		mui.toast("请选择跳至站点");
+		return;
+	}
+	if(reason==null||reason==""){
+		mui.toast("请输入跳站原由");
+		return;
+	} 
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/jumpStation/edit', {
+					data : {
+						jumpId : jumpId,
+						submitManName : name,//发文人姓名
+						ordermaking : ordermaking,
+						sn : sn,
+						presentStation : presentStation,
+						toStation : toStation,
+						reason : reason,
+						department : department//根据发文人的部门找到对应领导推送消息
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {
+						if(result.success == true){
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+							mui.toast("表单提交成功！");
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");
+					}
+				});
+			}
+		}
+	});
+});
+
+//根据主键memberId获取企业成员信息
+function getInfo(memberId){
+	var userId = null;
+	var name = null;
+	var department = null;
+	var position = null;
+	var isleader = null;
+	if(memberId==null || memberId=="" || memberId=="null"){
+		return [userId, name, department, position, isleader];
+	}
+	mui.ajax('/TFMobile/tf-api/member/getInfo', {
+		data : {
+			memberId : memberId			
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				userId = result.body.member.userId;
+				name = result.body.member.name;
+				department = result.body.member.department;
+				position = result.body.member.position;
+				isleader = result.body.member.isleader;
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");
+		}
+	});
+	return [userId, name, department, position, isleader];
+} 
+
+//以什么结尾
+function endWith(str,reg){     
+  var re = new RegExp(reg+"$");     
+  return re.test(str);        
+}
+</script>
+</html>

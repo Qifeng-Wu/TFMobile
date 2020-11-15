@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>部门人员信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>   
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	
+		<div class="mui-content" id="muiContent" style="display: none">
+			<div style="margin:0.5% 10px; text-align: center; opacity: 1; color: #FFF; font-size: 18px; background-color: #4093C6; padding: 10px;">
+				<span>人员名单</span><br>
+			</div>
+		    <div class="mui-input-row mui-search" style="margin:5px 10px 0 10px;margin-bottom:-5px">
+				<input type="search" id="keyword" class="mui-input-clear" placeholder="输入人员姓名、班组定位">
+				<a id="positioning" type="hidden"></a>
+				<script type="text/javascript">
+				//触发positioning定位
+				$("#keyword").on('keypress',function(e) {  
+				    var keycode = e.keyCode;  				   
+				    if(keycode=='13') {  
+				        e.preventDefault();
+						if($(this).val().replace(/ /g,'')==""){
+							mui.toast("请输入定位名称");
+							return;
+						}else{						
+							$("#positioning").attr("href","#"+$(this).val());
+							document.location.href = $("#positioning").attr("href");
+						}
+				    }
+				});
+				</script>
+			</div>
+			<div class="mui-card" style="margin-bottom:53px">
+				<form class="mui-input-group">
+					<div class="mui-input-row mui-checkbox">
+						<label style="color:#4093C6">全选</label>
+						<input name="checkbox" value="全选" type="checkbox" id="checkbox_all">
+					</div>
+					<div>
+						<ul class="mui-table-view mui-table-view-chevron" id="list">
+		       
+						</ul>
+					</div>
+				</form>
+			</div>				
+			<div style="position: fixed;bottom:0;z-index:10;text-align: center; margin-bottom:6px; margin-top:-18px; border-bottom-left-radius:20px; border-bottom-right-radius:20px; width:94%; margin-left:3%;">
+				<button type="button" onclick="deleteMember()"
+					style="width:30%; background: #4093C6; border: 0; height: 40px; margin-bottom: 3px; font-size: 18px; margin-top: 30px"
+					class="mui-btn mui-btn-danger grad1">删除</button>
+				<button type="button" onclick="addMember()"
+					style="width:30%; background: #4093C6; border: 0; height: 40px; margin-bottom: 3px; font-size: 18px; margin-top: 30px"
+					class="mui-btn mui-btn-danger grad1">添加</button>
+				<button type="button" onclick="editMember()"
+					style="width:30%; background: #4093C6; border: 0; height: 40px; margin-bottom: 3px; font-size: 18px; margin-top: 30px"
+					class="mui-btn mui-btn-danger grad1">编辑</button>
+			</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(11);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+
+
+var departmentName;
+if(department=="[2]"){
+	departmentName="工业技术部";
+}else if(department=="[3]"){
+	departmentName="工程部";
+}else if(department=="[4]"){
+	departmentName="生产部";
+}else if(department=="[5]"){
+	departmentName="质量部";
+}else if(department=="[7]"){
+	departmentName="研发部";
+}else if(department=="[11]"){
+	departmentName="仓储部";
+}
+
+if(position.indexOf('助理')!=-1){
+	setList(departmentName);
+}else{
+	mui.alert('您无此操作权限！', '提示', function() {
+		wx.closeWindow();
+	});
+}
+
+//列表赋值
+function setList(departmentName){
+	var list = findList(departmentName);
+	if(list.length>0){
+		var html;
+		for(var i=0;i< list.length;i++){
+			html = '<li class="mui-table-view-cell mui-collapse"  id="'+list[i][0].team+'"><a class="mui-navigate-right" style="color:#4093C6" href="#">'+list[i][0].team+'</a>'+
+					'<ul class="mui-table-view mui-table-view-chevron">'+
+						'<li class="mui-table-view-cell" style="padding-right:13px" id="t'+i+'">'+
+						'</li>'+
+					'</ul>'+
+				   '</li>';
+			$("#list").append(html);		
+			if(list[i].length>0){
+				for(var j=0;j<list[i].length;j++){	
+					var htmls = '<div class="mui-input-row mui-checkbox" id="'+list[i][j].name+'">'+
+					   '<label>'+list[i][j].name+' （'+list[i][j].no+'）&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+list[i][j].team+'</label>'+
+					   '<input name="checkbox" value="'+list[i][j].wxId+'" type="checkbox">'+
+				   '</div>';
+					$("#t"+i+"").append(htmls);
+				}
+			}
+		}
+	} else{
+		$("#list").prev().remove();
+		$("#list").append('<div style="padding-top:50px;padding-bottom:50px;text-align: center;">'+
+				'<span style="color: #696969;">无人员信息！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	}
+}
+
+//获取人员信息
+function findList(departmentName){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/wx-member/findList', {
+			data : {
+				department : departmentName,
+				team : ""
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						$("#loading").hide();
+						$("#muiContent").show();
+						$("body").css("background-color","#eee");						
+					}, 10);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦");						
+			}
+		});
+	return list;
+}
+
+//点击全选时触发事件
+$(function(){  
+	$("input:checkbox").click(function(){
+		if($(this).val()=="全选"){
+			if($(this).is(':checked')==true){
+				 $("input:checkbox").prop("checked",true);
+				 $(this).prop("checked",true);
+			}else{
+				$("input:checkbox").prop("checked",false);
+				 $(this).prop("checked",false);
+			}
+		}else{
+			$("#checkbox_all").prop("checked",false);		
+		}
+	});
+});	
+
+//删除人员
+var flag = true;
+function deleteMember(){	
+   var wxIds = "";
+   $("#list input:checkbox").each(function(){
+	    if(true == $(this).is(':checked')){
+	    	wxIds += $(this).val()+",";
+	    }
+	  });
+   if(wxIds.substr(wxIds.length-1)== ','){
+	   wxIds = wxIds.substr(0,wxIds.length-1);
+	}
+   if(wxIds==""){
+		mui.toast("请选择删除人员");
+		return;
+	}
+
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要删除吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;					
+				setTimeout(function(){
+					mui.ajax('/TFMobile/tf-api/wx-member/delete', {
+						data : {
+							wxIds : wxIds
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {
+							if(result.success == true){
+								setTimeout(function(){
+									location.reload();
+								}, 1000);				
+								mui.toast("删除人员信息成功！");
+							}else{
+								mui.toast(result.message);
+							}
+							flag = true;
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;	
+						}
+					});
+				 }, 10); 
+			}
+		}
+	});
+}
+
+//点击添加触发事件
+function addMember(){	
+   document.location.href = 'wxMemberForm.html';
+}
+
+//点击编辑触发事件
+function editMember(){	
+   var wxIds = "";
+   $("#list input:checkbox").each(function(){
+	    if(true == $(this).is(':checked')){
+	    	wxIds += $(this).val()+",";
+	    }
+	  });
+   if(wxIds.substr(wxIds.length-1)== ','){
+	   wxIds = wxIds.substr(0,wxIds.length-1);
+	}
+   if(wxIds==""){
+		mui.toast("请选择编辑人员");
+		return;
+	}else if(wxIds.indexOf(',')!=-1){
+		mui.toast("只能选择一个人员");
+		return;
+	}
+   document.location.href = 'wxMemberForm.html?wxId='+ wxIds;
+}
+</script>
+
+</html>

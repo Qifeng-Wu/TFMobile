@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>生产排产信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <style type="text/css">
+    	.mytable {
+		        border: 2px solid #cad9ea;
+		        font-size:12px;
+		        background-repeat: repeat-x;
+		        text-align:center;
+		        width:100%;
+    		}
+
+		.mytable thead {
+		        color: #FFF;
+		        background-color: #4093c6;
+		    }
+		
+		.mytable td,th {
+		        border: 1px solid #FFF;
+		        height: 36px
+		    }
+		    
+		.tr_color_1{
+    		background-color:#D2DEEF;
+    	}
+    	.tr_color_2{
+    		background-color:#EAEFF7;
+    	}    
+    </style>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">拼命加载中...</span>
+	</div>
+	<div class="mui-content" style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+		<div style="padding: 12px 1.5% 0 1.5%;">
+			<span id="chooseTime"><input id="handleTime" type="text" value="" placeholder="点击选择日期查询(默认展示当天排产信息)" readonly="readonly" /></span>			
+		</div>
+	<div style="padding:0 1% 0 1%">
+	    <div class="mui-card-header" style="background-color:#4093C6;color:#fff">A线排产信息</div>
+        <table class="mytable" id="line_a_table">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>序</th>
+	            	<th>SAP订单号</th>
+	            	<th>数量</th>
+	            	<th>主机名称</th>
+	            	<th>母件代号</th>
+            	</tr>
+            </thead>
+            <tbody id="line_a_list">
+		
+            </tbody>
+        </table>
+        <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-top:20px">B线排产信息</div>
+        <table class="mytable" id="line_b_table">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>序</th>
+	            	<th>SAP订单号</th>
+	            	<th>数量</th>
+	            	<th>主机名称</th>
+	            	<th>母件代号</th>
+            	</tr>
+            </thead>
+            <tbody id="line_b_list">
+
+		
+            </tbody>
+	   </table>
+	    <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-top:20px">C线排产信息</div>
+        <table class="mytable" id="line_c_table">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>序</th>
+	            	<th>SAP订单号</th>
+	            	<th>数量</th>
+	            	<th>主机名称</th>
+	            	<th>母件代号</th>
+            	</tr>
+            </thead>
+            <tbody id="line_c_list">
+
+		
+            </tbody>
+	   </table>
+	    <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-top:20px">D线排产信息</div>
+        <table class="mytable" id="line_d_table">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>序</th>
+	            	<th>SAP订单号</th>
+	            	<th>数量</th>
+	            	<th>主机名称</th>
+	            	<th>母件代号</th>
+            	</tr>
+            </thead>
+            <tbody id="line_d_list">
+
+		
+            </tbody>
+	   </table>
+	    <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-top:20px">E线排产信息</div>
+        <table class="mytable" id="line_e_table">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>序</th>
+	            	<th>SAP订单号</th>
+	            	<th>数量</th>
+	            	<th>主机名称</th>
+	            	<th>母件代号</th>
+            	</tr>
+            </thead>
+            <tbody id="line_e_list">
+
+		
+            </tbody>
+	   </table>
+	    <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-top:20px">F线排产信息</div>
+        <table class="mytable" id="line_f_table">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>序</th>
+	            	<th>SAP订单号</th>
+	            	<th>数量</th>
+	            	<th>主机名称</th>
+	            	<th>母件代号</th>
+            	</tr>
+            </thead>
+            <tbody id="line_f_list">
+
+		
+            </tbody>
+	   </table>
+	    <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-top:20px">HP线排产信息</div>
+        <table class="mytable" id="line_hp_table">
+            <thead>
+            	<tr style="background-color:#5B9BD5">
+	            	<th>序</th>
+	            	<th>SAP订单号</th>
+	            	<th>数量</th>
+	            	<th>主机名称</th>
+	            	<th>母件代号</th>
+            	</tr>
+            </thead>
+            <tbody id="line_hp_list">
+
+		
+            </tbody>
+	   </table>
+    </div>		
+  </div>		
+</body>
+<script type="text/javascript">
+mui.init();
+var date = parseDate(new Date());
+var line = "";
+//获取数据页面赋值(默认获取当天的数据)
+setTimeout(function(){
+	setLineList(date);
+}, 500); 
+
+//HP线数据赋值
+function setLineList(date){
+	var list = findProductionScheduleList(date);
+	if(list.length>0){
+		$("#line_a_table thead").show();	
+		$("#line_b_table thead").show();	
+		$("#line_c_table thead").show();	
+		$("#line_d_table thead").show();	
+		$("#line_e_table thead").show();	
+		$("#line_f_table thead").show();	
+		$("#line_hp_table thead").show();	
+		$("#line_a_list").empty();//清空
+		$("#line_b_list").empty();//清空
+		$("#line_c_list").empty();//清空
+		$("#line_d_list").empty();//清空
+		$("#line_e_list").empty();//清空
+		$("#line_f_list").empty();//清空
+		$("#line_hp_list").empty();//清空
+		var a=0,b=0,c=0,d=0,e=0,f=0,hp=0;
+		var a_count=0,b_count=0,c_count=0,d_count=0,e_count=0,f_count=0,hp_count=0;
+		for(var i=0;i< list.length;i++){
+			var orderStatus = "正常";
+			if(list[i].Rate=="放行"){
+				orderStatus = "<span onclick='goOrderStatus("+list[i].OrderNumber+")'>放行&nbsp;&nbsp;（<i style='color:red;font-size:12px'><u>点击查看</u></i>）</span>";
+			}else if(list[i].Rate=="变更"){
+				orderStatus = "<span onclick='goOrderStatus("+list[i].OrderNumber+")'>变更&nbsp;&nbsp;（<i style='color:red;font-size:12px'><u>点击查看</u></i>）</span>";
+			}else if(list[i].Rate=="暂停"){
+				orderStatus = "<span onclick='goOrderStatus("+list[i].OrderNumber+")'>暂停&nbsp;&nbsp;（<i style='color:red;font-size:12px'><u>点击查看</u></i>）</span>";
+			}
+			
+			var tr_color = "";
+			if(list[i].Line=="A"){
+				if(a%2==0){
+					tr_color = "tr_color_1";
+				}else{
+					tr_color = "tr_color_2";
+				}
+				a++;
+				a_count+=list[i].number;
+				var html = '<tr class="'+tr_color+'">'+
+				            	'<td>'+a+'</td>'+
+				            	'<td>'+list[i].OrderNumber+'</td>'+
+				            	'<td>'+list[i].number+'</td>'+
+				            	'<td>'+list[i].Type+'</td>'+
+				            	'<td>'+list[i].MNumber+'</td>'+
+				            '</tr>';
+				$("#line_a_list").append(html);	
+			}else if(list[i].Line=="B"){
+				if(b%2==0){
+					tr_color = "tr_color_1";
+				}else{
+					tr_color = "tr_color_2";
+				}
+				b++;
+				b_count+=list[i].number;
+				var html = '<tr class="'+tr_color+'">'+
+								'<td>'+b+'</td>'+
+				            	'<td>'+list[i].OrderNumber+'</td>'+
+				            	'<td>'+list[i].number+'</td>'+
+				            	'<td>'+list[i].Type+'</td>'+
+				            	'<td>'+list[i].MNumber+'</td>'+
+				            '</tr>';
+				$("#line_b_list").append(html);	
+			}else if(list[i].Line=="C"){
+				if(c%2==0){
+					tr_color = "tr_color_1";
+				}else{
+					tr_color = "tr_color_2";
+				}
+				c++;
+				c_count+=list[i].number;
+				var html = '<tr class="'+tr_color+'">'+
+								'<td>'+c+'</td>'+
+				            	'<td>'+list[i].OrderNumber+'</td>'+
+				            	'<td>'+list[i].number+'</td>'+
+				            	'<td>'+list[i].Type+'</td>'+
+				            	'<td>'+list[i].MNumber+'</td>'+
+				            '</tr>';
+				$("#line_c_list").append(html);	
+			}else if(list[i].Line=="D"){
+				if(d%2==0){
+					tr_color = "tr_color_1";
+				}else{
+					tr_color = "tr_color_2";
+				}
+				d++;
+				d_count+=list[i].number;
+				var html = '<tr class="'+tr_color+'">'+
+								'<td>'+d+'</td>'+
+				            	'<td>'+list[i].OrderNumber+'</td>'+
+				            	'<td>'+list[i].number+'</td>'+
+				            	'<td>'+list[i].Type+'</td>'+
+				            	'<td>'+list[i].MNumber+'</td>'+
+				            '</tr>';
+				$("#line_d_list").append(html);	
+			}else if(list[i].Line=="E"){
+				if(e%2==0){
+					tr_color = "tr_color_1";
+				}else{
+					tr_color = "tr_color_2";
+				}
+				e++;
+				e_count+=list[i].number;
+				var html = '<tr class="'+tr_color+'">'+
+								'<td>'+e+'</td>'+
+				            	'<td>'+list[i].OrderNumber+'</td>'+
+				            	'<td>'+list[i].number+'</td>'+
+				            	'<td>'+list[i].Type+'</td>'+
+				            	'<td>'+list[i].MNumber+'</td>'+
+				            '</tr>';
+				$("#line_e_list").append(html);	
+			}else if(list[i].Line=="F"){
+				if(f%2==0){
+					tr_color = "tr_color_1";
+				}else{
+					tr_color = "tr_color_2";
+				}
+				f++;
+				f_count+=list[i].number;
+				var html = '<tr class="'+tr_color+'">'+
+								'<td>'+f+'</td>'+
+				            	'<td>'+list[i].OrderNumber+'</td>'+
+				            	'<td>'+list[i].number+'</td>'+
+				            	'<td>'+list[i].Type+'</td>'+
+				            	'<td>'+list[i].MNumber+'</td>'+
+				            '</tr>';
+				$("#line_f_list").append(html);	
+			}else if(list[i].Line=="HP"){
+				if(hp%2==0){
+					tr_color = "tr_color_1";
+				}else{
+					tr_color = "tr_color_2";
+				}
+				hp++;
+				hp_count+=list[i].number;
+				var html = '<tr class="'+tr_color+'">'+
+								'<td>'+hp+'</td>'+
+				            	'<td>'+list[i].OrderNumber+'</td>'+
+				            	'<td>'+list[i].number+'</td>'+
+				            	'<td>'+list[i].Type+'</td>'+
+				            	'<td>'+list[i].MNumber+'</td>'+
+				            '</tr>';
+				$("#line_hp_list").append(html);	
+			}	
+		}
+		if(a==0){
+			$("#line_a_table thead").hide();
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+							'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="text-align:center">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+							'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+							'</div>'+
+							'</li></ul>'+
+						'</div>';
+				$("#line_a_list").append(html);	
+		}else{
+			var html = '<tr class="'+tr_color+'">'+
+							'<td>合计</td>'+
+				        	'<td></td>'+
+				        	'<td>'+a_count+'</td>'+
+				        	'<td></td>'+
+				        	'<td></td>'+
+				        '</tr>';
+				$("#line_a_list").append(html);	
+		}
+		if(b==0){
+			$("#line_b_table thead").hide();
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+							'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="text-align:center">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+							'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+							'</div>'+
+							'</li></ul>'+
+						'</div>';
+				$("#line_b_list").append(html);
+		}else{
+			var html = '<tr class="'+tr_color+'">'+
+							'<td>合计</td>'+
+				        	'<td></td>'+
+				        	'<td>'+b_count+'</td>'+
+				        	'<td></td>'+
+				        	'<td></td>'+
+				        '</tr>';
+				$("#line_b_list").append(html);	
+		}
+		if(c==0){
+			$("#line_c_table thead").hide();
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+							'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="text-align:center">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+							'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+							'</div>'+
+							'</li></ul>'+
+						'</div>';
+				$("#line_c_list").append(html);
+		}else{
+			var html = '<tr class="'+tr_color+'">'+
+							'<td>合计</td>'+
+				        	'<td></td>'+
+				        	'<td>'+c_count+'</td>'+
+				        	'<td></td>'+
+				        	'<td></td>'+
+				        '</tr>';
+				$("#line_c_list").append(html);	
+		}
+		if(d==0){
+			$("#line_d_table thead").hide();
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+							'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="text-align:center">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+							'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+							'</div>'+
+							'</li></ul>'+
+						'</div>';
+				$("#line_d_list").append(html);
+		}else{
+			var html = '<tr class="'+tr_color+'">'+
+							'<td>合计</td>'+
+				        	'<td></td>'+
+				        	'<td>'+d_count+'</td>'+
+				        	'<td></td>'+
+				        	'<td></td>'+
+				        '</tr>';
+				$("#line_d_list").append(html);	
+		}
+		if(e==0){
+			$("#line_e_table thead").hide();	
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+							'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="text-align:center">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+							'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+							'</div>'+
+							'</li></ul>'+
+						'</div>';
+				$("#line_e_list").append(html);
+		}else{
+			var html = '<tr class="'+tr_color+'">'+
+							'<td>合计</td>'+
+				        	'<td></td>'+
+				        	'<td>'+e_count+'</td>'+
+				        	'<td></td>'+
+				        	'<td></td>'+
+				        '</tr>';
+				$("#line_e_list").append(html);	
+		}
+		if(f==0){
+			$("#line_f_table thead").hide();
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+							'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="text-align:center">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+							'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+							'</div>'+
+							'</li></ul>'+
+						'</div>';
+				$("#line_f_list").append(html);
+		}else{
+			var html = '<tr class="'+tr_color+'">'+
+							'<td>合计</td>'+
+				        	'<td></td>'+
+				        	'<td>'+f_count+'</td>'+
+				        	'<td></td>'+
+				        	'<td></td>'+
+				        '</tr>';
+				$("#line_f_list").append(html);	
+		}
+		if(hp==0){
+			$("#line_hp_table thead").hide();	
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+							'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="text-align:center">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+							'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+							'</div>'+
+							'</li></ul>'+
+						'</div>';
+				$("#line_hp_list").append(html);
+		}else{
+			var html = '<tr class="'+tr_color+'">'+
+						'<td>合计</td>'+
+			        	'<td></td>'+
+			        	'<td>'+hp_count+'</td>'+
+			        	'<td></td>'+
+			        	'<td></td>'+
+			        '</tr>';
+			$("#line_hp_list").append(html);	
+		}
+	}else{
+		$("#line_a_table thead").hide();	
+		$("#line_b_table thead").hide();	
+		$("#line_c_table thead").hide();	
+		$("#line_d_table thead").hide();	
+		$("#line_e_table thead").hide();	
+		$("#line_f_table thead").hide();	
+		$("#line_hp_table thead").hide();	
+		var html = '<div class="mui-card">'+
+					'<ul class="mui-table-view">'+
+						'<li class="mui-table-view-cell mui-media">'+	
+						'<div class="mui-media-body" style="text-align:center">'+
+						'<div style="font-size:14px;" class="mui-ellipsis"><span>&nbsp;&nbsp;&nbsp;&nbsp;</span></div>'+			
+						'<div style="font-size:14px;" class="mui-ellipsis"><span">暂无排产信息哦！</span></div>'+	
+						'<div style="font-size:14px;" class="mui-ellipsis">（⊙o⊙）</div>'+		
+						'<div style="font-size:14px;" class="mui-ellipsis">&nbsp;</div>'+		
+						'</div>'+
+						'</li></ul>'+
+					'</div>';
+		$("#line_a_list").append(html);
+		$("#line_b_list").append(html);
+		$("#line_c_list").append(html);
+		$("#line_d_list").append(html);
+		$("#line_e_list").append(html);
+		$("#line_f_list").append(html);
+		$("#line_hp_list").append(html);
+
+	}
+}
+
+//发送请求获取数据
+function findProductionScheduleList(date){
+	var list = null;
+	mui.ajax('/TFMobile/tf-api/bj-mobile/productionSchedule/findList', {
+		data : {
+			date : date
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				list = result.body.list;
+				//赋值完毕结束过场动画
+				setTimeout(function(){
+					document.getElementById("loading").style.display="none";
+					$("body").css("background-color","#eee");
+					document.getElementById("muiContent").style.display="";
+				}, 300);
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");						
+		}
+	});
+	return list;
+}
+
+//跳转到产看订单状态页面
+function goOrderStatus(OrderNumber){
+	document.location.href = 'specialOperation.html?OrderNumber='+OrderNumber;
+}
+//将时间解析成yyyy-MM-dd格式
+function parseDate(tm){
+	if(tm != ""){
+		var date = new Date(tm);
+		Y = date.getFullYear() + '-';
+		M =((date.getMonth()+1) < 10 ? '0'+(date.getMonth()+1) : (date.getMonth()+1)) + '-';
+		D = (date.getDate() < 10 ? ('0'+date.getDate()) : date.getDate()) + ' ';
+		var ndate = Y+M+D
+		return ndate;
+	}
+	return "";
+}
+</script>
+<script>
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("handleTime");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2018";　　　　　　
+		options.beginMonth = "01";　　　　　　
+		options.beginDay = "01";　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+			result.value = rs.text;　　　　　　　　
+			picker.dispose();
+			picker.hide();
+			document.getElementById("loading").style.display="block";
+			document.getElementById("muiContent").style.display="none";
+			setTimeout(function(){
+				//获取数据页面赋值(默认获取当天的数据)
+				setLineList(rs.text);//HP线		
+			}, 300);
+
+	 });　　　　
+	}, false);　　　　
+})(mui);
+
+</script>
+</html>

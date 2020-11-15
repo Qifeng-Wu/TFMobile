@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>故障列表</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+    
+    <style type="text/css">
+      .mytable {
+            border: 2px solid #cad9ea;
+            font-size:12px;
+            background-repeat: repeat-x;
+            text-align:center;
+            width:100%
+        }
+
+    .mytable thead {
+            color: #FFF;
+            background-color: #4093c6
+        }
+    
+    .mytable td,th {
+            border: 1px solid #FFF;
+            padding: 0 1em 0;
+            height: 36px
+        }
+        
+    .tr_color_1{
+        background-color:#D2DEEF;
+      }
+      .tr_color_2{
+        background-color:#EAEFF7;
+      }    
+    </style>
+    
+</head>
+<body>
+  <!--页面加载 loading-->
+  <div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+    <span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+    <br />
+    <span style="font-size:0.8em;">加载中...</span>
+  </div>
+  <div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+    <div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+      <input type="search" id="keyword" class="mui-input-clear" placeholder="输入SN号、产品类型、所在大区、服务站">
+    </div>
+    <div hidden="true" id="warningList">
+
+    </div>
+    <div style="padding: 0px 10px;">
+      <div class="mui-segmented-control">
+        <a class="mui-control-item mui-active" href="#item1" id="item1a">当天预警
+          <span class="mui-badge mui-badge-danger" style="position:absolute;" id="count0">0</span>
+        </a>
+        <a class="mui-control-item" href="#item2" id="item2a">当月预警
+          <span class="mui-badge mui-badge-success" style="position:absolute;" id="count1">0</span>
+        </a>
+         <a class="mui-control-item" href="#item3" id="item3a">上周预警排名
+          
+        </a>
+         <a class="mui-control-item" href="#item4" id="item4a">上月预警排名
+        </a>
+        
+      </div>
+    </div>
+    <div id="warningItem">
+      <div id="item1" class="mui-control-content mui-active">
+
+      </div>
+      <div id="item2" class="mui-control-content">
+
+      </div>
+      <div id="item3" class="mui-control-content">
+         <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-left:2.5%;margin-right:2.5%">
+             <span style="margin-left:20%" id="title3">服务站多次维修预警周统计</span>
+         </div>
+      </div>
+      <div id="item4" class="mui-control-content">
+         <div class="mui-card-header" style="background-color:#4093C6;color:#fff;margin-left:2.5%;margin-right:2.5%">
+             <span style="margin-left:20%" id="title4">服务站多次维修预警月统计</span>
+         </div>
+      </div>
+    </div>
+    <div id="loadText" style="text-align:center;display:none;">
+      <span id="text" style="font-size:15px;color:#6D6D72;font-family:'Microsoft YaHei';">正在加载......</span>
+    </div>  
+  </div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+
+var type = 1;
+var page1= 0;
+var page2= 0;
+var page3= 0;
+var page4= 0;
+
+//当天预警赋值
+setWarningList1();
+//当月预警赋值
+setWarningList2();
+//周预警 排名赋值 
+setWarningList3();
+//月 预警 排名赋值 
+setWarningList4();
+
+//获取我的预警信息记录统计数量
+findOwnCount();
+
+
+//1.当天预警赋值
+function setWarningList1(){
+  var list1= findWarningList(1,page1);
+  if(list1.length>0){
+    for(var i=0;i< list1.length;i++){
+      var item1str = '';
+      
+      item1str += '<div class="mui-card">';
+      item1str += '<ul class="mui-table-view">';
+      item1str += '<li class="mui-table-view-cell mui-media">';   
+      item1str += '<div class="mui-media-body" style="padding-left:12px;">';
+
+      //js 时间戳转换成长时间  
+      var timestamp= String(list1[i].LATE_WARING_DATE);
+      timestamp=timestamp.substring(0, 10);
+      var d = new Date(timestamp * 1000);    //根据时间戳生成的时间对象
+      var date = (d.getFullYear()) + "-" + 
+                 (d.getMonth() + 1) + "-" +
+                 (d.getDate()) + " " + 
+                 (d.getHours()) + ":" + 
+                 (d.getMinutes()) + ":" + 
+                 (d.getSeconds());
+                 
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">预警时间：'+date+'</div>';
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">产品  SN：'+list1[i].PRODUCT_ID+'</div>';
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">产品类型：'+list1[i].PRODUCT_TYPE_CODE+'</div>'; 
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">显示器ID：'+list1[i].MONITOR_NO+'</div>';  
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">服务单号：'+list1[i].SERV_DOC_ID+'</div>';     
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">维修次数：'+list1[i].SERV_COUNT+' 次</div>';  
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">所在大区：'+list1[i].AREA_NAME+'</div>';  
+      item1str += '<div style="font-size:14px;" class="mui-ellipsis">服  务  站：'+list1[i].FIX_STATION_NAME+'</div>'; 
+     
+      item1str += '<button onclick="goDetail(\''+list1[i].PRODUCT_ID+'\',\''+list1[i].PRODUCT_TYPE_CODE+'\',\''+list1[i].MONITOR_NO+'\');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+      //item1str += '<button onclick="goDetail('+str+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+      
+      item1str += '</div>';
+      item1str += '</li></ul></div>';
+      $("#item1").append(item1str);
+    }
+  } else if(page1 ==0){
+    $("#item1").append('<div style="padding-top:100px;text-align: center;">'+
+        '<span style="color: #696969;">当天无预警通知！</span><br><br>'+
+        '<span style="color: #696969;">（⊙o⊙）</span></div>');
+  } else{
+    document.getElementById("loadText").style.display="none";
+    mui.toast("无更多数据！");
+    page1= 0;
+  }
+}
+//2.已办预警赋值
+function setWarningList2(){
+  var list2= findWarningList(2,page2);
+  if(list2.length>0){
+    for(var i=0;i< list2.length;i++){
+      var item2str = '';
+      item2str += '<div class="mui-card">';
+      item2str += '<ul class="mui-table-view">';
+      item2str += '<li class="mui-table-view-cell mui-media">';   
+      item2str += '<div class="mui-media-body" style="padding-left:12px;">';
+      
+      //js 时间戳转换成长时间  
+      var timestamp= String(list2[i].LATE_WARING_DATE);
+      timestamp=timestamp.substring(0, 10);
+      var d = new Date(timestamp * 1000);    //根据时间戳生成的时间对象
+      var date = (d.getFullYear()) + "-" + 
+                 (d.getMonth() + 1) + "-" +
+                 (d.getDate()) + " " + 
+                 (d.getHours()) + ":" + 
+                 (d.getMinutes()) + ":" + 
+                 (d.getSeconds());
+                 
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">预警时间：'+date+'</div>';
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">产品  SN：'+list2[i].PRODUCT_ID+'</div>';
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">产品类型：'+list2[i].PRODUCT_TYPE_CODE+'</div>'; 
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">显示器ID：'+list2[i].MONITOR_NO+'</div>';  
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">服务单号：'+list2[i].SERV_DOC_ID+'</div>';     
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">维修次数：'+list2[i].SERV_COUNT+' 次</div>';  
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">所在大区：'+list2[i].AREA_NAME+'</div>';  
+      item2str += '<div style="font-size:14px;" class="mui-ellipsis">服  务  站：'+list2[i].FIX_STATION_NAME+'</div>';     
+      item2str += '<button onclick="goDetail(\''+list2[i].PRODUCT_ID+'\',\''+list2[i].PRODUCT_TYPE_CODE+'\',\''+list2[i].MONITOR_NO+'\');;" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+      item2str += '</div>';
+      item2str += '</li></ul></div>';
+      $("#item2").append(item2str);
+    }
+  } else if(page2 ==0){
+    $("#item2").append('<div style="padding-top:100px;text-align: center;">'+
+        '<span style="color: #696969;">暂无当月预警!</span><br><br>'+
+        '<span style="color: #696969;">（⊙o⊙）</span></div>');
+  } else{
+    document.getElementById("loadText").style.display="none";
+    mui.toast("无更多数据！");
+  }
+}
+//3.周排名预警赋值
+function setWarningList3(){
+  var list3= findWarningList(3,page3);
+  var getTimeList3= getTime(3,page3);
+  //alert(getTimeList3);
+	if(list3.length!=0){
+		
+
+		 var item3str = '';
+		 item3str += '<div style="padding: 0 2% 0 2%;">';
+		 item3str += '<table class="mytable">';
+		 item3str += '<thead><tr style="background-color:#5B9BD5"><th>服务站ID</th><th>服务站名称</th><th>上周次数</th>';   
+		 item3str += '</tr></thead><tbody>';
+		 
+		 $("#title3").text(getTimeList3[0]+" 至 "+getTimeList3[1]+" 统计结果");
+		for(var i=0;i< list3.length;i++){
+			var tr_color = "";
+			if(i%2==0){
+				tr_color = "tr_color_1";
+			}else{
+				tr_color = "tr_color_2";
+			} 	
+			
+			item3str += '<tr class="'+tr_color+'">'+
+			            	'<td>'+list3[i].stationID+'</td>'+
+			            	'<td>'+list3[i].stationName+'</td>'+
+			            	'<td>'+list3[i].serverCount+'</td>'+
+			             '</tr>';
+			
+		}
+		
+		item3str += '</table> </div>'; 
+		$("#item3").append(item3str);
+		//alert(item3str);
+	}
+	 else if(page3 ==0){
+		    $("#item3").append('<div style="padding-top:100px;text-align: center;">'+
+		        '<span style="color: #696969;">暂无上周预警排名!</span><br><br>'+
+		        '<span style="color: #696969;">（⊙o⊙）</span></div>');
+		  } else{
+		    document.getElementById("loadText").style.display="none";
+		    mui.toast("无更多数据！");
+		  }
+}
+//4.月 排名预警赋值
+function setWarningList4(){
+  var list4= findWarningList(4,page4);
+  var getTimeList4= getTime(4,page4);
+  //alert(getTimeList4);
+	if(list4.length!=0){
+		 var item4str = '';
+		 item4str += '<div style="padding: 0 2% 0 2%;">';
+		 item4str += '<table class="mytable">';
+		 item4str += '<thead><tr style="background-color:#5B9BD5"><th>服务站ID</th><th>服务站名称</th><th>'+getTimeList4[2]+'</th><th>'+getTimeList4[3]+'</th>';   
+		 item4str += '</tr></thead><tbody>';
+		 
+		 $("#title4").text(getTimeList4[2]+" 与  "+getTimeList4[3]+" 对比统计结果");
+		for(var i=0;i< list4.length;i++){
+			var tr_color = "";
+			if(i%2==0){
+				tr_color = "tr_color_1";
+			}else{
+				tr_color = "tr_color_2";
+			} 	
+			
+			item4str += '<tr class="'+tr_color+'">'+
+			            	'<td>'+list4[i].StationId+'</td>'+
+			            	'<td>'+list4[i].StationName+'</td>'+
+			            	'<td>'+list4[i].LastMonth+'</td>'+
+			            	'<td>'+list4[i].LastBeforeMonth+'</td>'+
+			             '</tr>';
+			
+		}
+		
+		item4str += '</table> </div>'; 
+		$("#item4").append(item4str);
+		//alert(item4str);
+	}
+	 else if(page4 ==0){
+		    $("#item4").append('<div style="padding-top:100px;text-align: center;">'+
+		        '<span style="color: #696969;">暂无月预警对比!</span><br><br>'+
+		        '<span style="color: #696969;">（⊙o⊙）</span></div>');
+		  } else{
+		    document.getElementById("loadText").style.display="none";
+		    mui.toast("无更多数据！");
+		  }
+}
+
+//获取所有的预警列表
+function findWarningList(type,page){
+  var warningList = null;
+    mui.ajax('/TFMobile/tf-api/customerService/Waring/findList', {
+      data : {
+        type : type,
+        page : page
+      },
+      dataType : 'json',//服务器返回json格式数据
+      type : 'post',//HTTP请求类型
+      async : false,
+      success : function(result) {
+        if(result.success == true){
+          warningList = result.body.warningList;
+          //赋值完毕结束过场动画
+          setTimeout(function(){
+            document.getElementById("loading").style.display="none";
+            $("body").css("background-color","#eee");
+            document.getElementById("muiContent").style.display="";
+          }, 1000);
+        }else{
+          mui.toast(result.message);
+        }       
+      },
+      error : function(xhr, type, errorThrown) {
+        mui.toast("网络出错了");           
+      }
+    });
+    return warningList;
+}
+//获取时间信息
+function getTime(type,page){
+  var listTime = null;
+    mui.ajax('/TFMobile/tf-api/customerService/Waring/findList', {
+      data : {
+        type : type,
+        page : page
+      },
+      dataType : 'json',//服务器返回json格式数据
+      type : 'post',//HTTP请求类型
+      async : false,
+      success : function(result) {
+        if(result.success == true){
+        	listTime = result.body.listTime;
+          //赋值完毕结束过场动画
+          setTimeout(function(){
+            document.getElementById("loading").style.display="none";
+            $("body").css("background-color","#eee");
+            document.getElementById("muiContent").style.display="";
+          }, 1000);
+        }else{
+          mui.toast(result.message);
+        }       
+      },
+      error : function(xhr, type, errorThrown) {
+        mui.toast("网络出错了");           
+      }
+    });
+    return listTime;
+}
+
+
+//触发搜索框事件
+$("#keyword").on('keypress',function(e) {  
+    var keycode = e.keyCode;  
+    var searchName = $(this).val();
+  if(searchName.replace(/ /g,'')==""){
+    mui.toast("请输入搜索内容");
+    $("#warningList").empty();
+    return;
+  }
+    if(keycode=='13') {  
+        e.preventDefault();    
+        //请求搜索接口  
+    mui.ajax('/TFMobile/tf-api/customerService/Waring/searchList', {
+      data : {
+        searchName : searchName
+      },
+      dataType : 'json',//服务器返回json格式数据
+      type : 'post',//HTTP请求类型
+      async : false,
+      success : function(result) {
+        $("#warningList").empty();
+        $("#warningList").removeAttr("hidden");
+        $("#warningItem").attr("hidden");
+        if(result.success == true){
+          var list4 = result.body.warningList;
+          var length = list4.length;  
+          if(length>0){
+            for(var i=0;i<length;i++){
+              var str = '';         
+              str += '<div class="mui-card">';
+              str += '<ul class="mui-table-view">';
+              str += '<li class="mui-table-view-cell mui-media">';    
+              str += '<div class="mui-media-body" style="padding-left:12px;">';
+              //js 时间戳转换成长时间  
+              var timestamp= String(list4[i].LATE_WARING_DATE);
+              timestamp=timestamp.substring(0, 10);
+              var d = new Date(timestamp * 1000);    //根据时间戳生成的时间对象
+              var date = (d.getFullYear()) + "-" + 
+                         (d.getMonth() + 1) + "-" +
+                         (d.getDate()) + " " + 
+                         (d.getHours()) + ":" + 
+                         (d.getMinutes()) + ":" + 
+                         (d.getSeconds());
+                         
+              str += '<div style="font-size:14px;" class="mui-ellipsis">预警时间：'+date+'</div>';
+              str += '<div style="font-size:14px;" class="mui-ellipsis">产品  SN：'+list4[i].PRODUCT_ID+'</div>';
+              str += '<div style="font-size:14px;" class="mui-ellipsis">产品类型：'+list4[i].PRODUCT_TYPE_CODE+'</div>';  
+              str += '<div style="font-size:14px;" class="mui-ellipsis">显示器ID：'+list4[i].MONITOR_NO+'</div>';  
+              str += '<div style="font-size:14px;" class="mui-ellipsis">服务单号：'+list4[i].SERV_DOC_ID+'</div>';     
+              str += '<div style="font-size:14px;" class="mui-ellipsis">维修次数：'+list4[i].SERV_COUNT+' 次</div>';  
+              str += '<div style="font-size:14px;" class="mui-ellipsis">所在大区：'+list4[i].AREA_NAME+'</div>';  
+              str += '<div style="font-size:14px;" class="mui-ellipsis">服  务  站：'+list4[i].FIX_STATION_NAME+'</div>';   
+              
+              if(parseInt(list4[i].state)==1&&parseInt(list4[i].reviewState)==1){
+                str += '<button onclick="goDetail(\''+list4[i].PRODUCT_ID+'\',\''+list4[i].PRODUCT_TYPE_CODE+'\',\''+list4[i].MONITOR_NO+'\');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+              }else{
+                str += '<button onclick="goDetail(\''+list4[i].PRODUCT_ID+'\',\''+list4[i].PRODUCT_TYPE_CODE+'\',\''+list4[i].MONITOR_NO+'\');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+              }     
+              str += '</div>';
+              str += '</li></ul></div>';                
+              $("#warningList").append(str);
+            }
+          }else{
+            $("#warningList").empty();
+          }
+        }else{
+          mui.toast(result.message);
+        }               
+      },
+      error : function(xhr, type, errorThrown) {
+        mui.toast("网络出错了");           
+      }
+    });
+          
+    }  
+ })
+ 
+ 
+ //获取预警信息记录统计数量
+	function findOwnCount(){
+		var warningList = null;
+			mui.ajax('/TFMobile/tf-api/customerService/Waring/findOwnCount', {
+				data : {
+				},
+				dataType : 'json',//服务器返回json格式数据
+				type : 'post',//HTTP请求类型
+				async : false,
+				success : function(result) {
+					if(result.success == true){
+						$("#count0").text(result.body.count0);
+						$("#count1").text(result.body.count1);				
+					}else{
+						mui.toast(result.message);
+					}				
+				},
+				error : function(xhr, type, errorThrown) {
+					mui.toast("网络出错了！");						
+				}
+			});
+		return warningList;
+	}
+	
+	
+	
+ //跳转到详情界面
+ function goDetail(productId,ProductTypeCode,MonitorNo){
+  ProductTypeCode=encodeURI(encodeURI(ProductTypeCode));
+ 
+  document.location.href = 'MultiSNWaring.html?productId='+productId+'&ProductType='+ProductTypeCode+'&MonitorNo='+MonitorNo;
+
+}
+ 
+
+/**
+* 刷新功能
+*/
+//获取滚动条当前的位置 
+   function getScrollTop() {
+    var scrollTop = 0;
+    if (document.documentElement && document.documentElement.scrollTop) {
+      scrollTop = document.documentElement.scrollTop;
+    }
+    else if (document.body) {
+      scrollTop = document.body.scrollTop;
+    }
+    return scrollTop;
+   }
+    
+  //获取当前可视范围的高度 
+   function getClientHeight() {
+    var clientHeight = 0;
+    if (document.body.clientHeight && document.documentElement.clientHeight) {
+      clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight);
+    }else {
+      clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+    }
+    return clientHeight
+   }
+  
+  //获取文档完整的高度 
+   function getScrollHeight() {
+    return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+   }
+
+  document.getElementById('item1a').addEventListener('tap', function() {
+    type=1;
+    window.scrollTo(0,0);
+    $("#loadText").css("display","none");
+    $("#loadText").text("正在加载......");
+  });
+  document.getElementById('item2a').addEventListener('tap', function() {
+    type=2;
+    window.scrollTo(0,0);
+    $("#loadText").css("display","none");
+    $("#loadText").text("正在加载......");
+  });
+ // document.getElementById('item3a').addEventListener('tap', function() {
+ //   type=0;
+ //   window.scrollTo(0,0);
+ //   $("#loadText").css("display","none");
+ //   $("#loadText").text("正在加载......");
+ // });
+  
+  window.onscroll = function () {
+      //显示加载提醒
+      if(getScrollHeight()>window.innerHeight){
+        $("#loadText").css("display","block");
+      }
+      if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+        if(type == 1){
+          page1 ++;
+          setWarningList1();
+          window.scrollTo(0,(getScrollTop()-20));
+        } else if(type == 2){
+          page2 ++;
+          setWarningList2();
+          window.scrollTo(0,(getScrollTop()-20));
+        } else{
+          page3 ++;
+          setWarningList3();
+          window.scrollTo(0,(getScrollTop()-20));
+        }
+    }   
+}
+
+
+</script>
+</html>

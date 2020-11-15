@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>预警通知处理</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+   	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">
+		<div class="mui-card" style="min-height:500px">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">
+				<span style="margin-left:39%">预警通知</span>
+				<span id="backBtn" style="display:none" class="mui-btn mui-btn-danger" onclick="window.history.go(-1)">返回<span class="mui-icon mui-icon-forward"></span></span>
+			</div>
+			<div style="text-align:center;color:#4093C6;font-size:15px;margin-top:10px;margin-bottom:-20px">预警信息</div>
+			<div class="mui-card-content-inner" style="margin:22px 5px;border:solid 1px #ccc">
+				<div><span style="color: gray">预警编号：</span><span class="mui-pull-right" id="serialNumber"></span></div>				
+				<div><span style="color: gray">预警时间：</span><span class="mui-pull-right" id="warningTime"></span></div>				
+				<div><span style="color: gray">制令单号：</span><span class="mui-pull-right" id="ordermaking"></span></div>				
+				<div><span style="color: gray">出现次数：</span><span class="mui-pull-right" id="number"></span></div>				
+				<div><span style="color: gray">不良机型：</span><span class="mui-pull-right" id="model"></span></div>				
+				<div><span style="color: gray">不良现象：</span><span class="mui-pull-right" id="description"></span></div>
+				<div id="snlist">			
+					<!-- <div><span style="color: gray">不良SN：</span><span class="mui-pull-right"></span></div>	 -->
+				</div>																				
+			</div>
+			<div id="refused_picture" style="display:none;">
+				<div style="position:absolute;margin:9% 0 0 32%">
+					<img src="../../static/mui/images/refuse.png" style="max-width:7.2em; height:auto;"/>
+				</div>
+			</div>
+			<div id="handleCard" style="display:none">
+				<div style="text-align:center;color:#4093C6;font-size:15px;margin-bottom:-10px">预警处理信息
+					<div id="warningEditBtn" style="display:none;"><span class="mui-btn mui-btn-success mui-pull-right" style="margin-top:-32px;margin-right:5px">修改</span></div>
+				</div>
+				<div class="mui-card-content-inner" style="margin:12px 5px;border:solid 1px #ccc">			
+					<div><span style="color: gray">处理人：</span><span class="mui-pull-right" id="handler"></span></div>				
+					<div><span style="color: gray">处理时间：</span><span class="mui-pull-right" id="handleTimeShow"></span></div>							
+					<div><span style="color: gray">提交处理时间：</span><span class="mui-pull-right" id="submitTime"></span></div>							
+					<div><span style="color: gray">解决处理措施：</span><span class="" id="handleMethodShow"></span></div>
+				</div>
+			</div>
+			<div id="reviewPassCard" style="display:none;">
+				<div style="text-align:center;color:#4093C6;font-size:15px;margin-bottom:-10px;margin-top:25px;">预警确认信息</div>
+				<div class="mui-card-content-inner" style="margin:12px 5px;border:solid 1px #ccc">			
+					<div><span style="color: gray">确认人：</span><span class="mui-pull-right" id="reviewer"></span></div>				
+					<div><span style="color: gray">确认时间：</span><span class="mui-pull-right" id="reviewTime"></span></div>													
+				</div>
+			</div>
+			<div id="handleMethodDiv" style="display:none">
+				<div class="mui-input-row" style="margin: 10px 5px;">
+					<textarea id="handleMethod" rows="6" placeholder="输入预警处理措施" maxlength="300"></textarea>
+				</div>
+				<div class="mui-input-row" id="chooseTime" style="margin: -15px 5px;">
+					<input id="handleTime" class="span-after-input" type="text" value="" placeholder="点击选择处理时间" readonly="readonly" />
+				</div>
+				<div style="text-align:center;margin-bottom: 10px;margin-top: -10px;border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;width:94%;margin-left:3%;">
+					<button type="button" id="submitBtn" style="width:95%;background:#4093C6;border:0;height:40px;margin-bottom: 20px;font-size: 18px;margin-top: 30px "
+					class="mui-btn mui-btn-danger grad1">提交</button>		
+				</div>
+			</div>
+			<div id="reviewRefuseCard" style="display:none">
+				<div style="text-align:center;color:#cf5753;font-size:15px;margin-bottom:-10px;margin-top:25px;">预警驳回信息</div>
+				<div class="mui-card-content-inner" style="margin:12px 5px;border:solid 1px #ccc">			
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="reviewer1"></span></div>				
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="reviewTime1"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="refusedReason"></span></div>													
+				</div>
+			</div>
+			<div style="display:none;padding-top:25px;padding-bottom:20px" id="reviewDiv">
+				<button class="mui-btn mui-btn-danger"style="margin-left:30px;margin-top:20px;margin-bottom:20px" onclick="review(0);">驳回</button>
+				<button class="mui-btn mui-btn-success" style="float:right;margin-right:30px;margin-top:20px" onclick="review(1);">确认</button>
+			</div>
+			<div id="roleTitle" style="display:none;">
+				<p style="text-align:center;color:#dd523d;font-size:16px;margin-top:100px;">您暂无处理权限！</p>
+			</div>	
+		</div>
+	</div>
+
+	
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+var warningId = getUrlParam("warningId");
+//获取企业成员信息
+var memberInfo = getMemberInfo(5);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+
+//判断是从列表页面过来的则有显示返回按钮
+var back = getUrlParam("back");
+if(back==1){
+	$("#backBtn").attr("style","display:block");
+}
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取预警信息
+	findWarningInfo(warningId);
+}
+//页面加载获取预警通知信息
+function findWarningInfo(warningId){
+	if(warningId){
+		mui.ajax('/TFMobile/tf-api/warning/findInfo', {
+			data : {
+				warningId : warningId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+
+				if(result.success == true){	
+					//预警通知内容
+					$("#serialNumber").text(result.body.warning.serialNumber);
+					$("#warningTime").text(getDate(result.body.warning.warningTime));
+			   		$("#ordermaking").text(result.body.warning.ordermaking);
+			   		$("#number").text(result.body.warning.number+" 次");
+			   		$("#description").text(result.body.warning.description);
+			   		$("#model").text(result.body.warning.model);			   		
+			   		//解析SN集合
+					var snlist = result.body.warning.snlist;
+					if(snlist!=null&&snlist!=""&&snlist!="null"&&snlist.substring(snlist.length-1)==(";")){
+						snlist = snlist.substring(0,snlist.length-1);
+			   			var snlistArry = snlist.split(";");
+						var html= '<div><span style="color: gray">不良SN码：</span><span class="mui-pull-right">'+snlistArry[0]+'</span></div>';
+						$("#snlist").append(html);
+						for(var k=1;k<snlistArry.length;k++){
+							var html1= '<div><span style="color: gray">&nbsp;</span><span class="mui-pull-right">'+snlistArry[k]+'</span></div>';
+							$("#snlist").append(html1);
+						}
+					}
+			   		
+					if(parseInt(result.body.warning.state)==0&&parseInt(result.body.warning.reviewState)==0){//还未处理
+						//判断用户权限
+						var role = false;
+						for(var i=0;i<departmentJson.length;i++){
+							if(departmentJson[i]==3){
+								role = true;
+							}
+						}
+				   		if(!role){
+				   			$("#roleTitle").attr("style","display:block"); 			
+				   		}else{
+				   			$("#handleMethodDiv").attr("style","display:block");
+				   		}
+			   		}else if(parseInt(result.body.warning.state)==1&&parseInt(result.body.warning.reviewState)==0){//已处理但未审核
+				   		//预警处理内容
+				   		$("#handleMethodShow").text(result.body.warning.handleMethod);
+			   			$("#handler").text(result.body.warning.name);
+			   			$("#handleTimeShow").text(getDate(result.body.warning.handleTime));
+			   			$("#submitTime").text(getDate(result.body.warning.submitTime));
+			   			$("#handleCard").attr("style","display:block");
+						for(var i=0;i<departmentJson.length;i++){
+							if(departmentJson[i]==5){
+								$("#reviewDiv").attr("style","display:block");
+							}
+						}
+			   		}else if(parseInt(result.body.warning.state)==0&&parseInt(result.body.warning.reviewState)==1){//已处理但被驳回
+				   		//预警处理内容
+				   		$("#handleMethodShow").text(result.body.warning.handleMethod);
+			   			$("#handler").text(result.body.warning.name);
+			   			$("#handleTimeShow").text(getDate(result.body.warning.handleTime));
+			   			$("#submitTime").text(getDate(result.body.warning.submitTime));
+				   		//预警驳回内容
+				   		$("#refusedReason").text(result.body.warning.refusedReason);
+			   			$("#reviewer1").text(getInfo(result.body.warning.reviewer)[1]);
+			   			$("#reviewTime1").text(getDate(result.body.warning.reviewTime));
+			   			$("#handleCard").attr("style","display:block");
+			   			$("#reviewRefuseCard").attr("style","display:block");
+			   			$("#refused_picture").attr("style","display:block");
+			   			for(var i=0;i<departmentJson.length;i++){
+							if(departmentJson[i]==3){
+					   			$("#warningEditBtn").attr("style","display:block");
+							}
+						}
+			   		}else{//已处理且确认通过
+				   		//预警处理内容
+				   		$("#handleMethodShow").text(result.body.warning.handleMethod);
+			   			$("#handler").text(result.body.warning.name);
+			   			$("#handleTimeShow").text(getDate(result.body.warning.handleTime));
+			   			$("#submitTime").text(getDate(result.body.warning.submitTime));
+				   		//预警确认通过内容
+			   			$("#reviewer").text(getInfo(result.body.warning.reviewer)[1]);
+			   			$("#reviewTime").text(getDate(result.body.warning.reviewTime));
+			   			$("#handleCard").attr("style","display:block");
+			   			$("#reviewPassCard").attr("style","display:block");
+			   		}
+				}else{
+					mui.toast(result.message);
+				}
+				//赋值完毕结束过场动画
+				setTimeout(function(){
+					document.getElementById("loading").style.display="none";
+					$("body").css("background-color","#eee");
+					document.getElementById("muiContent").style.display="";
+				}, 10);
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+	}
+	
+}
+   
+
+	//表单提交
+	var flag = true;
+	document.getElementById('submitBtn').addEventListener('tap',function() {
+		var handler = memberId;
+   		var handleMethod = $("#handleMethod").val().replace(/ /g,'');
+   		var handleTime = $("#handleTime").val();
+   		var ordermaking = $("#ordermaking").text().replace(/ /g,'');
+   		var description = $("#description").text().replace(/ /g,'');
+   		var number = $("#number").text().replace(/ /g,'');
+   		var serialNumber = $("#serialNumber").text().replace(/ /g,'');
+   		var handlerName = name;
+
+   		if(handleMethod==null||handleMethod==""){
+   			mui.toast("请输入处理措施");
+   			return;
+   		}
+   		if(handleTime==null||handleTime==""){
+   			mui.toast("请选择处理时间");
+   			return;
+   		}
+	
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					//判断有没有被处理过
+					mui.ajax('/TFMobile/tf-api/warning/findInfo', {
+						data : {
+							warningId : warningId
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {
+							if(result.success == true){
+								if(parseInt(result.body.warning.state)==1){
+									mui.alert('该预警已被 '+result.body.warning.name+' 处理过了','已被处理提示',function() {
+									flag=true;
+									});
+								}else{
+									warningSave(warningId,serialNumber,handler,handleMethod,handleTime,ordermaking,description,number,handlerName);//保存信息
+								}
+							
+							}			
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");
+						}
+					});										
+					return;
+				}
+			}
+		});
+	});
+	
+	
+	//保存提交内容
+	function warningSave(warningId,serialNumber,handler,handleMethod,handleTime,ordermaking,description,number,handlerName){
+		mui.ajax('/TFMobile/tf-api/warning/saveHandleMethod', {
+			data : {
+				warningId : warningId,
+				serialNumber : serialNumber,
+				handler : handler,
+				handleMethod : handleMethod,
+				handleTime : handleTime,
+				ordermaking : ordermaking,
+				description : description,
+				number : number,
+				handlerName : handlerName,
+				touser : "WangJinLei",//消息通知要发送的成员
+				toparty : ""//消息通知要发送的部门
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){				
+					setTimeout(function(){
+						location.reload(); 
+					}, 1000);
+					mui.toast("提交成功！");
+				}else{
+					mui.toast("提交失败！");
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");
+			}
+		});
+	}
+	
+//审核事件（驳回：0或确认：1）
+function review(type){
+	var ordermaking = $("#ordermaking").text().replace(/ /g,'');
+	var description = $("#description").text().replace(/ /g,'');
+	var number = $("#number").text().replace(/ /g,'');
+	var serialNumber = $("#serialNumber").text().replace(/ /g,'');
+	if(type==0){//驳回触发事件
+		//填写驳回理由
+		var refusedReason = "";
+		var btnArray1 = ['取消', '确定'];
+		mui.prompt('请输入驳回原因：', '', '', btnArray1, function(e) {
+			if (e.index == 1) {
+				refusedReason = e.value;
+				if(refusedReason==""){
+					mui.toast("请输入驳回原因！");
+					return;
+				}else if(refusedReason.length>=50){
+					mui.toast("请输入50个字符以内！");
+					return;
+				}
+				warningUpdate(0,warningId,serialNumber,memberId,refusedReason,ordermaking,description,number);
+			} else {
+				
+			}
+		})
+		
+	}else if(type==1){
+		warningUpdate(1,warningId,serialNumber,memberId,refusedReason,ordermaking,description,number);
+	}
+	
+}
+
+//执行驳回或确认信息跟新保存
+function warningUpdate(type,warningId,serialNumber,memberId,refusedReason,ordermaking,description,number){
+	var flag = true;
+	if(type==0){
+		var message = "确认要驳回吗？";
+	}else if(type==1){
+		var message = "确认要通过吗？";
+	}
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', message,btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				mui.ajax('/TFMobile/tf-api/warning/review', {
+					data : {
+						warningId : warningId,
+						serialNumber : serialNumber,
+						memberId : memberId,
+						type : type,
+						refusedReason : refusedReason,
+						ordermaking : ordermaking,
+						description : description,
+						number : number,
+						touser : "ZhangJunJie|WangJiang",//消息通知要发送的成员
+						toparty : ""//消息通知要发送的部门
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						flag=false;	
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								document.location.href = 'ownWarningList.html?active=2';
+							}, 500);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=false;	
+					}
+				});
+			
+			}
+		}
+	});
+}
+
+//点击修改按钮触发事件
+document.getElementById('warningEditBtn').addEventListener('tap',function() { 
+	$("#handleMethodDiv").attr("style","display:block");
+});  
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("handleTime");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+
+		var optionsJson = this.getAttribute('data-options') || '{}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2018";　　　　　　
+		options.beginMonth = "01";　　　　　　
+		options.beginDay = "01";　　　　　　
+		options.beginHours = "00";　　　　　　
+		options.beginMinutes = "00";　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+			　　　　　　 result.value = rs.text;　　　　　　　　
+			picker.dispose();　
+			　　　　　 });　　　　
+	}, false);　　
+})(mui); 
+//根据主键memberId获取企业成员信息
+function getInfo(memberId){
+	var userId = null;
+	var name = null;
+	var department = null;
+	var position = null;
+	var isleader = null;
+	if(memberId==null || memberId=="" || memberId=="null"){
+		return [userId, name, department, position, isleader];
+	}
+	mui.ajax('/TFMobile/tf-api/member/getInfo', {
+		data : {
+			memberId : memberId			
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				userId = result.body.member.userId;
+				name = result.body.member.name;
+				department = result.body.member.department;
+				position = result.body.member.position;
+				isleader = result.body.member.isleader;
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");
+		}
+	});
+	return [userId, name, department, position, isleader];
+} 
+</script>
+</html>

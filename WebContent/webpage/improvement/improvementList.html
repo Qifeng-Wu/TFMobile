@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>改善提案记录</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<!--当页面没有数据时页面效果展示-->
+		<div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+		<div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入改善提案名称查询">
+		</div>
+		<div hidden="true" id="list">
+
+		</div>
+		<div style="padding: 0px 10px;">
+			<div class="mui-segmented-control">
+				<a class="mui-control-item mui-active" href="#item1" id="item1a">待完成</a>
+				<a class="mui-control-item" href="#item2" id="item2a">已完成</a>
+			</div>
+		</div>
+		<div id="listItem">
+			<div id="item1" class="mui-control-content mui-active">
+
+			</div>
+			<div id="item2" class="mui-control-content">
+
+			</div>
+		</div>	
+			
+		<div id="loadText" style="text-align:center;display:none;">
+			<span id="text" style="font-size:15px;color:#6D6D72;font-family:'Microsoft YaHei';">正在加载......</span>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getAnotherMemberInfo(2);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+
+var type = 1;
+var page1= 0;
+var page2= 0;
+if(memberId){
+	setUnfinishedList();  //未完成
+	setFinishedList();  //已完成
+}
+
+//1.未完成
+function setUnfinishedList(){
+	var list= findList(1,page1);
+	if(list.length>0){
+		for(var i=0;i< list.length;i++){
+			var str = '';
+			str += '<div class="mui-card">';
+			str += '<ul class="mui-table-view">';
+			str += '<li class="mui-table-view-cell mui-media">';		
+			str += '<div class="mui-media-body" style="padding-left:12px;padding-top:6px">';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">提交时间：'+getDate(list[i].proposer_time)+'</div>';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">提案名称：'+list[i].title+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">目前做法：'+list[i].current_measure+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">改善办法：'+list[i].improve_measure+'</div>';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">预期效果：'+list[i].anticipate_effect+'</div>';
+			if(parseInt(list[i].state)==0){
+				var isAdopt;
+				if(list[i].isAdopt=="是"){
+					isAdopt = "该提案已被采纳，流程完结";
+				}else{
+					isAdopt = "该提案未被采纳，流程完结";
+				}
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">'+isAdopt+'</span></div>';
+			}else if(parseInt(list[i].state)==1){
+				if(parseInt(list[i].type)==0){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待主管确认</span></div>';
+				}else if(parseInt(list[i].type)==1){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理审核</span></div>';
+				}
+			}else if(parseInt(list[i].state)==2){
+				if(parseInt(list[i].type)==0){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被主管驳回，待提案人处理</span></div>';
+				}else if(parseInt(list[i].type)==1){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被部门经理驳回，待提案人处理</span></div>';
+				}
+			}else if(parseInt(list[i].state)==3){
+				if(parseInt(list[i].type)==0){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理审核</span></div>';
+				}else if(parseInt(list[i].type)==1){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工业主管处理</span></div>';
+				}
+			}else if(parseInt(list[i].state)==4){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被部门经理驳回，待主管处理</span></div>';
+			}else if(parseInt(list[i].state)==5){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工业主管处理</span></div>';
+			}
+			str += '<button onclick="goDetail('+list[i].improvementId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+			str += '</div>';
+			str += '</li></ul></div>';
+			$("#item1").append(str);
+		}		
+	}else if(page1 ==0){
+		$("#item1").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">无未完结提案信息!</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	} 
+}
+//2.已完成
+function setFinishedList(){
+	var list= findList(2,page2);
+	if(list.length>0){
+		for(var i=0;i< list.length;i++){
+			var str = '';
+			str += '<div class="mui-card">';
+			str += '<ul class="mui-table-view">';
+			str += '<li class="mui-table-view-cell mui-media">';		
+			str += '<div class="mui-media-body" style="padding-left:12px;padding-top:6px">';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">提交时间：'+getDate(list[i].proposer_time)+'</div>';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">提案名称：'+list[i].title+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">目前做法：'+list[i].current_measure+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">改善办法：'+list[i].improve_measure+'</div>';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">预期效果：'+list[i].anticipate_effect+'</div>';
+			if(parseInt(list[i].state)==0){
+				var isAdopt;
+				if(list[i].isAdopt=="是"){
+					isAdopt = "该提案已被采纳，流程完结";
+				}else{
+					isAdopt = "该提案未被采纳，流程完结";
+				}
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">'+isAdopt+'</span></div>';
+			}else if(parseInt(list[i].state)==1){
+				if(parseInt(list[i].type)==0){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待主管确认</span></div>';
+				}else if(parseInt(list[i].type)==1){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理审核</span></div>';
+				}
+			}else if(parseInt(list[i].state)==2){
+				if(parseInt(list[i].type)==0){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被主管驳回，待提案人处理</span></div>';
+				}else if(parseInt(list[i].type)==1){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被部门经理驳回，待提案人处理</span></div>';
+				}
+			}else if(parseInt(list[i].state)==3){
+				if(parseInt(list[i].type)==0){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理审核</span></div>';
+				}else if(parseInt(list[i].type)==1){
+					str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工业主管处理</span></div>';
+				}
+			}else if(parseInt(list[i].state)==4){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被部门经理驳回，待主管处理</span></div>';
+			}else if(parseInt(list[i].state)==5){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工业主管处理</span></div>';
+			}
+			str += '<button onclick="goDetail('+list[i].improvementId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+			str += '</div>';
+			str += '</li></ul></div>';
+			$("#item2").append(str);
+		}		
+	}else if(page2 ==0){
+		$("#item2").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">无已完结提案信息!</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	} 
+}
+
+//获取信息记录
+function findList(type,page){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/improvement/data/findList', {
+			data : {
+				type : type,
+				page : page
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					document.getElementById("loading").style.display="none";
+					$("body").css("background-color","#eee");
+					document.getElementById("muiContent").style.display="";
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦，请联系管理员！");						
+			}
+		});
+	return list;
+}
+
+//查询
+$("#keyword").on('keypress',function(e) {  
+    var keycode = e.keyCode;     	 
+  if(keycode=='13') { 
+        e.preventDefault(); 
+        var searchName = $(this).val();
+        if(searchName==""){
+        	$("#list").empty();
+      		mui.toast("请输入提案名称！");
+    	    return; 
+      	 }
+        //请求搜索接口  
+		mui.ajax('/TFMobile/tf-api/improvement/data/searchList', {
+			data : {
+				searchName : searchName,
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				$("#list").empty();
+				$("#list").removeAttr("hidden");
+				$("#listItem").attr("hidden");
+				if(result.success == true){
+					var list = result.body.list;
+					if(list.length>0){
+						var str = '';
+						str += '<div class="mui-card">';
+						str += '<ul class="mui-table-view">';
+						str += '<li class="mui-table-view-cell mui-media">';		
+						str += '<div class="mui-media-body" style="padding-left:12px;padding-top:6px">';
+						str += '<div style="font-size:14px;" class="mui-ellipsis">提交时间：'+getDate(list[i].proposer_time)+'</div>';
+						str += '<div style="font-size:14px;" class="mui-ellipsis">提案名称：'+list[i].title+'</div>';	
+						str += '<div style="font-size:14px;" class="mui-ellipsis">目前做法：'+list[i].current_measure+'</div>';	
+						str += '<div style="font-size:14px;" class="mui-ellipsis">改善办法：'+list[i].improve_measure+'</div>';
+						str += '<div style="font-size:14px;" class="mui-ellipsis">预期效果：'+list[i].anticipate_effect+'</div>';
+						if(parseInt(list[i].state)==0){
+							var isAdopt;
+							if(list[i].isAdopt=="是"){
+								isAdopt = "该提案已被采纳，流程完结";
+							}else{
+								isAdopt = "该提案未被采纳，流程完结";
+							}
+							str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">'+isAdopt+'</span></div>';
+						}else if(parseInt(list[i].state)==1){
+							if(parseInt(list[i].type)==0){
+								str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待主管确认</span></div>';
+							}else if(parseInt(list[i].type)==1){
+								str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理审核</span></div>';
+							}
+						}else if(parseInt(list[i].state)==2){
+							if(parseInt(list[i].type)==0){
+								str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被主管驳回，待提案人处理</span></div>';
+							}else if(parseInt(list[i].type)==1){
+								str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被部门经理驳回，待提案人处理</span></div>';
+							}
+						}else if(parseInt(list[i].state)==3){
+							if(parseInt(list[i].type)==0){
+								str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理审核</span></div>';
+							}else if(parseInt(list[i].type)==1){
+								str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工业主管处理</span></div>';
+							}
+						}else if(parseInt(list[i].state)==4){
+							str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">提案已被部门经理驳回，待主管处理</span></div>';
+						}else if(parseInt(list[i].state)==5){
+							str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工业主管处理</span></div>';
+						}
+						str += '<button onclick="goDetail('+list[i].improvementId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+						str += '</div>';
+						str += '</li></ul></div>';
+						$("#list").append(str);
+					}else{
+						$("#list").empty();
+						$("#list").append('<div style="padding-top:100px;text-align: center;">'+
+								'<span style="color: #696969;">未查询到任何结果！</span><br><br>'+
+								'<span style="color: #696969;">（⊙o⊙）</span></div>');
+						mui.toast("未查询到任何结果！");
+					}
+				}else{
+					mui.toast(result.message);
+				}								
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦，请联系管理员！");						
+			}
+		});
+          
+    }  
+ });
+ 
+ //跳转到详情界面
+ function goDetail(improvementId){
+	document.location.href = 'improvementForm.html?improvementId='+ improvementId;
+} 
+
+/**
+* 刷新功能
+*/
+//获取滚动条当前的位置 
+   function getScrollTop() {
+   	var scrollTop = 0;
+    if (document.documentElement && document.documentElement.scrollTop) {
+    	scrollTop = document.documentElement.scrollTop;
+    }
+    else if (document.body) {
+    	scrollTop = document.body.scrollTop;
+    }
+   	return scrollTop;
+   }
+ 		
+ 	//获取当前可视范围的高度 
+   function getClientHeight() {
+   	var clientHeight = 0;
+    if (document.body.clientHeight && document.documentElement.clientHeight) {
+    	clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight);
+    }else {
+    	clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+    }
+   	return clientHeight
+   }
+ 	
+ 	//获取文档完整的高度 
+   function getScrollHeight() {
+   	return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+   }
+
+	document.getElementById('item1a').addEventListener('tap', function() {
+		type=1;
+		window.scrollTo(0,0);
+		$("#loadText").css("display","none");
+		$("#loadText").text("正在加载......");
+	});
+	document.getElementById('item2a').addEventListener('tap', function() {
+		type=2;
+		window.scrollTo(0,0);
+		$("#loadText").css("display","none");
+		$("#loadText").text("正在加载......");
+	});
+	
+	window.onscroll = function () {
+  		//显示加载提醒
+  		if(getScrollHeight()>window.innerHeight){
+  			$("#loadText").css("display","block");
+  		}
+  		if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+    		if(type == 1){
+    			page1 ++;
+    			setUnfinishedList();
+    			window.scrollTo(0,(getScrollTop()-20));
+    		} else if(type == 2){
+    			page2 ++;
+    			setFinishedList();
+    			window.scrollTo(0,(getScrollTop()-20));
+    		} 
+		}		
+}
+</script>
+</html>

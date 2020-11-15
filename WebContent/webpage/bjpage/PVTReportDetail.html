@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>PVT阶段测试信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <style>
+    	.list_color{
+    		background-color:#f3f3f3;
+    	}
+    </style>
+</head>
+<body >
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content" id="muiContent" style="display:none">
+		<div class="mui-card">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">
+				<span style="margin-left:33%" id="pvt_title">PVT阶段测试信息</span>
+			</div>
+		</div>
+		<div id="pvt_list">
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+mui.init();
+//从连接中获取数据
+var type = decodeURI(getUrlParam("type"));
+$("#pvt_title").text(type+"测试信息");
+//获取数据页面赋值
+setList(type);
+
+function setList(type){
+	var list = findList(type);
+	if(list.length>0){
+		$("#pvt_list").empty();
+		for(var i=0;i< list.length;i++){
+			var tr_color = "";
+			if(i%2==0){
+				var color = "";				
+			}else{
+				var color = "background-color:#f3f3f3";
+			}
+			if(list[i].status=="完成"){
+				var img = "../../static/mui/images/finished.png";
+			}else{
+				var img = "../../static/mui/images/unfinished.png";
+			}
+
+			var html = '<div class="mui-card" style="'+color+'">'+
+						'<ul class="mui-table-view" style="'+color+'">'+
+						'<li class="mui-table-view-cell mui-media">'+	
+							'<div class="mui-media-body" style="padding-left:12px;">'+
+							'<div style="font-size:14px;" class="mui-ellipsis">测试项目：<span style="color:#4093C6">'+list[i].projectName+'</span></div>'+
+							'<div style="font-size:14px;" class="mui-ellipsis">负&nbsp;&nbsp;责&nbsp;&nbsp;人：<span style="color:#4093C6">'+list[i].chargePerson+'</span></div>'+
+							'<div style="font-size:14px;" class="mui-ellipsis">启动时间：<span style="color:#4093C6">'+list[i].startTime+'</span></div>'+
+							'<div style="font-size:14px;" class="mui-ellipsis">预计完成时间：<span style="color:#4093C6">'+list[i].finishTime+'</span></div>'+
+							'<div style="font-size:14px;" class="mui-ellipsis">状&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;态：<span style="color:red">'+list[i].status+'</span></div>'+
+							'<div style="position:absolute;margin:-19% 0 0 70%">'+
+								'<img src="'+img+'" style="max-width:5em; height:auto;">'+
+							'</div>'+		
+							'</div>'+
+						'</li>'+
+						'</ul>'+
+					'</div>';
+			$("#pvt_list").append(html);
+		}
+	}
+}
+
+//获取所有的记录列表
+function findList(type){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/bj-mobile/PVTReport/detail', {
+			data : {
+				type : type
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						document.getElementById("loading").style.display="none";
+						$("body").css("background-color","#eee");
+						document.getElementById("muiContent").style.display="";
+					}, 1000);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+		return list;
+}
+</script>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>订单进度列表</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <style>
+    	.mui-card{
+    		background-color:#4093C6;
+    	}
+    	.span_color{
+    		color:#4093C6;
+    	}
+    </style>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">拼命加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;background-color:#eee;padding-bottom:15px" id="muiContent">
+		<div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入订单号查询">
+		</div>
+		<!-- <div style="padding: 0 3% 0 3%;">			
+			<span id="chooseTime"><input id="endTime" style="width:50%;" type="text" value="" placeholder="结束日期" readonly="readonly"/></span>
+			<span id="chooseTime1"><input id="startTime" style="width:50%;float: left;" type="text" value="" placeholder="开始日期" readonly="readonly"/></span>
+		</div> -->
+		<div style="margin-top:-10px" id="orderProgressList">
+	<!-- 	<div class="mui-card">
+			<ul class="mui-table-view">
+			<li class="mui-table-view-cell mui-media">		
+			<div class="mui-media-body" style="padding-left:12px;padding-top:6px">
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">订&nbsp;&nbsp;单&nbsp;&nbsp;号：<span class="span_color">700157550</span></span><span style="width:40%;float:right;">已装配：<span style="color:red">200</span></span></div>			
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">总量/已投产：<span class="span_color">200/200</span></span><span style="width:40%;float:right;">已终检：<span style="color:red">100</span></span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">投产日期：<span class="span_color">2018-06-12</span></span><span style="width:40%;float:right;">已包装：<span style="color:red">50</span></span></div>	
+			<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">线&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;别：<span class="span_color">D线</span></span><span style="width:40%;float:right;">已入库：<span style="color:red">20</span></span></div>			
+			</div>
+			</li></ul>
+			</div> -->
+		</div>			
+	</div>			
+</body>
+<script type="text/javascript">
+mui.init();
+var page= 0;
+//获取数据页面赋值
+setTimeout(function(){
+	setOrderProgressList(page);
+}, 100); 
+
+//获取数据页面赋值
+function setOrderProgressList(page){
+	var list = findOrderProgressList(page);
+	if(list.length>0){
+		for(var i=0;i< list.length;i++){
+			var html = '<div class="mui-card">'+
+						'<ul class="mui-table-view">'+
+						'<li class="mui-table-view-cell mui-media">'+		
+							'<div class="mui-media-body" style="padding-left:12px;padding-top:6px">'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">订&nbsp;&nbsp;单&nbsp;&nbsp;号：<span class="span_color">'+list[i].OrderNumber+'</span></span><span style="width:40%;float:right;">已装配：<span style="color:red">'+list[i].assembly+'</span></span></div>'+			
+							'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">总量/已投产：<span class="span_color">'+list[i].Quantity+'/'+list[i].orderCount+'</span></span><span style="width:40%;float:right;">已终检：<span style="color:red">'+list[i].finalInspection+'</span></span></div>'+
+							'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">物&nbsp;&nbsp;料&nbsp;&nbsp;号：<span class="span_color">'+list[i].MNumber+'</span></span><span style="width:40%;float:right;">已包装：<span style="color:red">'+list[i].packaging+'</span></span></div>'+	
+							'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">产品类型：<span class="span_color">'+list[i].MModel+'</span></span><span style="width:40%;float:right;">已入库：<span style="color:red">'+list[i].putStorage+'</span></span></div>	'+		
+							'</div>'+
+						'</li></ul>'+
+						'</div>';
+			$("#orderProgressList").append(html);
+		}
+	} else if(page==0){
+		$("#orderProgressList").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">输入订单号查询进度信息！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	}
+}
+//获取所有列表
+function findOrderProgressList(page){
+	var list = null;
+		mui.ajax('/TFMobile/tf-api/bj-mobile/orderProgress/findList', {
+			data : {
+				page : page
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						document.getElementById("loading").style.display="none";
+						$("body").css("background-color","#eee");
+						document.getElementById("muiContent").style.display="";
+					}, 10);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+		return list;
+}
+
+//触发搜索框事件
+$("#keyword").on('keypress',function(e) {  
+    var keycode = e.keyCode;  
+    var searchName = $(this).val();
+/* 	if(searchName.replace(/ /g,'')==""){
+		mui.toast("请输入查询内容");
+		$("#specialOperationList").empty();
+		return;
+	} */
+    if(keycode=='13') {  
+        e.preventDefault();    
+        //请求搜索接口  
+		mui.ajax('/TFMobile/tf-api/bj-mobile/orderProgress/searchList', {
+			data : {
+				searchName : searchName
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				$("#orderProgressList").empty();
+				if(result.success == true){
+					var list = result.body.list;
+					if(list.length>0){
+						for(var i=0;i< list.length;i++){
+							var html = '<div class="mui-card">'+
+										'<ul class="mui-table-view">'+
+										'<li class="mui-table-view-cell mui-media">'+		
+											'<div class="mui-media-body" style="padding-left:12px;padding-top:6px">'+
+											'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">订&nbsp;&nbsp;单&nbsp;&nbsp;号：<span class="span_color">'+list[i].OrderNumber+'</span></span><span style="width:40%;float:right;">已装配：<span style="color:red">'+list[i].assembly+'</span></span></div>'+			
+											'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">总量/已投产：<span class="span_color">'+list[i].Quantity+'/'+list[i].orderCount+'</span></span><span style="width:40%;float:right;">已终检：<span style="color:red">'+list[i].finalInspection+'</span></span></div>'+
+											'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">物&nbsp;&nbsp;料&nbsp;&nbsp;号：<span class="span_color">'+list[i].MNumber+'</span></span><span style="width:40%;float:right;">已包装：<span style="color:red">'+list[i].packaging+'</span></span></div>'+	
+											'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">产品类型：<span class="span_color">'+list[i].MModel+'</span></span><span style="width:40%;float:right;">已入库：<span style="color:red">'+list[i].putStorage+'</span></span></div>	'+		
+											'</div>'+
+										'</li></ul>'+
+										'</div>';
+							$("#orderProgressList").append(html);
+						}
+					}else{
+						$("#orderProgressList").append('<div style="padding-top:100px;text-align: center;">'+
+								'<span style="color: #696969;">没有查询到任何结果！</span><br><br>'+
+								'<span style="color: #696969;">（⊙o⊙）</span></div>');
+					}
+				}else{
+					mui.toast(result.message);
+				}								
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+          
+    }  
+ })
+
+ 
+ //通过日期搜索查询
+ function  dateSearch(startTime,endTime){
+    //请求搜索接口  
+	mui.ajax('/BJMobile/tf-api/bj-mobile/orderProgress/dateSearch', {
+		data : {
+			startTime : startTime,
+			endTime : endTime
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			$("#orderProgressList").empty();
+			if(result.success == true){
+				var list = result.body.list;
+				if(list.length>0){
+					for(var i=0;i< list.length;i++){
+						var html = '<div class="mui-card">'+
+									'<ul class="mui-table-view">'+
+									'<li class="mui-table-view-cell mui-media">'+		
+										'<div class="mui-media-body" style="padding-left:12px;padding-top:6px">'+
+										'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">订&nbsp;&nbsp;单&nbsp;&nbsp;号：<span class="span_color">'+list[i].OrderNumber+'</span></span><span style="width:40%;float:right;">已装配：<span style="color:red">'+list[i].assembly+'</span></span></div>'+			
+										'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">总量/已投产：<span class="span_color">'+list[i].Quantity+'/'+list[i].orderCount+'</span></span><span style="width:40%;float:right;">已终检：<span style="color:red">'+list[i].finalInspection+'</span></span></div>'+
+										'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">物&nbsp;&nbsp;料&nbsp;&nbsp;号：<span class="span_color">'+list[i].MNumber+'</span></span><span style="width:40%;float:right;">已包装：<span style="color:red">'+list[i].packaging+'</span></span></div>'+	
+										'<div style="font-size:14px;" class="mui-ellipsis"><span style="width:60%;">产品类型：<span class="span_color">'+list[i].MModel+'</span></span><span style="width:40%;float:right;">已入库：<span style="color:red">'+list[i].putStorage+'</span></span></div>	'+		
+										'</div>'+
+									'</li></ul>'+
+									'</div>';
+						$("#orderProgressList").append(html);
+					}
+				}else{
+					$("#orderProgressList").append('<div style="padding-top:100px;text-align: center;">'+
+							'<span style="color: #696969;">没有查询到任何结果！</span><br><br>'+
+							'<span style="color: #696969;">（⊙o⊙）</span></div>');
+				}
+				//赋值完毕结束过场动画
+				setTimeout(function(){
+					document.getElementById("loading").style.display="none";
+					$("body").css("background-color","#eee");
+					document.getElementById("muiContent").style.display="";
+				}, 10);
+			}else{
+				mui.toast(result.message);
+			}								
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");						
+		}
+	});	
+}
+ 
+ 
+ 
+/**
+* 刷新功能
+*/
+//获取滚动条当前的位置 
+   function getScrollTop() {
+   	var scrollTop = 0;
+    if (document.documentElement && document.documentElement.scrollTop) {
+    	scrollTop = document.documentElement.scrollTop;
+    }
+    else if (document.body) {
+    	scrollTop = document.body.scrollTop;
+    }
+   	return scrollTop;
+   }
+ 		
+ 	//获取当前可视范围的高度 
+   function getClientHeight() {
+   	var clientHeight = 0;
+    if (document.body.clientHeight && document.documentElement.clientHeight) {
+    	clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight);
+    }else {
+    	clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+    }
+   	return clientHeight
+   }
+ 	
+ 	//获取文档完整的高度 
+   function getScrollHeight() {
+   	return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+   }
+	
+	window.onscroll = function () {
+  		//显示加载提醒
+  		if(getScrollHeight()>window.innerHeight){
+  			$("#loadText").css("display","block");
+  		}
+  		if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+    		page ++;
+    		 document.getElementById("loading").style.display="block";
+			 document.getElementById("muiContent").style.display="none";
+			 setTimeout(function(){
+		    		setOrderProgressList(page); 			
+				}, 300);
+		}		
+	}
+</script>
+<script>
+
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("endTime");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2018";　　　　　　
+		options.beginMonth = "01";　　　　　　
+		options.beginDay = "01";　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　
+
+			 result.value = rs.text;　
+			 picker.hide();　　　　　　　　
+			 picker.dispose();
+			 //判断有没有选择开始日期
+			 var startTime = document.getElementById("startTime").value;
+			 var endTime = document.getElementById("endTime").value;
+			 if(startTime==""){
+				 document.getElementById("endTime").value = '';
+				 mui.toast("请选择开始日期"); 
+			 }else if(!dateCompare(startTime,endTime)){
+				 mui.toast("开始日期不能大于结束日期"); 
+			 }else{
+				 document.getElementById("loading").style.display="block";
+				 document.getElementById("muiContent").style.display="none";
+				 setTimeout(function(){
+					 	dateSearch(startTime,endTime); 			
+					}, 300);
+			 }
+		});
+		
+	}, false);　　
+	var result1 = document.getElementById("startTime");　　　　
+	$(chooseTime1)[0].addEventListener('tap', function() {　
+
+		var optionsJson1 = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options1 = JSON.parse(optionsJson1);　　　　
+		options1.beginYear = "2018";　　　　　　
+		options1.beginMonth = "01";　　　　　　
+		options1.beginDay = "01";　　　　　　
+		var picker1 = new $.DtPicker(options1);　　　　　　
+		picker1.show(function(rs) {　　
+			result1.value = rs.text;　　　　　　　　
+			picker1.dispose();
+			 //点击开始时间就把结束时间清空
+			 var startTime = document.getElementById("startTime").value;
+			 document.getElementById("endTime").value = '';			　
+		 });　　　　
+	}, false);　　
+})(mui);
+
+//js日期比较(yyyy-mm-dd)
+function dateCompare(a,b) {
+   var arr = a.split("-");
+   var starttime = new Date(arr[0], arr[1], arr[2]);
+   var starttimes = starttime.getTime();
+
+   var arrs = b.split("-");
+   var endtime = new Date(arrs[0], arrs[1], arrs[2]);
+   var endtimes = endtime.getTime();
+   if (starttimes > endtimes) {
+       return false;
+   }else{
+       return true; 
+   }
+}
+</script>
+</html>

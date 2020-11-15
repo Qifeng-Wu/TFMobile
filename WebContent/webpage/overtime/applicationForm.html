@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>加班申请单</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/flowChart.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <style type="text/css">
+    	.mytable {
+		        border: 2px solid #cad9ea;
+		        font-size:12px;
+		        background-repeat: repeat-x;
+		        text-align:center;
+		        width:100%;
+    		}
+		.mytable thead {
+		        color: #FFF;
+		        background-color: #4093c6;
+		    }		
+		.mytable td,th {
+		        border: 1px solid #FFF;
+		        height: 36px
+		    }		    
+		.tr_color_1{
+    		background-color:#D2DEEF;
+    	}
+    	.tr_color_2{
+    		background-color:#EAEFF7;
+    	}    
+    </style>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">	
+		<div style="position:fixed;background-color:#cf5753;height:32px;width:100%;color:#fff;text-align:center;margin:-13px 0 10px 0;padding:7px 0;z-index:1">
+			<span style="font-size:16px"id="state_tip"></span>
+		</div>	
+		<!-- 加班人员列表 -->
+		<div class="mui-card">
+			<div class="mui-card-header" style="margin-top:20px;background-color:#4093C6;color:#fff">申请加班人员名单（日期：<span id="date_title"></span>）</div>
+			<!-- 部门申请加班人员列表 -->
+			<ul class="mui-table-view mui-table-view-chevron" id="departmentMemberList" style="display:none">
+				<li class="mui-table-view-cell mui-collapse" id="list_show"><a class="mui-navigate-right" href="#">点击展开收起
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;共 <span style="color:#4093C6" id="member_number_title">0</span> 人</a>
+				<ul class="mui-table-view mui-table-view-chevron">
+				<table class="mytable">
+		            <thead>
+		            	<tr style="background-color:#5B9BD5">
+			            	<th>序号</th>
+			            	<th>姓名</th>
+			            	<th>班组</th>
+			            	<th>开始时间</th>
+			            	<th>结束时间</th>
+		            	</tr>
+		            </thead>
+		            <tbody id="department_list_tbody">
+		
+				
+		            </tbody>
+		   		</table>
+			</ul>
+			</li>
+			</ul>
+		</div>
+
+		<!-- 生产调度填写加班理由-->
+		<div class="mui-card" id="overtimeReasonForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">申请加班理由</div>
+				<div class="mui-input-row" style="margin: 17px 5px -10px 5px;">
+					<textarea id="applicant_reason" rows="4" maxlength="300" placeholder="请填写申请加班理由"></textarea>
+				</div>			
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" onclick="dispatcherConfirm()">立即提交</a>
+			</div>
+		</div>	
+		
+		<!-- 加班申请审批进度-->
+		<div class="mui-card">
+			<div class="mui-card-header"
+				style="background-color: #4093C6; color: #fff">申请加班审批进度（部门：<span id="department_title"></span>）</div>
+			<!--事件时间轴-->
+			<div class="flowChart">
+				<!--左侧轴-->
+				<div class="flowChart-left">
+					<!--虚线-->
+					<div class="dashed"></div>
+				</div>
+				<!--右侧内容-->
+				<div class="flowChart-right" id="stateList">
+					
+				</div>
+			</div>
+		</div>
+		<!-- 部门经理审核-->
+		<div style="display:none;padding-top:25px;padding-bottom:20px;" id="manager_confirm_div">
+			<button class="mui-btn mui-btn-danger"style="position: fixed;bottom:0;z-index:10;margin-left:30px;margin-top:20px;margin-bottom:10px" onclick="managerConirm(0);">驳回</button>
+			<button class="mui-btn mui-btn-success" style="position: fixed;bottom:0;z-index:10;right:0px;margin-right:30px;margin-bottom:10px" onclick="managerConirm(1);">确认</button>
+		</div>
+		<!-- 工程部门审核-->
+		<div style="display:none;padding-top:25px;padding-bottom:20px;" id="engineer_confirm_div">
+			<button class="mui-btn mui-btn-danger"style="position: fixed;bottom:0;z-index:10;margin-left:30px;margin-top:20px;margin-bottom:10px" onclick="engineerConfirm(0);">驳回</button>
+			<button class="mui-btn mui-btn-success" style="position: fixed;bottom:0;z-index:10;right:0px;margin-right:30px;margin-bottom:10px" onclick="engineerConfirm(1);">确认</button>
+		</div>
+		<!-- 中心副总审核-->
+		<div style="display:none;padding-top:25px;padding-bottom:20px;" id="general_confirm_div">
+			<button class="mui-btn mui-btn-danger"style="position: fixed;bottom:0;z-index:10;margin-left:30px;margin-top:20px;margin-bottom:10px" onclick="generalConfirm(0);">驳回</button>
+			<button class="mui-btn mui-btn-success" style="position: fixed;bottom:0;z-index:10;right:0px;margin-right:30px;margin-bottom:10px" onclick="generalConfirm(1);">确认</button>
+		</div>
+	</div>
+
+<!-- 放隐藏域的地方 重要-->	
+<input type="hidden" id="departmentNameHidden">
+<input type="hidden" id="applicantIdHidden">
+<input type="hidden" id="applicantTimeHidden">
+<input type="hidden" id="dispatcherIdHidden">
+<input type="hidden" id="dispatcherTimeHidden">
+<input type="hidden" id="applicantReasonHidden">
+<input type="hidden" id="managerIdHidden">
+<input type="hidden" id="managerTimeHidden">
+<input type="hidden" id="engineerIdHidden">
+<input type="hidden" id="engineerTimeHidden">
+<input type="hidden" id="generalIdHidden">
+<input type="hidden" id="generalTimeHidden">
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(11);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+//获取url中的参数
+var applicationId = getUrlParam("applicationId");
+var style_no = 0;
+
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取异常问题表单信息
+	var status = findApplicationInfo(applicationId);
+	if(status!=null && status!="null"){
+			//赋值完毕结束过场动画
+	   	setTimeout(function(){
+	   		document.getElementById("loading").style.display="none";
+	   		$("body").css("background-color","#eee");
+	   		document.getElementById("muiContent").style.display="";
+	   	}, 10);		
+	}else{
+		mui.alert('加班申请单不存在或已被删除！', '提示', function() {
+			wx.closeWindow();
+		});
+	}	
+}
+
+//获取加班申请单信息
+function findApplicationInfo(applicationId){
+	var state = null;
+	if(applicationId){
+		mui.ajax('/TFMobile/tf-api/overtime/findInfo', {
+			data : {
+				applicationId : applicationId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {			
+				if(result.success == true){
+					var application = result.body.application;
+					if(application!=null && application!="null" && application!=""){	
+						state = application.state;//获取异常状态（非常重要）
+						$("#date_title").text(application.date);
+						$("#department_title").text(application.department);
+						$("#departmentNameHidden").val(application.department);
+						$("#applicantIdHidden").val(application.applicant);
+						$("#applicantTimeHidden").val(getDate(application.applicant_time));
+						$("#dispatcherIdHidden").val(application.dispatcher);
+						$("#dispatcherTimeHidden").val(getDate(application.dispatcher_time));
+						$("#applicantReasonHidden").val(application.applicant_reason);
+						$("#managerIdHidden").val(application.manager);
+						$("#managerTimeHidden").val(getDate(application.manager_time));
+						$("#engineerIdHidden").val(application.engineer);
+						$("#engineerTimeHidden").val(getDate(application.engineer_time));
+						$("#generalIdHidden").val(application.general);
+						$("#generalTimeHidden").val(getDate(application.general_time));
+						//加班人员列表信息
+						setDepartmentMemberList(result.body.memberList);
+						$("#departmentMemberList").show();
+						
+						//状态解析
+						statuseParse(state);
+					}else{
+						mui.toast("系统出错啦，请联系管理员");
+					}
+
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦，请联系管理员");
+			}
+		});
+	}
+	return state;
+}
+
+//状态解析
+function statuseParse(status){
+	//==============状态值判断==============================
+	if(status==1){//生产部初始插入，带调度员填写加班理由
+		$("#state_tip").text("待生产调度员填写加班理由");
+		var departmentName = $("#departmentNameHidden").val();
+		if(department=="[4]" && position.indexOf('调度')!=-1){			
+			$("#overtimeReasonForm").show();
+		}
+		//解析加班申请流程进度
+		var applicantId = $("#applicantIdHidden").val();
+		var applicantTime = $("#applicantTimeHidden").val();
+		progressParse(applicantId,applicantTime,"加班申请","发起");
+	}else if(status==2){//待部门经理审核
+		$("#state_tip").text("待加班申请部门经理审核");
+		var departmentName = $("#departmentNameHidden").val();
+		var pass = false;
+		switch(departmentName){
+			case "工业技术部": if(department=="[2]"){pass =true;}break;
+			case "工程部": if(department=="[3]"){pass =true;}break;
+			case "生产部": if(department=="[4]"){pass =true;}break;
+			case "质量部": if(department=="[5]"){pass =true;}break;
+			case "研发部": if(department=="[7]"){pass =true;}break;
+			case "仓储部": if(department=="[11]"){pass =true;}break;
+			default: pass = false;
+		}
+		if(pass && isleader==1){
+			$("#manager_confirm_div").show();
+		}		
+		if(departmentName=="生产部"){
+			//解析加班申请流程进度
+			var applicantId = $("#applicantIdHidden").val();
+			var applicantTime = $("#applicantTimeHidden").val();
+			var dispatcherId = $("#dispatcherIdHidden").val();
+			var dispatcherTime = $("#dispatcherTimeHidden").val();
+			var applicantReason = $("#applicantReasonHidden").val();
+			progressParse(dispatcherId,dispatcherTime,applicantReason,"理由");
+			progressParse(applicantId,applicantTime,"加班申请","发起");
+		}else{
+			//解析加班申请流程进度
+			var applicantId = $("#applicantIdHidden").val();
+			var applicantTime = $("#applicantTimeHidden").val();
+			var applicantReason = $("#applicantReasonHidden").val();
+			progressParse(applicantId,applicantTime,applicantReason,"发起");
+		}		
+	}else if(status==3){//生产部门经理确认，待工程确认（生产部）
+		$("#state_tip").text("待工艺主管确认");
+		if(department=="[3]" && isleader==1){
+			$("#engineer_confirm_div").show();
+		}
+		//解析加班申请流程进度
+		var applicantId = $("#applicantIdHidden").val();
+		var applicantTime = $("#applicantTimeHidden").val();
+		var dispatcherId = $("#dispatcherIdHidden").val();
+		var dispatcherTime = $("#dispatcherTimeHidden").val();
+		var applicantReason = $("#applicantReasonHidden").val();
+		var managerId = $("#managerIdHidden").val();
+		var managerTime = $("#managerTimeHidden").val();
+		progressParse(managerId,managerTime,"同意","审核");
+		progressParse(dispatcherId,dispatcherTime,applicantReason,"理由");
+		progressParse(applicantId,applicantTime,"加班申请","发起");
+	}else if(status==4){//生产部门经理驳回，待申请人处理，未开发
+		$("#state_tip").text("加班申请被经理驳回，待申请人处理");
+		
+	}else if(status==5){//工程（生产）或非生产部门经理确认，待副总确认
+		$("#state_tip").text("待事业部副总确认");
+		var departmentName = $("#departmentNameHidden").val();
+		if(departmentName=="生产部"){
+			if(userId=="ZangYun"){
+				$("#general_confirm_div").show();
+			}		
+			var applicantId = $("#applicantIdHidden").val();
+			var applicantTime = $("#applicantTimeHidden").val();
+			var dispatcherId = $("#dispatcherIdHidden").val();
+			var dispatcherTime = $("#dispatcherTimeHidden").val();
+			var applicantReason = $("#applicantReasonHidden").val();
+			var managerId = $("#managerIdHidden").val();
+			var managerTime = $("#managerTimeHidden").val();
+			var engineerId = $("#engineerIdHidden").val();
+			var engineerTime = $("#engineerTimeHidden").val();
+			progressParse(engineerId,engineerTime,"同意","确认");
+			progressParse(managerId,managerTime,"同意","审核");
+			progressParse(dispatcherId,dispatcherTime,applicantReason,"理由");
+			progressParse(applicantId,applicantTime,"加班申请","发起");		
+		}else{
+			if(departmentName=="工业技术部" || departmentName=="仓储部"){
+				if(userId=="ZangYun"){
+					$("#general_confirm_div").show();
+				}			
+			}else if(departmentName=="工程部"){
+				if(userId=="XuFeng"){
+					$("#general_confirm_div").show();
+				}	
+			}else if(departmentName=="质量部"){
+				if(userId=="ZhouMin"){
+					$("#general_confirm_div").show();
+				}	
+			}else if(departmentName=="研发部"){
+				if(userId=="HuangZhongNan"){
+					$("#general_confirm_div").show();
+				}	
+			}			
+			var applicantId = $("#applicantIdHidden").val();
+			var applicantTime = $("#applicantTimeHidden").val();
+			var applicantReason = $("#applicantReasonHidden").val();
+			var managerId = $("#managerIdHidden").val();
+			var managerTime = $("#managerTimeHidden").val();			
+			progressParse(managerId,managerTime,"同意","审核");
+			progressParse(applicantId,applicantTime,applicantReason,"发起");
+		}
+	}else if(status==0){//副总确认，结束
+		$("#state_tip").text("已完结");
+		var departmentName = $("#departmentNameHidden").val();
+		if(departmentName=="生产部"){
+			var applicantId = $("#applicantIdHidden").val();
+			var applicantTime = $("#applicantTimeHidden").val();
+			var dispatcherId = $("#dispatcherIdHidden").val();
+			var dispatcherTime = $("#dispatcherTimeHidden").val();
+			var applicantReason = $("#applicantReasonHidden").val();
+			var managerId = $("#managerIdHidden").val();
+			var managerTime = $("#managerTimeHidden").val();
+			var engineerId = $("#engineerIdHidden").val();
+			var engineerTime = $("#engineerTimeHidden").val();
+			var generalId = $("#generalIdHidden").val();
+			var generalTime = $("#generalTimeHidden").val();	
+			progressParse(generalId,generalTime,"同意","结束");
+			progressParse(engineerId,engineerTime,"同意","确认");
+			progressParse(managerId,managerTime,"同意","审核");			
+			progressParse(dispatcherId,dispatcherTime,applicantReason,"理由");
+			progressParse(applicantId,applicantTime,"加班申请","发起");
+		}else{
+			var applicantId = $("#applicantIdHidden").val();
+			var applicantTime = $("#applicantTimeHidden").val();
+			var applicantReason = $("#applicantReasonHidden").val();
+			var managerId = $("#managerIdHidden").val();
+			var managerTime = $("#managerTimeHidden").val();
+			var generalId = $("#generalIdHidden").val();
+			var generalTime = $("#generalTimeHidden").val();		
+			progressParse(generalId,generalTime,"同意","结束");
+			progressParse(managerId,managerTime,"同意","审核");
+			progressParse(applicantId,applicantTime,applicantReason,"发起");
+		}
+	}	
+}
+//赋值班部门级申请加班人员列表信息
+function setDepartmentMemberList(list){
+	if(list.length>0){	
+		var a = 0;
+		for(var i=0;i<list.length;i++){	
+			if(a%2==0){
+				tr_color = "tr_color_1";
+			}else{
+				tr_color = "tr_color_2";
+			}
+			a++;
+			var html = '<tr class="'+tr_color+'">'+
+			            	'<td>'+a+'</td>'+
+			            	'<td>'+list[i].name+'</td>'+
+			            	'<td>'+list[i].team+'</td>'+
+			            	'<td>'+getDate(list[i].start_time)+'</td>'+
+			            	'<td>'+getDate(list[i].end_time)+'</td>'+
+			            '</tr>';	
+			$("#department_list_tbody").append(html);
+		}
+		$("#member_number_title").text(a);		
+		if(a<8){
+			$("#list_show").attr("class","mui-table-view-cell mui-collapse mui-active");
+		}
+	} else{
+		$("#department_list_tbody").prev().remove();
+		$("#department_list_tbody").append('<div style="padding-top:50px;padding-bottom:50px;text-align: center;">'+
+				'<span style="color: #696969;">无申请加班人员信息！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	}
+}
+
+var flag = true;
+//1.部门经理审核确认（para：0驳回，1确认）
+function managerConirm(para){
+	if(para==0){
+		mui.alert('驳回功能待开发中！', '提示', function() {
+		});
+	}else if(para==1){
+		var btnArray = [ '取消', '确认' ];
+		mui.confirm('', '确认审核吗？', btnArray, function(e) {
+			if (e.index == 1) {
+				if (flag == false) {
+					return;
+				} else {
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/overtime/managerConfirm', {
+						data : {
+							applicationId : applicationId,
+							manager : memberId,
+							department : department
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("确认成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+								flag = true;
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");	
+							flag = true;
+						}
+					});
+				}
+			}
+		});		
+	}
+}
+//1.生产部调度填写加班理由确认
+function dispatcherConfirm(){
+	var applicant_reason = $("#applicant_reason").val();
+	if(applicant_reason==""){
+		mui.toast("请填写加班理由");
+		return;
+	}
+	var btnArray = [ '取消', '确认' ];
+	mui.confirm('', '确认提交信息吗？', btnArray, function(e) {
+		if (e.index == 1) {
+			if (flag == false) {
+				return;
+			} else {
+				flag = false;
+				mui.ajax('/TFMobile/tf-api/overtime/dispatcherConfirm', {
+					data : {
+						applicationId : applicationId,
+						dispatcher : memberId,
+						applicant_reason : applicant_reason,
+						department : department
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("提交信息成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+							flag = true;
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("系统出错啦，请联系管理员");	
+						flag = true;
+					}
+				});
+			}
+		}
+	});		
+}
+
+//2.工程审核确认（para：0驳回，1确认）
+function engineerConfirm(para){
+	if(para==0){
+		mui.alert('驳回功能待开发中！', '提示', function() {
+		});
+	}else if(para==1){
+		var btnArray = [ '取消', '确认' ];
+		mui.confirm('', '确认审核吗？', btnArray, function(e) {
+			if (e.index == 1) {
+				if (flag == false) {
+					return;
+				} else {
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/overtime/engineerConfirm', {
+						data : {
+							applicationId : applicationId,
+							engineer : memberId
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {
+							if (result.success == true) {
+								mui.toast("确认成功！");
+								setTimeout(function() {
+									location.reload();
+								}, 1000);
+							} else {
+								mui.toast(result.message);
+								flag = true;
+							}
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;
+						}
+					});
+				}
+			}
+		});
+	}	
+}
+//3.中心副总审核确认（para：0驳回，1确认）
+function generalConfirm(para){
+	if(para==0){
+		mui.alert('驳回功能待开发中！', '提示', function() {
+		});
+	}else if(para==1){
+		var departmentName = $("#departmentNameHidden").val();
+		var btnArray = [ '取消', '确认' ];
+		mui.confirm('', '确认审核吗？', btnArray, function(e) {
+			if (e.index == 1) {
+				if (flag == false) {
+					return;
+				} else {
+					flag = false;
+					mui.ajax('/TFMobile/tf-api/overtime/generalConfirm', {
+						data : {
+							applicationId : applicationId,
+							general : memberId,
+							departmentName : departmentName
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {
+							if (result.success == true) {
+								mui.toast("确认成功！");
+								setTimeout(function() {
+									location.reload();
+								}, 1000);
+							} else {
+								mui.toast(result.message);
+								flag = true;
+							}
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");
+							flag = true;
+						}
+					});
+				}
+			}
+		});
+	}
+}
+//解析加班申请流程进度(其中position_no参数是放置位置号)
+function progressParse(member_id, time, desctiption, position_no) {
+	var member = getInfo(member_id);
+	var check_style = "";
+	style_no++;
+	if (style_no % 5 == 0) {
+		check_style = "";
+	} else if (style_no % 5 == 1) {
+		check_style = "check-prime";
+	} else if (style_no % 5 == 2) {
+		check_style = "check-success";
+	} else if (style_no % 5 == 3) {
+		check_style = "check-warning";
+	} else if (style_no % 5 == 4) {
+		check_style = "check-danger";
+	}
+	var html = '';
+	html += '<div class="oneNode">';
+	html += '<div class="check '+check_style+'">' + position_no + '</div>';
+	html += '<div class="tag-boder">';
+	html += '<div class="tag"></div>';
+	html += '</div>';
+	html += '<div class="NodeDetail">';
+	html += '<div class="NodeDetail-title">';
+	html += '<img src="'+member[5]+'"/>';
+	html += '<div class="details">';
+	html += '<h4>' + member[1] + '</h4>';
+	html += '<p style="margin-bottom:-5px;">' + member[3] + '</p>';
+	html += '</div>';
+	html += '</div>';
+	html += '<div class="NodeDetail-content">';
+	html += '<p style="color:black">' + desctiption + '</p>';
+	html += '</div>';
+	html += '<div class="NodeDetail-footer">';
+	html += '<span>' + time + '</span>';
+	html += '</div>';
+	html += '</div>';
+	html += '</div>';
+	$("#stateList").append(html);
+}
+</script>
+
+</html>

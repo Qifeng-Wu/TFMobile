@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>待我处理物料异常列表</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<!--当页面没有数据时页面效果展示-->
+	<div class="mui-content"  style="display:none;background-color:#eee;" id="muiContent">
+		<div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入文件序号、检验批号查询">
+		</div>
+		<div hidden="true" id="exceptionList">
+
+		</div>
+		<div style="padding: 0px 10px;">
+			<div id="segmentedControl" class="mui-segmented-control">
+				<a class="mui-control-item mui-active" href="#item1" id="item1a">待处理异常</a>
+				<a class="mui-control-item" href="#item2" id="item2a">已处理异常</a>
+				<a class="mui-control-item" href="#item3" id="item3a">全部异常</a>
+			</div>
+		</div>
+		<div id="exceptionItem">
+			<div id="item1" class="mui-control-content mui-active">
+
+			</div>
+			<div id="item2" class="mui-control-content">
+
+			</div>
+			<div id="item3" class="mui-control-content">
+
+			</div>
+		</div>
+			
+		<div id="loadText" style="text-align:center;display:none;">
+			<span id="text" style="font-size:15px;color:#6D6D72;font-family:'Microsoft YaHei';">正在加载......</span>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(9);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+
+var type = 1;
+var page1= 0;
+var page2= 0;
+var page3= 0;
+if(memberId){
+	//待我处理赋值
+	setOwnExceptionList1();
+	//我已处理赋值
+	setOwnExceptionList2();
+	//我的全部异常赋值
+	setOwnExceptionList3();	
+	
+	//获取url中的参数
+	var active = getUrlParam("active");
+	if(active==2){
+		$("#item1a").attr("class","mui-control-item");
+		$("#item2a").attr("class","mui-control-item mui-active");
+		$("#item1").attr("class","mui-control-content");
+		$("#item2").attr("class","mui-control-content mui-active");
+	}
+}
+
+//1.未完成异常赋值
+function setOwnExceptionList1(){
+	var list1= findOwnExceptionList(1,page1);
+	if(list1.length>0){
+		for(var i=0;i< list1.length;i++){
+			var item1str = '';
+			item1str += '<div class="mui-card">';
+			item1str += '<ul class="mui-table-view">';
+			item1str += '<li class="mui-table-view-cell mui-media">';		
+			item1str += '<div class="mui-media-body" style="padding-left:12px;padding-top:6px">';
+			item1str += '<div style="font-size:14px;" class="mui-ellipsis">文件序号：'+list1[i].serialNumber+'</div>';
+			item1str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">检验批号：'+list1[i].inspectionNumber+'</span><span style="width:38%;float:right;">到货数量：'+list1[i].arrivalQuantity+'</span></div>';			
+			item1str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">物料编号：'+list1[i].materialCode+'</span><span style="width:38%;float:right;">检验数量：'+list1[i].inspectionQuantity+'</span></div>';				
+			item1str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">发文时间：'+getDate(list1[i].reportTime)+'</span><span style="width:38%;float:right;">不良数量：'+list1[i].failuresQuantity+'</span></div>';	
+			item1str += '<div style="font-size:14px;" class="mui-ellipsis">故障明细：'+list1[i].description+'</div>';	
+			if(parseInt(list1[i].state)==0){
+				item1str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待发文主管审核</span></div>';
+			}else if(parseInt(list1[i].state)==1){
+				item1str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待质量工程师处理</span></div>';
+			}else if(parseInt(list1[i].state)==2){
+				item1str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待相关部门会签处理</span></div>';
+			}else if(parseInt(list1[i].state)==3){
+				item1str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待相关部门会签处理</span></div>';
+			}else if(parseInt(list1[i].state)==4){
+				item1str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待IQC验证处理</span></div>';
+			}else if(parseInt(list1[i].state)==5){
+				item1str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待IQC处理验证审核</span></div>';
+			}
+			item1str += '<button onclick="goDetail('+list1[i].exceptionId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:12px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">立即处理</span></button>';
+			item1str += '</div>';
+			item1str += '</li></ul></div>';
+			$("#item1").append(item1str);
+		}
+	} else if(page1 ==0){
+		$("#item1").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">暂无待处理异常！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	}
+}
+//2.已完成异常赋值
+function setOwnExceptionList2(){
+	var list2= findOwnExceptionList(2,page2);
+	if(list2.length>0){
+		for(var i=0;i< list2.length;i++){
+			var item2str = '';
+			item2str += '<div class="mui-card">';
+			item2str += '<ul class="mui-table-view">';
+			item2str += '<li class="mui-table-view-cell mui-media">';		
+			item2str += '<div class="mui-media-body" style="padding-left:12px;">';
+			item2str += '<div style="font-size:14px;" class="mui-ellipsis">文件序号：'+list2[i].serialNumber+'</div>';
+			item2str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">检验批号：'+list2[i].inspectionNumber+'</span><span style="width:38%;float:right;">到货数量：'+list2[i].arrivalQuantity+'</span></div>';			
+			item2str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">物料编号：'+list2[i].materialCode+'</span><span style="width:38%;float:right;">检验数量：'+list2[i].inspectionQuantity+'</span></div>';				
+			item2str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">发文时间：'+getDate(list2[i].reportTime)+'</span><span style="width:38%;float:right;">不良数量：'+list2[i].failuresQuantity+'</span></div>';	
+			item2str += '<div style="font-size:14px;" class="mui-ellipsis">故障明细：'+list2[i].description+'</div>';	
+			item2str += '<button onclick="goDetail('+list2[i].exceptionId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:12px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+			item2str += '</div>';
+			item2str += '</li></ul></div>';
+			$("#item2").append(item2str);
+		}
+	} else if(page2 ==0){
+		$("#item2").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">暂无已处理异常!</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	}
+}
+//3.全部异常赋值
+function setOwnExceptionList3(){
+	var list3= findOwnExceptionList(0,page3);
+	if(list3.length>0){
+		for(var i=0;i< list3.length;i++){
+			var item3str = '';
+			item3str += '<div class="mui-card">';
+			item3str += '<ul class="mui-table-view">';
+			item3str += '<li class="mui-table-view-cell mui-media">';		
+			item3str += '<div class="mui-media-body" style="padding-left:12px;">';
+			item3str += '<div style="font-size:14px;" class="mui-ellipsis">文件序号：'+list3[i].serialNumber+'</div>';
+			item3str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">检验批号：'+list3[i].inspectionNumber+'</span><span style="width:38%;float:right;">到货数量：'+list3[i].arrivalQuantity+'</span></div>';			
+			item3str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">物料编号：'+list3[i].materialCode+'</span><span style="width:38%;float:right;">检验数量：'+list3[i].inspectionQuantity+'</span></div>';				
+			item3str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:62%;">发文时间：'+getDate(list3[i].reportTime)+'</span><span style="width:38%;float:right;">不良数量：'+list3[i].failuresQuantity+'</span></div>';	
+			item3str += '<div style="font-size:14px;" class="mui-ellipsis">故障明细：'+list3[i].description+'</div>';		
+			if(parseInt(list3[i].state)==6){
+				item3str += '<div style="position:absolute;margin:-19% 0 0 70%"><img src="../../static/mui/images/finished.png" style="max-width:5em; height:auto;"/></div>';
+				item3str += '<button onclick="goDetail('+list3[i].exceptionId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:12px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+			}else{
+				item3str += '<div style="position:absolute;margin:-15% 0 0 68%"><img src="../../static/mui/images/unfinished.png" style="max-width:5.5em; height:auto;"/></div>';
+				item3str += '<button onclick="goDetail('+list3[i].exceptionId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:12px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">立即处理</span></button>';
+			}			
+			item3str += '</div>';
+			item3str += '</li></ul></div>';
+			$("#item3").append(item3str);
+		}
+	} else if(page3 ==0){
+		$("#item3").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">暂无处理异常记录！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	}
+}
+//获取我的异常信息记录
+function findOwnExceptionList(type,page){
+	var exceptionList = null;
+		mui.ajax('/TFMobile/tf-api/iqc-exception/data/findOwnList', {
+			data : {
+				memberId : memberId,
+				type : type,
+				page : page
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					exceptionList = result.body.exceptionList;
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						document.getElementById("loading").style.display="none";
+						$("body").css("background-color","#eee");
+						document.getElementById("muiContent").style.display="";
+					}, 10);
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了！");						
+			}
+		});
+	return exceptionList;
+}
+//触发搜索框事件
+$("#keyword").on('keypress',function(e) {  
+    var keycode = e.keyCode;  
+    var searchName = $(this).val();
+	if(searchName.replace(/ /g,'')==""){
+		mui.toast("请输入搜索内容");
+		$("#exceptionList").empty();
+		return;
+	}
+    if(keycode=='13') {  
+        e.preventDefault();    
+        //请求搜索接口  
+		mui.ajax('/TFMobile/tf-api/iqc-exception/data/searchList', {
+			data : {
+				searchName : searchName
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				$("#exceptionList").empty();
+				$("#exceptionList").removeAttr("hidden");
+				$("#exceptionItem").attr("hidden");
+				if(result.success == true){
+					var list4 = result.body.exceptionList;
+					var length = list4.length;	
+					if(length>0){
+						for(var i=0;i<length;i++){
+							var str = '';					
+							str += '<div class="mui-card">';
+							str += '<ul class="mui-table-view">';
+							str += '<li class="mui-table-view-cell mui-media">';		
+							str += '<div class="mui-media-body" style="padding-left:12px;">';
+							str += '<div style="font-size:14px;" class="mui-ellipsis">文件序号：'+list4[i].serialNumber+'</div>';
+							str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:55%;">检验批号：'+list4[i].inspectionNumber+'</span><span style="width:45%;float:right;">到货数量：'+list4[i].arrivalQuantity+'</span></div>';			
+							str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:55%;">物料编号：'+list4[i].materialCode+'</span><span style="width:45%;float:right;">检验数量：'+list4[i].inspectionQuantity+'</span></div>';					
+							str += '<div style="font-size:14px;" class="mui-ellipsis">发文时间：'+getDate(list4[i].reportTime)+'</div>';	
+							str += '<div style="font-size:14px;" class="mui-ellipsis">故障明细：'+list4[i].description+'</div>';	
+							if(parseInt(list4[i].state)==12){
+								str += '<button onclick="goDetail('+list4[i].exceptionId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:12px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+							}else{
+								str += '<button onclick="goDetail('+list4[i].exceptionId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:12px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">立即处理</span></button>';
+							}			
+							str += '</div>';
+							str += '</li></ul></div>';								
+							$("#exceptionList").append(str);
+						}
+					}else{
+						$("#exceptionList").empty();
+					}
+				}else{
+					mui.toast(result.message);
+				}								
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});
+          
+    }  
+ })
+ 
+ //跳转到详情界面
+ function goDetail(exceptionId){
+	document.location.href = 'exceptionForm.html?exceptionId='+ exceptionId+'&back=1';
+}
+ 
+ 
+
+/**
+* 刷新功能
+*/
+//获取滚动条当前的位置 
+   function getScrollTop() {
+   	var scrollTop = 0;
+    if (document.documentElement && document.documentElement.scrollTop) {
+    	scrollTop = document.documentElement.scrollTop;
+    }
+    else if (document.body) {
+    	scrollTop = document.body.scrollTop;
+    }
+   	return scrollTop;
+   }
+ 		
+ 	//获取当前可视范围的高度 
+   function getClientHeight() {
+   	var clientHeight = 0;
+    if (document.body.clientHeight && document.documentElement.clientHeight) {
+    	clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight);
+    }else {
+    	clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+    }
+   	return clientHeight
+   }
+ 	
+ 	//获取文档完整的高度 
+   function getScrollHeight() {
+   	return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+   }
+
+	document.getElementById('item1a').addEventListener('tap', function() {
+		type=1;
+		window.scrollTo(0,0);
+		$("#loadText").css("display","none");
+		$("#loadText").text("正在加载......");
+	});
+	document.getElementById('item2a').addEventListener('tap', function() {
+		type=2;
+		window.scrollTo(0,0);
+		$("#loadText").css("display","none");
+		$("#loadText").text("正在加载......");
+	});
+	document.getElementById('item3a').addEventListener('tap', function() {
+		type=0;
+		window.scrollTo(0,0);
+		$("#loadText").css("display","none");
+		$("#loadText").text("正在加载......");
+	});
+	
+	window.onscroll = function () {
+  		//显示加载提醒
+  		if(getScrollHeight()>window.innerHeight){
+  			$("#loadText").css("display","block");
+  		}
+  		if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+    		if(type == 1){
+    			page1 ++;
+    			setOwnExceptionList1();
+    			window.scrollTo(0,(getScrollTop()-20));
+    		} else if(type == 2){
+    			page2 ++;
+    			setOwnExceptionList2();
+    			window.scrollTo(0,(getScrollTop()-20));
+    		} else{
+    			page3 ++;
+    			setOwnExceptionList3();
+    			window.scrollTo(0,(getScrollTop()-20));
+    		}
+		}		
+}
+</script>
+</html>

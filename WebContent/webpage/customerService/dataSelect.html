@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+		content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>质量状况查询</title>
+<link href="../../static/mui/css/mui.min.css" rel="stylesheet" />
+<link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet" />
+<script src="../../static/js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript"
+		src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<script src="../../static/mui/js/mui.min.js"></script>
+<script src="../../static/mui/js/mui.picker.min.js"></script>
+<script src="../../static/js/common.js"></script>
+</head>
+<body>
+		<!--页面加载 loading-->
+		<div style="margin-top: 50%; width: 100%; text-align: center;"
+				id="loading">
+				<span><img src="../../static/mui/images/loading.gif"
+						style="max-width: 5em; height: auto;" /></span> <br /> <span
+						style="font-size: 0.8em;">加载中...</span>
+		</div>
+		
+    <div class="mui-content" style="display:none;" id="muiContent">
+		<div class="mui-card">
+				<div class="mui-content"
+						style="background-color: #eee; padding-bottom: 15px;">
+						<div class="mui-card-content" >
+								<div class="mui-card-content-inner">
+										<div
+												style="text-align: center; opacity: 1; color: #FFF; font-size: 20px; background-color: #4093C6; padding: 12px;">
+												<span>质量状况查询</span><br>
+										</div>
+ 				<!--
+	                 <div>
+	                    <h5 class="mui-content-padded" style="margin-top:8px">大区</h5>
+						<select style="margin-top:-3px" id="area">
+							<option value="">选择大区</option>
+						</select>
+					</div> 
+				-->
+				<div>
+                    <h5 class="mui-content-padded" style="margin-top:8px">年月</h5>
+												<span style="margin-top:-3px" id="chooseTime"><input
+														style="background-color: #FFF;" id="inqueryDate"
+														type="text" /></span>
+										</div>
+										<div
+												style="text-align: center; margin-bottom: 0px; margin-top: -12px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; width: 94%; margin-left: 3%;">
+												<button type="button" id="submitBtn"
+														style="width: 85%; background: #4093C6; border: 0; height: 40px; margin-bottom: -9px; font-size: 18px; margin-top: 15px"
+														class="mui-btn mui-btn-danger grad1">查询</button>
+										</div>
+								</div>
+						</div>
+				</div>
+		</div>
+		
+		<div class="mui-card " >
+				<div class="mui-card-content">
+						<div class="mui-card-content-inner" >
+								<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 按前五省份-->
+								<div id="Chart" style="width: 100%; height: 400px; color:#FFF;"></div>
+						</div>
+				</div>
+		</div>
+		
+		<div class="mui-card chartDiv" >
+				<div class="mui-card-content">
+						<div class="mui-card-content-inner" >
+								<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 前五维修机构-->
+								<div id="stationChart" style="width: 100%; height: 400px; color:#FFF;"></div>
+						</div>
+								<div style="margin-left:10%;margin-top:-5px">
+								<p id='stationNameDesc'></p>
+								</div>
+				</div>
+		</div>
+		<!-- 按大区查询
+		<div class="mui-card chartDiv" >
+				<div class="mui-card-content">
+						<div class="mui-card-content-inner">
+								 为 ECharts 准备一个具备大小（宽高）的 DOM 按省份
+								<div id="areaChart" style="width: 100%; height: 400px; color:#FFF"></div>
+						</div>
+				</div>
+		</div>
+			<div class="mui-card chartDiv" >
+					<div class="mui-card-content">
+							<div class="mui-card-content-inner">
+									 为 ECharts 准备一个具备大小（宽高）的 DOM 一体机故障件
+									<div id="AIOpartChart" style="width: 100%; height: 400px; color:#FFF"></div>
+							</div>
+					</div>
+			</div>						
+		-->
+			<div class="mui-card chartDiv" >
+					<div class="mui-card-content">
+							<div class="mui-card-content-inner">
+									<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 台式机故障件环比-->
+									<div id="DTpartCompareChart" style="width: 100%; height: 400px; color:#FFF"></div>
+							</div>
+					</div>
+			</div>
+			<div class="mui-card chartDiv" >
+					<div class="mui-card-content">
+							<div class="mui-card-content-inner">
+									<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 一体机故障件环比-->
+									<div id="AIOpartCompareChart" style="width: 100%; height: 400px; color:#FFF"></div>
+							</div>
+					</div>
+			</div>
+			<!--  
+				<div class="mui-card chartDiv" >
+						<div class="mui-card-content">
+								<div class="mui-card-content-inner">
+										<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 台式机故障件
+										<div id="DTpartChart" style="width: 100%; height: 400px; color:#FFF"></div>
+								</div>
+						</div>
+				</div>
+			-->
+			<div class="mui-card chartDiv" >
+					<div class="mui-card-content">
+							<div class="mui-card-content-inner">
+									<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 两月环比图-->
+									<div id="monthCompareChart" style="width: 100%; height: 400px; color:#FFF"></div>
+							</div>
+					</div>
+			</div>
+			
+			
+			<div class="mui-card chartDiv" >
+					<div class="mui-card-content">
+							<div class="mui-card-content-inner">
+									<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 两月环比图-->
+									<div id="usingTimePieChart" style="width: 100%; height: 400px; color:#FFF"></div>
+							</div>
+					</div>
+			</div>
+			<!--  主板按工厂的饼状图
+				<div class="mui-card chartDiv" >
+						<div class="mui-card-content">
+								<div class="mui-card-content-inner">
+										<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM 按故障件
+										<div id="comChart" style="width: 100%; height: 400px; color:#FFF"></div>
+								</div>
+						</div>
+				</div>
+			-->
+	</div>
+</body>
+
+<script type="text/javascript">
+
+	mui.init();
+	
+	(function($) {				　　　　
+		$.init();　　　　
+		var result = document.getElementById("inqueryDate");　　　　
+		$(chooseTime)[0].addEventListener('tap', function() {　
+			var optionsJson = this.getAttribute('data-options') || '{"type":"month"}';　　　　　　
+			var options = JSON.parse(optionsJson);　　　　
+			options.beginYear = "2015";　　　　　　
+			options.beginMonth = "01";　
+			var date = new Date();
+			var year=date.getFullYear() ; 
+			var month=date.getMonth() ; 
+			options.endYear=year ; 　　　
+			var picker = new $.DtPicker(options);　　　　　　　
+			picker.setSelectedValue(year+'-'+month);　　　　　
+			picker.show(function(rs) {　　
+				result.value = rs.text;　　　　　　　　
+				picker.dispose();
+				});　　　　　
+		}, false);　　　　
+	})(mui);	
+	
+	$(function(){
+		//载入大区
+		//findArea();		
+
+		document.getElementById("loading").style.display="none";
+		document.getElementById("muiContent").style.display="";
+		
+		// 给大区绑定 change 事件
+  	//	$("#area"). change(selectedChange);
+		// 给月份  绑定 change 事件
+  		$("#inqueryDate"). change(selectedChange);
+		//给提交按钮 绑定 查询 事件
+		$("#submitBtn").click(Inquery); 	
+
+		// 页面一 加载就初始值
+		var myDate = new Date();
+		var year=myDate.getFullYear();//获取当前年
+		var month=myDate.getMonth();//获取当前月
+        month =(month<10 ? "0"+month:month); 			
+		$("#inqueryDate").val(year+"-"+(month));		
+	//	$("#area").val('北京大区');
+
+		$(".chartDiv").css("display","none");
+	});
+	
+	// 给大区绑定 change 事件
+	function selectedChange() {
+		$("#Chart").attr("style","visibility:hidden;");
+		return;		
+	}
+<!--
+	//获取大区列表
+	function findArea(){
+	var areas=null;
+	mui.ajax('/TFMobile/tf-api/customerService/QualityCondition/loadData/getAreas', {
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+					if(result.success == true){
+			      	　　　areas = result.body.areaList;　
+			      	
+						for (var i = 0; i < areas.length; i++) {
+			                $("#area").append('<option value="'+areas[i]+'">'+areas[i]+'</option>');
+			            
+						}
+					}else{
+						mui.toast(result.message);
+						//alert(result.message);
+					}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");						
+			}
+		});	
+	}
+	-->
+	//根据月份、大区绘制统计报表
+	function Inquery(){
+
+    	var myChart = echarts.init(document.getElementById('Chart'));
+    	myChart.clear();
+    	myChart.dispose();
+    	var myChart = echarts.init(document.getElementById('DTpartCompareChart'));
+    	myChart.clear();
+    	myChart.dispose();
+    	var myChart = echarts.init(document.getElementById('stationChart'));
+    	myChart.clear();
+    	myChart.dispose();
+    	var myChart = echarts.init(document.getElementById('AIOpartCompareChart'));
+    	myChart.clear();
+    	myChart.dispose();
+    	var myChart = echarts.init(document.getElementById('monthCompareChart'));
+    	myChart.clear();
+    	myChart.dispose();
+    	var myChart = echarts.init(document.getElementById('usingTimePieChart'));
+    	myChart.clear();
+    	myChart.dispose();
+    	var myChart = echarts.init(document.getElementById('Chart'));
+    	myChart.clear();
+    	myChart.dispose();
+  		$("#stationNameDesc").html("");
+		
+		//1获取参数值     
+		//var area = $("#area").val();
+		var inqueryYMonth = $("#inqueryDate").val();
+  		
+   	   //2.验证数据有效性：查询月份最近的月份只能是上个月，不能是当月或还没有到的月份
+   	    inqueryDate = $("#inqueryDate").val();
+   	    //alert(inqueryDate);
+      	//1)获取当前 月份 
+        var date=new Date();
+        var year=date.getFullYear(); 
+        var month=date.getMonth();
+        month =(month<10 ? "0"+month:month); 
+        var mydate = (year.toString()+'-'+month.toString());
+        //2)获取查询的年月
+        var inqueryYear=inqueryDate.substring(0,4);
+        var inqueryMonth=inqueryDate.substring(5,7);
+        //3）检验 月份
+ 		 if(inqueryYear>year){
+ 			mui.toast("不提供该年月的数据查询,请重新选择月份！ ");
+ 			return;
+ 		 }
+ 		 else if(inqueryYear==year && inqueryMonth>date.getMonth()){
+ 			mui.toast("不提供该月份的数据查询,请重新选择月份！");
+ 			return;
+		 }
+ 		 else{
+ 			 
+ 			 //前5省份
+ 			var array= findList(inqueryDate,'countByProvince');
+            if(array[0].length==0 || array[1].length==0){
+ 				
+ 				alert("无数据！ ");
+ 				$("#Chart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+			//显示图表区
+ 			$(".chartDiv").css("display","");			
+ 			$("#Chart").css("visibility","visible");
+ 			
+ 			var ProvinceList = array[0];
+      		var CountList = array[1];
+      		//alert(DateList);
+      		//alert(ResultList);  		
+      		//计算出折线图的y轴的 最大值 
+      		var YMax=CountList.sort(function(a,b) {
+       			return b - a;
+       		})[0];             	
+      		//展示图表     
+      		chart(ProvinceList,CountList,YMax,'Chart', '维修量前五省份');  	
+
+			
+			 //按省份
+    /*       if(array[0].length==0 || array[1].length==0){				
+			alert("无数据！ ");
+				$("#areaChart").attr("style","visibility:hidden;");
+				return;
+			}
+			//显示图表区			
+			$("#areaChart").css("visibility","visible");
+			
+			var ProvinceList = array[0];
+     		var CountList = array[1];
+     		//alert(DateList);
+     		//alert(ResultList);  		
+     		//计算出折线图的y轴的 最大值 
+     		var YMax=CountList.sort(function(a,b) {
+      			return b - a;
+      		})[0];             	
+     		//展示图表     
+     		chart(ProvinceList,CountList,YMax,'areaChart', '大区省份'); 
+     	*/	
+
+			//上月时间，以此取出上月数据
+			var lastMonth="";
+			var month=inqueryDate.substring(5);
+			if(month=="01")
+			{
+				var lastYear=parseInt(inqueryDate.substring(0, 4))-1;
+				lastMonth=lastYear+"-12";
+			}
+			else
+			{
+				var i=parseInt(month)-1;
+				if(i<10)
+					lastMonth=inqueryDate.substring(0, 5)+"0"+i;
+				else
+					lastMonth=inqueryDate.substring(0, 5)+i;
+			}
+			
+      		//按故障件 台式机
+ 			var DTarrayByPart= findList(inqueryDate,'DTcountByPart');
+            if(DTarrayByPart[0].length==0 || DTarrayByPart[1].length==0){
+ 				
+ 				alert("无数据！ ");
+ 				//$("#DTpartChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			//$("#DTpartChart").css("visibility","visible");
+ 			var DTPartList = DTarrayByPart[0];
+      		var DTCountByPartList = DTarrayByPart[1];
+      		//计算出折线图的y轴的 最大值 
+      		var YMax=DTCountByPartList.sort(function(a,b) {
+       			return b - a;
+       		})[0];             	
+      		//展示图表     
+      		//chart(DTPartList,DTCountByPartList,YMax,'DTpartChart','台式机故障件');
+
+      		
+      		//按故障件 台式机前四环比
+ 			var LastMonthDTarrayByPart= findList(lastMonth,'DTcountByPart');
+
+            if(LastMonthDTarrayByPart[0].length==0 || LastMonthDTarrayByPart[1].length==0){ 				
+ 				alert("无数据！ ");
+ 				$("#DTpartCompareChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			$("#DTpartCompareChart").css("visibility","visible");
+ 			var LastMonthDTPartList = LastMonthDTarrayByPart[0];
+      		var LastMonthDTCountByPartList = LastMonthDTarrayByPart[1];      	
+
+      		//计算 最大值      
+      		var lastMonthMAX=LastMonthDTCountByPartList.sort(function(a,b) {
+       			return b - a;
+       		})[0];    
+      		var XMax=( YMax>lastMonthMAX ? YMax : lastMonthMAX)
+      		XMax=parseInt(XMax*1.05);
+      		var thisMonthData=getThisMonthData(DTPartList,DTCountByPartList,4,false);
+      		var lastMonthData=getLastMonthData(LastMonthDTPartList,LastMonthDTCountByPartList,4,false);
+      		
+      		//展示图表     
+      		partCompareChart(thisMonthData,lastMonthData,XMax,'DTpartCompareChart','台式机故障件环比',inqueryDate,lastMonth);
+      		   
+      		
+      		//按故障件 一体机
+ 			var AIOarrayByPart= findList(inqueryDate,'AIOcountByPart');
+            if(AIOarrayByPart[0].length==0 || AIOarrayByPart[1].length==0){
+ 				
+ 				alert( inqueryDate +"无数据！ ");
+ 			//	$("#AIOpartChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			//$("#AIOpartChart").css("visibility","visible");
+ 			var AIOPartList = AIOarrayByPart[0];
+      		var AIOCountByPartList = AIOarrayByPart[1];
+      		//计算出折线图的y轴的 最大值 
+      		var YMax=AIOCountByPartList.sort(function(a,b) {
+       			return b - a;
+       		})[0];             	
+      		//展示图表     
+      		//chart(AIOPartList,AIOCountByPartList,YMax,'AIOpartChart','一体机故障件');
+
+      		//按故障件 一体机前四环比
+ 			var LastMonthAIOarrayByPart= findList(lastMonth,'AIOcountByPart');
+
+            if(LastMonthAIOarrayByPart[0].length==0 || LastMonthAIOarrayByPart[1].length==0){ 				
+ 				alert("无数据！ ");
+ 				$("#AIOpartCompareChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			$("#AIOpartCompareChart").css("visibility","visible");
+ 			var LastMonthAIOPartList = LastMonthAIOarrayByPart[0];
+      		var LastMonthAIOCountByPartList = LastMonthAIOarrayByPart[1];      	
+
+      		//计算 最大值     
+      		var lastMonthMAX=LastMonthAIOCountByPartList.sort(function(a,b) {
+       			return b - a;
+       		})[0];    
+      		var XMax=( YMax>lastMonthMAX ? YMax : lastMonthMAX)
+      		XMax=parseInt(XMax*1.05);
+      		var thisMonthData=getThisMonthData(AIOPartList,AIOCountByPartList,4,false);
+      		var lastMonthData=getLastMonthData(LastMonthAIOPartList,LastMonthAIOCountByPartList,4,false);
+      		
+      		//展示图表     
+      		partCompareChart(thisMonthData,lastMonthData,XMax,'AIOpartCompareChart','一体机故障件环比',inqueryDate,lastMonth);
+  
+
+      		//维修量前五的服务机构
+ 			var arrayStation= findList(inqueryDate,'top5ServiceStation');
+            if(arrayStation[0].length==0 || arrayStation[1].length==0){ 				
+ 				alert("无数据！ ");
+ 				$("#stationChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			$("#stationChart").css("visibility","visible");
+ 			$("#stationNameDesc").css("visibility","visible");
+ 			$("#stationNameDesc").css("display","");
+ 			var StationList = arrayStation[0];
+      		var StationCountList = arrayStation[1];
+      		var StationNameList = arrayStation[2];
+      		var nameDesc="";
+      		for(var i=0;i<StationNameList.length;i++)
+      			nameDesc+=(StationList[i].toString()+":"+StationNameList[i].toString()+"</br>");
+      		$("#stationNameDesc").html(nameDesc);
+      		
+      		//计算出折线图的y轴的 最大值 
+      		var YMax=StationCountList.sort(function(a,b) {
+       			return b - a;
+       		})[0];             	
+      		//展示图表     
+      		chart(StationList,StationCountList,YMax,'stationChart','维修量前五站点');
+      		
+
+      		//相邻两月的维修量比较
+ 			var arrayCpmpare= findList(inqueryDate,'monthsCompare');
+            if(arrayCpmpare[0].length==0 || arrayCpmpare[1].length==0){ 				
+ 				alert("无数据！ ");
+ 				$("#monthCompareChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			$("#monthCompareChart").css("visibility","visible");
+ 			var TypeList = arrayCpmpare[0];
+      		var TypeCountList = arrayCpmpare[1];
+ 			var LastMonthTypeList = arrayCpmpare[2];
+      		var LastMonthTypeCountList = arrayCpmpare[3];
+      		var LastMonth = arrayCpmpare[4];
+      		
+      		//计算出折线图的y轴的 最大值 
+      		var thisMonth=TypeCountList.sort(function(a,b) {
+       			return b - a;
+       		})[0];         
+      		var lastMonth=LastMonthTypeCountList.sort(function(a,b) {
+       			return b - a;
+       		})[0];    
+      		var YMax=(thisMonth>lastMonth ? thisMonth : lastMonth)
+      		var thisMonthData=getThisMonthData(TypeList,TypeCountList,0,true);
+      		var lastMonthData=getLastMonthData(LastMonthTypeList,LastMonthTypeCountList,0,true);
+      		//展示图表     
+      		compareChart(thisMonthData,lastMonthData,YMax,'monthCompareChart','各产品维修数量环比',inqueryDate,LastMonth);
+      		
+      		/*
+      		//按主板厂家
+ 			var arrayByCom= findList(inqueryDate,'countByMainBoardCom');
+            if(arrayByCom[0].length==0 || arrayByCom[1].length==0){
+ 				
+ 				alert("无数据！ ");
+ 				$("#comChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			$("#comChart").css("visibility","visible");
+ 			var pieData= getPieData(arrayByCom);
+ 			
+ 			var ComList = arrayByCom[0];
+      		var CountByComList = arrayByCom[1];            	
+      		//展示图表  
+      		pieChart(pieData,'comChart','主板厂家')
+      		*/
+      		
+      		
+      		//按使用时间的饼状图
+ 			var arrayByUsingTime= findList(inqueryDate,'pieUsingTime');
+            if(arrayByUsingTime[0].length==0 || arrayByUsingTime[1].length==0){
+ 				
+ 				alert("无数据！ ");
+ 				$("#usingTimePieChart").attr("style","visibility:hidden;");
+ 				return;
+ 			}
+ 			$("#usingTimePieChart").css("visibility","visible");
+ 			var pieData= getPieData(arrayByUsingTime);          	
+      		//展示图表  
+      		pieChart(pieData,'usingTimePieChart','维修量按生产时间分布')
+      		
+ 		 }
+
+	}
+	
+    function getThisMonthData(TypeList,TypeCountList,getCount,isASC){
+        var legendData = [];
+        var seriesData = [];
+        var times=TypeList.length;        
+        if(getCount>0)
+        	times=getCount;
+        if(!isASC){
+	        for (var i = times-1; i > -1 ; i--) {
+	            legendData.push(TypeList[i]);
+	            seriesData.push({
+	                name: TypeList[i],
+	                value: TypeCountList[i]
+	            });     
+	        }
+        }
+        else{
+        	for (var i = 0; i <times ; i++) {
+	            legendData.push(TypeList[i]);
+	            seriesData.push({
+	                name: TypeList[i],
+	                value: TypeCountList[i]
+	            });     
+	        }
+        }
+        return {
+            legendData: legendData,
+            seriesData: seriesData
+        };
+    }
+    
+    function getLastMonthData(LastMonthTypeList,LastMonthTypeCountList,getCount,isASC){
+        var legendData = [];
+        var seriesData = [];
+        var times=LastMonthTypeList.length;        
+        if(getCount>0)
+        	times=getCount;
+        if(!isASC){
+        	for (var i = times-1; i > -1 ; i--) {
+	            legendData.push(LastMonthTypeList[i]);
+	            seriesData.push({
+	                name: LastMonthTypeList[i],
+	                value: LastMonthTypeCountList[i]
+	            });     
+	        }
+        }
+        else{
+        	for (var i = 0; i <times ; i++) {
+	            legendData.push(LastMonthTypeList[i]);
+	            seriesData.push({
+	                name: LastMonthTypeList[i],
+	                value: LastMonthTypeCountList[i]
+	            });     
+	        }
+        }
+        return {
+            legendData: legendData,
+            seriesData: seriesData
+        };
+    }
+	
+    function getPieData(arrayByCom){
+        var legendData = [];
+        var seriesData = [];
+
+        for (var i = 0; i < arrayByCom[0].length; i++) {
+            legendData.push(arrayByCom[0][i]);
+            seriesData.push({
+                name: arrayByCom[0][i],
+                value: arrayByCom[1][i]
+            });     
+        }
+        return {
+            legendData: legendData,
+            seriesData: seriesData
+        };
+    }
+	
+    //按个方法获取数量
+  	function findList(mydate,funcName){
+  		var ConditionList = null;
+  		var CountList = null;
+  		var StationNameList = null;
+  		var LastMonthConditionList = null;
+  		var LastMonthCountList = null;
+  		var LastMonth = null;
+  		var Index=null;
+  			mui.ajax('/TFMobile//tf-api/customerService/QualityCondition/loadData/'+funcName, {
+  				data : {
+  					mydate : mydate
+  				},
+  				dataType : 'json',//服务器返回json格式数据
+  				type : 'post',//HTTP请求类型
+  				async : false,
+  				success : function(result) {
+  					if(result.success == true){
+  						ConditionList = result.body.ConditionList;
+  						CountList= result.body.CountList;
+  						if(funcName=='top5ServiceStation')
+  							StationNameList=result.body.StationNameList;
+  						else{
+  							if(funcName=='monthsCompare'){
+  								LastMonthConditionList=result.body.LastMonthConditionList;
+  								LastMonthCountList=result.body.LastMonthCountList;  
+  								LastMonth=result.body.LastMonth;  								
+  							}
+  						}
+  						
+  					}else{
+  						mui.toast(result.message);
+  					}				
+  				},
+  				error : function(xhr, type, errorThrown) {
+  					mui.toast("网络出错了");						
+  				}
+  			});
+		if(funcName=='top5ServiceStation')
+			return [ConditionList,CountList,StationNameList];
+		else
+		{	
+			if(funcName=='monthsCompare')
+				return [ConditionList,CountList,LastMonthConditionList,LastMonthCountList,LastMonth]; 		
+			else
+				return [ConditionList,CountList];
+		}
+  	}
+    
+    <!-- 柱状图-->
+        // 基于准备好的dom，初始化echarts实例
+        function chart(ProvinceList,CountList,YMax,elementId,chartName){        	
+        	var myChart = echarts.init(document.getElementById(elementId));
+            // 指定图表的配置项和数据
+            var option = {
+              //标题
+                title: {
+                    text: chartName
+                },
+                tooltip: {
+                    trigger: 'axis'
+                }, 
+                grid: {  
+                    left: '1%',  
+                    right: '1%',  
+                   bottom: '1%',  
+                   containLabel: true  
+               	},
+                //工具框，可以选择               
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        dataView: {readOnly: false},
+                        magicType: {type: ['line', 'bar']},
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                //X轴
+                xAxis: {
+                  type: 'category',
+                  data: ProvinceList,
+                    
+                },
+                //y轴
+                yAxis: {
+                   type: 'value',
+                    // y轴数据,根据数据的最大最小之进行计算
+                   scale: true,
+                   max:YMax,                
+                },
+                
+                //dataZoom 组件 用于区域缩放
+                 dataZoom: [{
+                    type: 'inside',
+                    throttle: 50
+                }],
+                
+                series: [
+	                {
+	                    name: '数量',
+	                    type: 'bar', 	//图表类型：bar柱状图 ；line折线图
+	                    //data: [5.01, 20.03, 36.02, 10.09, 10.05, 20.03], //数据填充
+	                    data: CountList,//数据填充                   
+	
+	                    //以百分比的形式显示
+	                    itemStyle: {  
+	                        normal: { 
+	                            color:'#4093C6' ,
+	                            label: {  
+	                                show: true,  
+	                                position: 'top',  
+	                                //formatter: '{b}\n{c}%'  
+	                                formatter: '{c}'  //显示具体数值在点的上方
+	                            }  
+	                        }  
+	                    },  
+	                    
+	                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        }
+        
+        <!-- 比较柱状图-->
+        // 基于准备好的dom，初始化echarts实例
+        function compareChart(thisMonthData,lastMonthData,YMax,elementId,chartName,thisMonth,LastMonth){
+        	var myChart = echarts.init(document.getElementById(elementId));
+            // 指定图表的配置项和数据
+            var option = {
+              //标题
+                title: {
+                    text: chartName
+                },
+                tooltip: {
+                    trigger: 'axis'
+                }, 
+                //工具框，可以选择               
+                toolbox: {
+                	top:'6%',  
+                    show: true,
+                    feature: {
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        dataView: {readOnly: false},
+                        magicType: {type: ['line', 'bar']},
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },                
+                legend: {
+                    left: 'left',
+                    top: '12%',
+                    data: [thisMonth,LastMonth]
+                },
+                grid: { 
+                    top: '22%', 
+                    left: '1%',  
+                    right: '1%',  
+                   bottom: '1%',  
+                   containLabel: true  
+               	},
+                //X轴
+                xAxis: {
+                  type: 'category',
+                  data: thisMonthData.legendData,                    
+                },
+                //y轴
+                yAxis: {
+                   type: 'value',
+                    // y轴数据,根据数据的最大最小之进行计算
+                   scale: true,
+                   max:YMax,                
+                },
+                
+                //dataZoom 组件 用于区域缩放
+                 dataZoom: [{
+                    type: 'inside',
+                    throttle: 50
+                }],
+                series: [
+	                {
+	                    name: thisMonth,
+	                    type: 'bar', 	//图表类型：bar柱状图 ；line折线图
+	                    //data: [5.01, 20.03, 36.02, 10.09, 10.05, 20.03], //数据填充
+	                    data: thisMonthData.seriesData,//数据填充                   
+	
+	                    //以百分比的形式显示
+	                    itemStyle: {  
+	                        normal: { 
+	                            color:'#4093C6' ,
+	                            label: {  
+	                                show: true,  
+	                                position: 'top',  
+	                                //formatter: '{b}\n{c}%'  
+	                                formatter: '{c}'  //显示具体数值在点的上方
+	                            }  
+	                        }  
+	                    },  
+	                    
+	                },
+	                {
+	                    name: LastMonth,
+	                    type: 'bar', 	//图表类型：bar柱状图 ；line折线图
+	                    //data: [5.01, 20.03, 36.02, 10.09, 10.05, 20.03], //数据填充
+	                    data: lastMonthData.seriesData,//数据填充                   
+	
+	                    //以百分比的形式显示
+	                    itemStyle: {  
+	                        normal: { 
+	                            color:'#C2C2C2' ,
+	                            label: {  
+	                                show: true,  
+	                                position: 'top',  
+	                                //formatter: '{b}\n{c}%'  
+	                                formatter: '{c}'  //显示具体数值在点的上方
+	                            }  
+	                        }  
+	                    },  
+	                    
+	                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        }
+        
+        
+        <!-- 故障件环比 横向柱状图-->
+        // 基于准备好的dom，初始化echarts实例
+        function partCompareChart(thisMonthData,lastMonthData,XMax,elementId,chartName,thisMonth,LastMonth){
+        	var myChart = echarts.init(document.getElementById(elementId));
+            // 指定图表的配置项和数据
+            var option = {
+              //标题
+                title: {
+                    text: chartName
+                },
+                tooltip: {
+                    trigger: 'axis'
+                }, 
+                //工具框，可以选择               
+                toolbox: {
+                	top:'6%',  
+                    show: true,
+                    feature: {
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        dataView: {readOnly: false},
+                        magicType: {type: ['line', 'bar']},
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },                
+                legend: {
+                    left: 'left',
+                    top: '12%',
+                    data: [thisMonth,LastMonth]
+                },
+                grid: { 
+                    top: '22%', 
+                    left: '1%',  
+                    right: '6%',  
+                   bottom: '1%',  
+                   containLabel: true  
+               	},
+                //X轴
+                xAxis: {
+                   type: 'value',
+                    // y轴数据,根据数据的最大最小之进行计算
+                   scale: true,
+                   max:XMax                    
+                },
+                //y轴
+                yAxis: {   
+                    type: 'category',
+                    data: thisMonthData.legendData           
+                },
+                
+                //dataZoom 组件 用于区域缩放
+                 dataZoom: [{
+                    type: 'inside',
+                    throttle: 50
+                }],
+                series: [
+	                {
+	                    name: thisMonth,
+	                    type: 'bar', 	//图表类型：bar柱状图 ；line折线图
+	                    //data: [5.01, 20.03, 36.02, 10.09, 10.05, 20.03], //数据填充
+	                    data: thisMonthData.seriesData,			//数据填充           
+	                    //以百分比的形式显示
+	                    itemStyle: {  
+	                        normal: { 
+	                            color:'#4093C6' ,
+	                            label: {  
+	                                show: true,  
+	                                position: 'right',  
+	                                //formatter: '{b}\n{c}%'  
+	                                formatter: '{c}'  //显示具体数值在点的上方
+	                            }  
+	                        }  
+	                    },  
+	                    
+	                },
+	                {
+	                    name: LastMonth,
+	                    type: 'bar', 	//图表类型：bar柱状图 ；line折线图
+	                    //data: [5.01, 20.03, 36.02, 10.09, 10.05, 20.03], //数据填充
+	                    data: lastMonthData.seriesData,//数据填充                   
+	
+	                    //以百分比的形式显示
+	                    itemStyle: {  
+	                        normal: { 
+	                            color:'#C2C2C2' ,
+	                            label: {  
+	                                show: true,  
+	                                position: 'right',  
+	                                //formatter: '{b}\n{c}%'  
+	                                formatter: '{c}'  //显示具体数值在点的上方
+	                            }  
+	                        }  
+	                    },  
+	                    
+	                }]
+            };
+
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+        }
+        
+        //饼状图
+        function pieChart(pieData,elementId,chartName){
+        var myChart = echarts.init(document.getElementById(elementId));
+        var option = {
+        		
+            title: {
+                text: chartName,
+                left: 'center',
+                top: 20
+            },
+            //工具框，可以选择               
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            
+            tooltip : {
+                trigger: 'item',
+                formatter: "{b} : {c}<br/>占比：{d}%"
+            },
+            
+            //标识
+            legend: {
+                orient: 'horizontal',
+                bottom: 20,
+                data: ['3月内','3~6月','6~12月','1~2年','2~3年','3年以上']
+            },
+
+            series : [
+                {
+                    name:chartName,
+                    type:'pie',
+                    clockwise:'true',
+                    startAngle:'0',
+                    radius : '50%',
+                    center: ['50%', '50%'],
+                    data: pieData.seriesData,
+                    label : {
+                    	normal : {
+                    		formatter: '{b}\r\n{d}%',
+                    		textStyle : {
+                    		fontWeight : 'normal',
+                    		fontSize : 15
+                    		}
+                    	}
+                    }, 
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        myChart.setOption(option);
+        }
+
+</script>
+
+<script src="../../static/js/echarts.js"></script>
+
+</html>
+
+
+
+

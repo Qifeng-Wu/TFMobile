@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>异常通报信息修改</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script src="../../static/js/jquery-1.8.3.min.js"></script>
+    <script src="../../static/js/exif.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.zoom.js"></script>
+    <script src="../../static/mui/js/mui.previewimage.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <style type="text/css">
+		.mui-preview-image.mui-fullscreen {
+			position: fixed;
+			z-index: 20;
+			background-color: #000;
+		}
+		.mui-preview-header,
+		.mui-preview-footer {
+			position: absolute;
+			width: 100%;
+			left: 0;
+			z-index: 10;
+		}
+		.mui-preview-header {
+			height: 44px;
+			top: 0;
+		}
+		.mui-preview-footer {
+			height: 50px;
+			bottom: 0px;
+		}
+		.mui-preview-header .mui-preview-indicator {
+			display: block;
+			line-height: 25px;
+			color: #fff;
+			text-align: center;
+			margin: 15px auto 4;
+			width: 70px;
+			background-color: rgba(0, 0, 0, 0.4);
+			border-radius: 12px;
+			font-size: 16px;
+		}
+		.mui-preview-image {
+			display: none;
+			-webkit-animation-duration: 0.5s;
+			animation-duration: 0.5s;
+			-webkit-animation-fill-mode: both;
+			animation-fill-mode: both;
+		}
+		.mui-preview-image.mui-preview-in {
+			-webkit-animation-name: fadeIn;
+			animation-name: fadeIn;
+		}
+		.mui-preview-image.mui-preview-out {
+			background: none;
+			-webkit-animation-name: fadeOut;
+			animation-name: fadeOut;
+		}
+		.mui-preview-image.mui-preview-out .mui-preview-header,
+		.mui-preview-image.mui-preview-out .mui-preview-footer {
+			display: none;
+		}
+		.mui-zoom-scroller {
+			position: absolute;
+			display: -webkit-box;
+			display: -webkit-flex;
+			display: flex;
+			-webkit-box-align: center;
+			-webkit-align-items: center;
+			align-items: center;
+			-webkit-box-pack: center;
+			-webkit-justify-content: center;
+			justify-content: center;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			-webkit-backface-visibility: hidden;
+		}
+		.mui-zoom {
+			-webkit-transform-style: preserve-3d;
+			transform-style: preserve-3d;
+		}
+		.mui-slider .mui-slider-group .mui-slider-item img {
+			width: auto;
+			height: auto;
+			max-width: 100%;
+			max-height: 100%;
+		}
+		.mui-android-4-1 .mui-slider .mui-slider-group .mui-slider-item img {
+			width: 100%;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-slider-group .mui-slider-item {
+			display: inline-table;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-zoom-scroller img {
+			display: table-cell;
+			vertical-align: middle;
+		}
+		.mui-preview-loading {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			display: none;
+		}
+		.mui-preview-loading.mui-active {
+			display: block;
+		}
+		.mui-preview-loading .mui-spinner-white {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin-left: -25px;
+			margin-top: -25px;
+			height: 50px;
+			width: 50px;
+		}
+		.mui-preview-image img.mui-transitioning {
+			-webkit-transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+			transition: transform 0.5s ease, opacity 0.5s ease;
+		}
+		@-webkit-keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@-webkit-keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		@keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		p img {
+			max-width: 100%;
+			height: auto;
+		}
+	</style>
+    <style>
+		.upload{
+			height:100px;
+			margin-top:7px;
+			margin-bottom:20px;
+			position:relative;
+		}
+		.upload>p{
+			width:40%;
+			height:100px;
+			line-height:100px;
+			padding:5px;
+			text-align:center;
+		}
+		.index1{
+			border:2px dashed #888;
+		}
+		.index2{
+			border:0;
+		}
+		.index2>img{
+			width:98%;
+			height:98%;
+			margin:1% 1%;
+		}
+		.icon1,.img1,.input1{
+			position:absolute;
+			top:0;
+			left:35%;
+		}
+		.index1 span{
+			font-size:50px;
+			color:#888;
+		}
+		.index3{
+			opacity:0;
+			border:0;
+		}
+		.index3 input{
+			border:0;
+			width:100%;
+			height:100px;
+			margin:0 auto;
+		}
+	</style>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	
+	<div class="mui-content" id="muiContent" style="display:none">
+		<div class="mui-card">
+			<form class="mui-input-group">
+				<div style="text-align: center;opacity:1;color: #FFF;font-size:20px; background-color: #4093C6;padding:18px 20px 18px 20px;">
+					<span>修改异常问题通报信息</span><br>
+				</div>
+				<div class="mui-input-row">
+					<label>文件序号</label>
+					<input type="text" id="serialNumber" name="serialNumber" readOnly maxlength="12">
+				</div>
+				<div class="mui-input-row">
+					<label>发文部门</label>
+					<input type="text" id="submitDepartment" name="submitDepartment" readOnly maxlength="12">
+				</div>
+
+				<div class="mui-input-row">
+					<label>线&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;别</label>
+					<select class="mui-btn-block" id="line">
+						<option value="">选择线别</option>
+						<option value="A线">A线</option>
+						<option value="B线">B线</option>
+						<option value="C线">C线</option>
+						<option value="D线">D线</option>
+						<option value="E线">E线</option>
+						<option value="F线">F线</option>
+						<option value="P线">P线</option>
+						<option value="离线">离线</option>
+						<option value="服务器">服务器</option>
+					</select>
+				</div>
+				<div class="mui-input-row">
+					<label>发现组别</label>
+					<select class="mui-btn-block" id="findStation">
+						<option value="">选择组别</option>
+						<option value="备料">备料</option>
+						<option value="装配">装配</option>
+						<option value="高温">高温</option>
+						<option value="终检">终检</option>
+						<option value="包装">包装</option>
+						<option value="资料">资料</option>
+						<option value="PQC">PQC</option>
+						<option value="OQC">OQC</option>
+						<option value="ORT">ORT</option>
+						<option value="其他">其他</option>
+					</select>
+				</div>
+				<div class="mui-input-row">
+					<label>订单类型</label>
+					<select class="mui-btn-block" id="orderCategory">
+						<option value="">选择订单类型</option>
+						<option value="特单/大单">特单/大单</option>
+						<option value="小批量">小批量</option>
+						<option value="常规">常规</option>
+					</select>
+				</div>
+				<div class="mui-input-row">
+					<label>产品类型</label>
+					<select class="mui-btn-block" id="productCategory">
+						<option value="">选择产品类型</option>
+						<option value="台式">台式</option>
+						<option value="一体机">一体机</option>
+						<option value="服务器">服务器</option>
+						<option value="笔记本">笔记本</option>
+						<option value="云终端">云终端</option>
+						<option value="显示器">显示器</option>
+						<option value="工作站">工作站</option>
+						<option value="全国产化">全国产化</option>
+					</select>
+				</div>
+				<div class="mui-input-row" >
+					<label>制令单号</label>
+					<input type="text" id="ordermaking" placeholder="输入制令单号 " maxlength="15">
+				</div>
+				<div class="mui-input-row">
+					<label>机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型</label>
+					<input type="text" id="model" placeholder="输入机型 " maxlength="15">
+				</div>
+				<div class="mui-input-row">
+					<label>订单数量</label>
+					<input type="number" id="orderQuantity" placeholder="输入订单数量 " maxlength="6">
+				</div>
+				<div class="mui-input-row">
+					<label>已生产数量</label>
+					<input type="number" id="producedQuantity" placeholder="输入已生产数量" maxlength="6" onchange="compareQuantity1()">
+				</div>
+				<div class="mui-input-row">
+					<label>检验数量</label>
+					<input type="number" id="checkQuantity" placeholder="输入检验数量 " maxlength="6" onchange="compareQuantity2()">
+				</div>
+				<div class="mui-input-row">
+					<label>故障数量</label>
+					<input type="number" id="failuresQuantity" placeholder="输入故障数量 " maxlength="6" onchange="compareQuantity3()">
+				</div>
+				<div class="mui-input-row" style="height:120px">
+					<label>图片上传<br>（选填）</label>
+					<div class="upload">
+						<p class="index1 icon1"><span class="mui-icon mui-icon-plus"></span></p >
+						<p class="index2 img1" id="upload3Pic" style="display: none;"><img class="upload3" style="height: 96%;"/></p >
+						<p class="index3 input1"><input style="border:0;position:relative;top:-35px;" type="file" id="upload3" accept="image/*" onchange="compress(this);"></p >
+					</div>
+					<input id="upload3z" type="hidden" value="" readonly="readonly" />
+				</div>
+				<div class="mui-input-row" style="height:120px">
+					<label>异常描述</label>
+					<textarea id="exceptionDescription" rows="5" placeholder="输入异常描述" maxlength="300"></textarea>
+				</div>				
+			</form>
+			<div  style="text-align:center;margin-bottom: 10px;margin-top: -10px;border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;width:94%;margin-left:3%;">
+				<button type="button" id="submitBtn" style="width:95%;background:#4093C6;border:0;height:40px;margin-bottom: 20px;font-size: 18px;margin-top: 30px "
+				class="mui-btn mui-btn-danger grad1">提交信息</button>		
+			</div> 
+		</div>
+	</div>
+
+	
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(10);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+//获取url中的参数
+var exceptionId = getUrlParam("exceptionId");
+
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取异常问题表单信息
+	var status = findExceptionInfo(exceptionId);
+	if(status!=null && status!="null"){
+	   	//赋值完毕结束过场动画
+	    setTimeout(function(){
+	   		document.getElementById("loading").style.display="none";
+	   		$("body").css("background-color","#eee");
+	   		document.getElementById("muiContent").style.display="";
+	   	}, 1);
+	}
+
+}
+
+function findExceptionInfo(exceptionId){
+	var state = null;
+	if(exceptionId){
+		mui.ajax('/TFMobile/tf-api/new-exception/findInfo', {
+			data : {
+				exceptionId : exceptionId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					state = result.body.exception.state;//获取异常状态（非常重要）
+					//问题描述内容
+					$("#serialNumber").val(result.body.exception.serialNumber);
+			   		$("#submitDepartment").val(result.body.exception.submitDepartment);
+			   		$("#line option[value='"+result.body.exception.line+"']").attr("selected","selected")
+			   		$("#orderCategory option[value='"+result.body.exception.orderCategory+"']").attr("selected","selected")
+			   		$("#productCategory option[value='"+result.body.exception.productCategory+"']").attr("selected","selected")			   		
+			   		$("#ordermaking").val(result.body.exception.ordermaking);
+			   		$("#model").val(result.body.exception.model);
+			   		$("#orderQuantity").val(result.body.exception.orderQuantity);
+			   		$("#checkQuantity").val(result.body.exception.checkQuantity);
+			   		$("#failuresQuantity").val(result.body.exception.failuresQuantity);
+			   		$("#producedQuantity").val(result.body.exception.producedQuantity);
+			   		$("#findStation option[value='"+result.body.exception.findStation+"']").attr("selected","selected")	
+			   		$("#exceptionDescription").val(result.body.exception.exceptionDescription);
+			   		if(result.body.exception.exceptionPicture!=null&&result.body.exception.exceptionPicture!=""&&result.body.exception.exceptionPicture!="null"){
+			   			$(".upload3").attr("src","http://www.stephen7.top/"+result.body.exception.exceptionPicture);
+			   		}
+			   		
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				//mui.toast("网络出错了");
+			}
+		});
+	}
+	return state;
+}
+
+	//表单提交
+	var flag = true;
+	document.getElementById('submitBtn').addEventListener('tap',function() {
+
+		var submitDepartment = "";
+		//判断当前成员是否有权限处理（是否为生产部、质量控制部门或品质保障部的成员）
+		var pass = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if((departmentJson[i]==3 && position=="维修组组长") || departmentJson[i]==4 || departmentJson[i]==5){
+				pass = true;
+			}
+			if(departmentJson[i]==3){
+				submitDepartment = "工程部";
+			}else if(departmentJson[i]==4){
+				submitDepartment = "生产部";
+			}else if(departmentJson[i]==5){
+				submitDepartment = "质量部";
+			}			
+		}
+		if(!pass){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+   		
+   		var line = $("#line").val().replace(/ /g,'');
+   		var orderCategory = $("#orderCategory").val().replace(/ /g,'');
+   		var productCategory = $("#productCategory").val().replace(/ /g,'');
+   		var ordermaking = $("#ordermaking").val().replace(/ /g,'');
+   		var model = $("#model").val().replace(/ /g,'');
+   		var orderQuantity = $("#orderQuantity").val().replace(/ /g,'');
+   		var checkQuantity = $("#checkQuantity").val().replace(/ /g,'');
+   		var producedQuantity = $("#producedQuantity").val().replace(/ /g,'');
+   		var failuresQuantity = $("#failuresQuantity").val().replace(/ /g,'');   		
+   		var findStation = $("#findStation").val().replace(/ /g,'');
+   		var exceptionDescription = $("#exceptionDescription").val().replace(/ /g,'');
+   		var defectiveRate = failuresQuantity/checkQuantity;
+   		var exceptionPicture = $("#upload3z").val().replace(/ /g,'');
+   		var re = /^[1-9]\d*$/;//正整数正则
+
+   		if(line==null||line==""){
+   			mui.toast("请选择线别");
+   			return;
+   		}
+   		if(findStation==null||findStation==""){
+   			mui.toast("请选择发现组别");
+   			return;
+   		}
+   		if(orderCategory==null||orderCategory==""){
+   			mui.toast("请选择订单类型");
+   			return;
+   		}
+   		if(productCategory==null||productCategory==""){
+   			mui.toast("请选择产品类型");
+   			return;
+   		}
+   		if(ordermaking==null||ordermaking==""){
+   			mui.toast("请输入制令单号");
+   			return;
+   		}
+   		if(model==null||model==""){
+   			mui.toast("请输入机型");
+   			return;
+   		}
+   		if(orderQuantity==null||orderQuantity==""){
+   			mui.toast("请输入订单数量");
+   			return;
+   		}
+   		if(!re.test(orderQuantity)){
+   			mui.toast("订单数量请输入正整数");
+   			return;
+   		}
+   		if(checkQuantity==null||checkQuantity==""){
+   			mui.toast("请输入检验数量");
+   			return;
+   		}
+   		if(!re.test(checkQuantity)){
+   			mui.toast("检验数量请输入正整数");
+   			return;
+   		}
+   		if(failuresQuantity==null||failuresQuantity==""){
+   			mui.toast("请输入故障数量");
+   			return;
+   		}
+   		if(!re.test(failuresQuantity)){
+   			mui.toast("故障数量请输入正整数");
+   			return;
+   		}
+   		if(producedQuantity==null||producedQuantity==""){
+   			mui.toast("请输入已生产数量");
+   			return;
+   		}
+   		if(!re.test(producedQuantity)){
+   			mui.toast("已生产数量请输入正整数");
+   			return;
+   		}
+   		if(exceptionDescription==null||exceptionDescription==""){
+   			mui.toast("请输入异常描述");
+   			return;
+   		} 		
+
+   				
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					exceptionSave(memberId,exceptionId,line,orderCategory,productCategory,ordermaking,model,
+							orderQuantity,checkQuantity,producedQuantity,failuresQuantity,defectiveRate,
+							findStation,exceptionDescription,exceptionPicture);
+					return;
+				}
+			}
+		});
+	});
+	
+	
+	//保存提交内容
+	function exceptionSave(memberId,exceptionId,line,orderCategory,productCategory,ordermaking,model,
+			orderQuantity,checkQuantity,producedQuantity,failuresQuantity,defectiveRate,findStation,
+			exceptionDescription,exceptionPicture){
+
+		mui.ajax('/TFMobile/tf-api/new-exception/exceptionEdit', {
+			data : {
+				exceptionId : exceptionId,
+				memberId : memberId,
+				reporter : name,
+				position : position,
+				line : line,
+				orderCategory : orderCategory,
+				productCategory : productCategory,
+				ordermaking : ordermaking,
+				model : model,
+				orderQuantity : orderQuantity,
+				checkQuantity : checkQuantity,
+				producedQuantity : producedQuantity,
+				failuresQuantity : failuresQuantity,
+				defectiveRate : defectiveRate,
+				findStation : findStation,
+				exceptionDescription : exceptionDescription,
+				exceptionPicture : exceptionPicture,
+				department : department//根据发文人的部门找到对应领导推送消息
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					setTimeout(function(){
+						document.location.href = 'exceptionForm.html?exceptionId='+exceptionId; 
+					}, 1000);
+					mui.toast("信息修改成功！");
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");
+			}
+		});
+	}
+</script>
+<script type="text/javascript">
+//压缩图片
+function compress(ele) {
+    var self = ele;
+    var fileName = $(ele).attr("name");
+    var file = self.files[0];
+    var r = new FileReader();
+    r.readAsDataURL(file);
+    $(r).load(function () {
+        var fileStream = ele.result;//base64图片流
+        var URL = window.URL || window.webkitURL,
+        canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+        if (URL && file && ctx) {
+            var fileURL = URL.createObjectURL(file),
+            img = new Image();
+            img.src = fileURL;
+            img.onload = function () {
+                var orientation=null;
+                EXIF.getData(img, function () {
+                	EXIF.getAllTags(this);
+                    orientation = EXIF.getTag(this, "Orientation");
+                   var degree = 0, drawWidth = img.width, drawHeight = img.height, width, height;  
+                    //以下改变一下图片大小
+                   	var maxSide = Math.max(drawWidth, drawHeight);
+                    var tarSize = 1024;
+                    if (maxSide > tarSize) {
+                        var minSide = Math.min(drawWidth, drawHeight);
+                        minSide = minSide / maxSide * tarSize;  
+                        maxSide = tarSize;  
+                        if (drawWidth > drawHeight) { 
+                            drawWidth = maxSide;  
+                            drawHeight = minSide;
+                        } else {
+                            drawWidth = minSide;  
+                            drawHeight = maxSide;
+                        }
+                    }
+                   	
+                    canvas.width = width = drawWidth;
+                    canvas.height = height = drawHeight;
+                   
+                   switch (orientation) {//横屏竖屏转化  
+					//横屏拍摄，此时home键在左侧  
+					case 3:
+						degree = 180;
+						drawWidth = -width;
+						drawHeight = -height;
+						break;
+					//竖屏拍摄，此时home键在下方(正常拿手机的方向)  
+					case 6:
+						canvas.width = height;
+						canvas.height = width;
+						degree = 90;
+						drawWidth = width;
+						drawHeight = -height;
+						break;
+					//竖屏拍摄，此时home键在上方  
+					case 8:
+						canvas.width = height;
+						canvas.height = width;
+						degree = 270;
+						drawWidth = -width;
+						drawHeight = height;
+						break;
+					}
+                  //使用canvas旋转校正  
+					ctx.rotate(degree* Math.PI/180);
+                  
+					ctx.drawImage(img, 0, 0, drawWidth, drawHeight);  
+                    var base64 = canvas.toDataURL('image/jpeg',1);  
+                    var reader = new FileReader();
+                    reader.readAsDataURL(ele.files[0]);
+                    reader.onload = function(e){
+                    	$("."+ele.id).attr("src",e.target.result);
+                    	$("#"+ele.id+"z").val(base64);
+                    	$("#"+ele.id+"Pic").show();
+          		    };
+                    canvas = null;  
+                    img = null;  
+                });
+            }
+        } else {
+        	var reader = new FileReader();
+            reader.readAsDataURL(ele.files[0]);
+            reader.onload = function(e){
+            	$("."+ele.id).attr("src",e.target.result);
+            	$("#"+ele.id+"z").val(e.target.result);
+  		    };
+        }  
+    });
+}
+
+
+/*=========数量比较=============*/
+
+function compareQuantity1(){
+	var orderQuantity = $("#orderQuantity").val();
+	var producedQuantity = $("#producedQuantity").val();
+		
+	if(orderQuantity && producedQuantity && parseInt(producedQuantity)>parseInt(orderQuantity)){
+		mui.toast("已生产数量不能大于订单数量");
+		$("#producedQuantity").val("")
+	}
+	
+}
+
+function compareQuantity2(){
+	var checkQuantity = $("#checkQuantity").val();
+	var producedQuantity = $("#producedQuantity").val();
+		
+	if(checkQuantity && producedQuantity && parseInt(checkQuantity)>parseInt(producedQuantity)){
+		mui.toast("检验数量不能大于已生产数量");
+		$("#checkQuantity").val("")
+	}
+	
+}
+function compareQuantity3(){
+	var checkQuantity = $("#checkQuantity").val();
+	var failuresQuantity = $("#failuresQuantity").val();	
+	
+	if(checkQuantity && failuresQuantity && parseInt(failuresQuantity)>parseInt(checkQuantity)){
+		mui.toast("故障数量不能大于检验数量");
+		$("#failuresQuantity").val("")
+	}
+
+}
+</script>
+</html>

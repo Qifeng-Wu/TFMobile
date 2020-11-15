@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>待我处理加班申请</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<!--当页面没有数据时页面效果展示-->
+	<div class="mui-content"  style="display:none;background-color:#eee;" id="muiContent">
+		<div style="padding: 0px 10px;margin-top:10px">
+			<div id="segmentedControl" class="mui-segmented-control">
+				<a class="mui-control-item mui-active" href="#item1" id="item1a">待处理</a>
+				<a class="mui-control-item" href="#item2" id="item2a">已处理</a>
+			</div>
+		</div>
+		<div id="list">
+			<div id="item1" class="mui-control-content mui-active">
+
+			</div>
+			<div id="item2" class="mui-control-content">
+
+			</div>
+		</div>
+			
+		<div id="loadText" style="text-align:center;display:none;">
+			<span id="text" style="font-size:15px;color:#6D6D72;font-family:'Microsoft YaHei';">正在加载......</span>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(11);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+
+var type = 1;
+var page1= 0;
+var page2= 0;
+if(memberId){
+	setUnfinishedList1();  //待我处理赋值
+	setFinishedList1();  //已处理赋值
+}
+
+//1.待处理赋值
+function setUnfinishedList1(){
+	var list= findOwnList(1,page1)[0];
+	var supplementList = findOwnList(1,page1)[1];
+	if(list.length>0){
+		for(var i=0;i< list.length;i++){
+			var str = '';
+			str += '<div class="mui-card">';
+			str += '<ul class="mui-table-view">';
+			str += '<li class="mui-table-view-cell mui-media">';		
+			str += '<div class="mui-media-body" style="padding-left:12px;padding-top:6px">';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">加班日期：'+list[i].date+'</div>';
+			str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:50%;">加班部门：'+list[i].department+'</span><span style="width:50%;float:right;">申请人：'+getInfo(list[i].applicant)[1]+'</span></div>';			
+			str += '<div style="font-size:14px;" class="mui-ellipsis">申请时间：'+getDate(list[i].applicant_time)+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">加班理由：'+list[i].applicant_reason+'</div>';
+			if(parseInt(list[i].state)==1){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待生产调度填写加班理由</span></div>';
+			}else if(parseInt(list[i].state)==2){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理确认</span></div>';
+			}else if(parseInt(list[i].state)==3){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工艺主管确认</span></div>';
+			}else if(parseInt(list[i].state)==4){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">申请已被申请部门经理驳回，待申请人处理</span></div>';
+			}else if(parseInt(list[i].state)==5){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待事业部副总确认</span></div>';
+			}else if(parseInt(list[i].state)==0){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">流程已完结</span></div>';
+			}
+			str += '<button onclick="goDetail('+list[i].applicationId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">立即处理</span></button>';
+			str += '</div>';
+			str += '</li></ul></div>';
+			$("#item1").append(str);
+		}		
+	} 
+	//赋值待处理的补充类型
+	if(supplementList && supplementList.length>0){
+		for(var i=0;i< supplementList.length;i++){
+			var str = '';
+			str += '<div class="mui-card">';
+			str += '<ul class="mui-table-view">';
+			str += '<li class="mui-table-view-cell mui-media">';		
+			str += '<div class="mui-media-body" style="padding-left:12px;padding-top:6px">';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">加班日期：'+supplementList[i].date+'</div>';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">申请部门：'+supplementList[i].department+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">申请时间：'+getDate(supplementList[i].apply_time)+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">加班理由：'+supplementList[i].apply_reason+'</div>';
+			if(parseInt(supplementList[i].state)==0){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待部门经理审核确认</span></div>';
+			}else if(parseInt(supplementList[i].state)==1){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">部门经理已确认</span></div>';
+			}
+			str += '<button onclick="goSupplementDetail('+supplementList[i].supplementId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+			str += '</div>';
+			str += '</li></ul></div>';
+			$("#item1").append(str);
+		}
+	}
+	
+	if(list.length<=0 && supplementList.length<=0 && page1 ==0){
+		$("#item1").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">暂无待处理加班申请！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else if(list.length<=0 && supplementList.length<=0 && page1 >0){
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	}
+}
+//2.已处理加班申请赋值
+function setFinishedList1(){
+	var list= findOwnList(2,page2)[0];
+	if(list.length>0){
+		for(var i=0;i< list.length;i++){
+			var str = '';
+			str += '<div class="mui-card">';
+			str += '<ul class="mui-table-view">';
+			str += '<li class="mui-table-view-cell mui-media">';		
+			str += '<div class="mui-media-body" style="padding-left:12px;padding-top:6px">';
+			str += '<div style="font-size:14px;" class="mui-ellipsis">加班日期：'+list[i].date+'</div>';
+			str += '<div style="font-size:14px;" class="mui-ellipsis"><span style="width:50%;">申请部门：'+list[i].department+'</span><span style="width:50%;float:right;">申请人：'+getInfo(list[i].applicant)[1]+'</span></div>';			
+			str += '<div style="font-size:14px;" class="mui-ellipsis">申请时间：'+getDate(list[i].applicant_time)+'</div>';	
+			str += '<div style="font-size:14px;" class="mui-ellipsis">加班理由：'+list[i].applicant_reason+'</div>';
+			if(parseInt(list[i].state)==1){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待生产调度填写加班理由</span></div>';
+			}else if(parseInt(list[i].state)==2){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待部门经理确认</span></div>';
+			}else if(parseInt(list[i].state)==3){
+				str += '<div style="font-size:14px;" class="">流程状态：<span style="color:red">待工艺主管确认</span></div>';
+			}else if(parseInt(list[i].state)==4){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">申请已被申请部门经理驳回，待申请人处理</span></div>';
+			}else if(parseInt(list[i].state)==5){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">待事业部副总确认</span></div>';
+			}else if(parseInt(list[i].state)==0){
+				str += '<div style="font-size:14px;" class="mui-ellipsis">流程状态：<span style="color:red">流程已完结</span></div>';
+			}
+			str += '<button onclick="goDetail('+list[i].applicationId+');" class="mui-pull-right" style="width:70px; height:24px;margin-top:15px;border-radius: 5px; text-align: center;border:0px;background-color:#4093C6;position:absolute;right:7px;top:-3px;"><span style="position: relative; left:-5px;top:-3px;color:white;">查看详情</span></button>';
+			str += '</div>';
+			str += '</li></ul></div>';
+			$("#item2").append(str);
+		}
+	} else if(page2 ==0){
+		$("#item2").append('<div style="padding-top:100px;text-align: center;">'+
+				'<span style="color: #696969;">暂无已处理加班申请!</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	} else{
+		document.getElementById("loadText").style.display="none";
+		mui.toast("无更多数据！");
+	}
+}
+
+//获取个人加班申请信息记录
+function findOwnList(type,page){
+	var list = null;
+	var supplementList = null;
+		mui.ajax('/TFMobile/tf-api/overtime/data/findOwnList', {
+			data : {
+				type : type,
+				memberId : memberId,
+				department : department,
+				userId : userId,
+				position : position,
+				isleader : isleader,
+				page : page
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					list = result.body.list;
+					supplementList = result.body.supplementList;										
+					//赋值完毕结束过场动画
+					document.getElementById("loading").style.display="none";
+					$("body").css("background-color","#eee");
+					document.getElementById("muiContent").style.display="";
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦！");						
+			}
+		});
+	return [list,supplementList];
+}
+ 
+ //跳转到详情界面
+ function goDetail(applicationId){
+	document.location.href = 'applicationForm.html?applicationId='+ applicationId;
+} 
+ function goSupplementDetail(supplementId){
+	document.location.href = 'supplementForm.html?supplementId='+ supplementId;
+}
+ 
+/**
+* 刷新功能
+*/
+//获取滚动条当前的位置 
+   function getScrollTop() {
+   	var scrollTop = 0;
+    if (document.documentElement && document.documentElement.scrollTop) {
+    	scrollTop = document.documentElement.scrollTop;
+    }
+    else if (document.body) {
+    	scrollTop = document.body.scrollTop;
+    }
+   	return scrollTop;
+   }
+ 		
+ 	//获取当前可视范围的高度 
+   function getClientHeight() {
+   	var clientHeight = 0;
+    if (document.body.clientHeight && document.documentElement.clientHeight) {
+    	clientHeight = Math.min(document.body.clientHeight, document.documentElement.clientHeight);
+    }else {
+    	clientHeight = Math.max(document.body.clientHeight, document.documentElement.clientHeight);
+    }
+   	return clientHeight
+   }
+ 	
+ 	//获取文档完整的高度 
+   function getScrollHeight() {
+   	return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+   }
+
+	document.getElementById('item1a').addEventListener('tap', function() {
+		type=1;
+		window.scrollTo(0,0);
+		$("#loadText").css("display","none");
+		$("#loadText").text("正在加载......");
+	});
+	document.getElementById('item2a').addEventListener('tap', function() {
+		type=2;
+		window.scrollTo(0,0);
+		$("#loadText").css("display","none");
+		$("#loadText").text("正在加载......");
+	});
+	
+	window.onscroll = function () {
+  		//显示加载提醒
+  		if(getScrollHeight()>window.innerHeight){
+  			$("#loadText").css("display","block");
+  		}
+  		if (getScrollTop() + getClientHeight() == getScrollHeight()) {
+    		if(type == 1){
+    			page1 ++;
+    			setUnfinishedList1();
+    			window.scrollTo(0,(getScrollTop()-20));
+    		} else if(type == 2){
+    			page2 ++;
+    			setFinishedList1();
+    			window.scrollTo(0,(getScrollTop()-20));
+    		} 
+		}		
+}
+</script>
+</html>

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>运营信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+<style>
+.mui-card-content-inner {
+	width: 100%;
+	padding-top: 2px;
+	padding-bottom: 5px;
+	height: 45px;
+}
+
+.mui-media-body {
+font-family: '微软雅黑';
+}
+
+#menu img{
+height: 56%;
+width: 62%;
+}
+
+#yewu img{
+height: 90%;
+width: 90%;
+}
+
+#menu li{
+width: 33%;
+margin-top: -10px;
+border: none;
+}
+#menu div{
+font-size: 15px;
+color: black;
+margin-top: 5px;
+font-family: '微软雅黑';
+}
+
+</style>
+</head>
+<body style="background-color:#fff;">
+ 	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	<div class="mui-content"  style="display:none;" id="muiContent">
+		<div>
+			<img src="../../static/mui/images/index.png" height="180px" width="100%"/>
+		
+		</div>
+		<div>
+		  <ul class="mui-table-view">
+		         <li class="mui-table-view-cell mui-media " style="margin-right: 15px;margin-top: -1%;height: 100%;">功能菜单</li>
+		         <ul class="mui-table-view mui-grid-view mui-grid-9" style="margin-top:8px;background-color: white;height: 100%;border: none;" id="menu">
+		            <li class="mui-table-view-cell mui-media mui-col-sm-3" style="border-bottom: none;"id="dingdanjindu">
+		                <img src="../../static/mui/images/dingdanjindu_menu.png"/>
+		                <div class="mui-media-body">订单进度</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="paichanxinxi">
+		                <img src="../../static/mui/images/paichanxinxi_menu.png"/>
+		                <div class="mui-media-body">排产信息</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="teshucaozuo">
+		                <img src="../../static/mui/images/teshucaozuo_menu.png"/>
+		                <div class="mui-media-body">制程异常</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="chengpinchuhuo">
+		                <img src="../../static/mui/images/chengpinchuhuo_menu.png"/>
+		                <div class="mui-media-body">成品出货</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media m mui-col-sm-3" style="border-bottom: none;" id="cailiaoruku">
+		                <img src="../../static/mui/images/cailiaoruku_menu.png"/>
+		                <div class="mui-media-body">材料入库</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="iqc">
+		                <img src="../../static/mui/images/iqc_menu.png"/>
+		                <div class="mui-media-body">IQC检验</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="dvt">
+		                <img src="../../static/mui/images/dvt_menu.png"/>
+		                <div class="mui-media-body">DVT进度</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="pvt">
+		                <img src="../../static/mui/images/pvt_menu.png"/>
+		                <div class="mui-media-body">PVT进度</div>
+		            </li>
+		            <li class="mui-table-view-cell mui-media  mui-col-sm-3" style="border-bottom: none;" id="doa">
+		                <img src="../../static/mui/images/doa_menu.png"/>
+		                <div class="mui-media-body">DOA退货</div>
+		            </li>
+		        </ul> 
+	
+			</ul>
+			
+			<div style="text-align:center;padding-top:3%;background-color:#fff;color:#4093C6;font-size:14px">
+			   <div><span>同方计算机有限公司</span></div>
+			   <div>Copyright © 2019    无锡制造基地</div>
+			</div>
+		</div>					
+	</div>			
+</body>
+<script>
+mui.init();
+//赋值完毕结束过场动画
+setTimeout(function(){
+	document.getElementById("loading").style.display="none";
+	document.getElementById("muiContent").style.display="";
+}, 500);
+
+//监听点击菜单栏事件
+document.getElementById('dingdanjindu').addEventListener('tap',function() {
+	document.location.href = 'orderProgress.html';
+});
+document.getElementById('paichanxinxi').addEventListener('tap',function() {
+	document.location.href = 'productionSchedule.html';
+});
+document.getElementById('cailiaoruku').addEventListener('tap',function() {
+	document.location.href = 'materialStorage.html';
+	//mui.toast("正在拼命开发中。。。");
+});
+document.getElementById('chengpinchuhuo').addEventListener('tap',function() {
+	//document.location.href = 'productShipment.html';
+	mui.toast("正在拼命开发中。。。");
+});
+document.getElementById('teshucaozuo').addEventListener('tap',function() {
+	document.location.href = 'specialOperation.html';
+});
+document.getElementById('pvt').addEventListener('tap',function() {
+	document.location.href = 'PVTReport.html';
+});
+document.getElementById('dvt').addEventListener('tap',function() {
+	document.location.href = 'DVTReport.html';
+});
+document.getElementById('iqc').addEventListener('tap',function() {
+	document.location.href = 'IQCReport.html';
+});
+document.getElementById('doa').addEventListener('tap',function() {
+	document.location.href = 'DOAReport.html';
+});
+</script>
+</html>

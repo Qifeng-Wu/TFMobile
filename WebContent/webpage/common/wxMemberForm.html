@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>新增人员信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>   
+    <style>
+	  #btnFS{
+	      position: absolute;
+	      width:55px;
+	      height:55px;
+	      text-align: center;
+    	  padding-top: 17px;
+          top: 90px;
+	      right: 10px;
+	      cursor: pointer;
+	      background-color: #4093C6;
+	      border-radius: 55px;
+	      border: 0;
+	      color:#fff;
+	  }
+	</style>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	
+	<div class="mui-content" id="muiContent" style="display: none">
+		<div class="mui-content-padded" style="margin:7% 7% 0 7%;">
+			<div style="margin-top: -22px; text-align: center; opacity: 1; color: #FFF; font-size: 20px; background-color: #4093C6; padding: 12px;">
+				<span id="title_tip">新增人员信息</span><br>
+			</div>
+
+			<h5 style="margin-top: 16px">姓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;名：</h5>
+			<div class="mui-input-row mui-password">
+				<input type="text" class="mui-input" maxlength="10" id="name">
+			</div>
+			<h5 style="margin-top: -2px">工&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：</h5>
+			<div class="mui-input-row mui-password">
+				<input type="text" class="mui-input" maxlength="10" id="no">
+			</div>
+			<h5 style="margin-top: -2px">职&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;位：</h5>
+			<div class="mui-input-row mui-password">
+				<input type="text" class="mui-input" maxlength="10" id="position">
+			</div>
+			<h5 style="margin-top: -2px">所属中心：</h5>
+			<div class="mui-input-row mui-password">
+				<select class="mui-btn-block" id="organization">
+					<option value="">&nbsp;&nbsp;&nbsp;点击选择中心</option>
+			
+				</select>
+			</div>
+			<h5 style="margin-top: -2px">所属部门：</h5>
+			<div class="mui-input-row mui-password">
+				<select class="mui-btn-block" id="department">
+					<option value="">&nbsp;&nbsp;&nbsp;点击选择部门</option>
+	
+				</select>
+			</div>
+			<h5 style="margin-top: -2px">所属班组：</h5>
+			<div class="mui-input-row mui-password">
+				<select class="mui-btn-block" id="team">
+					<option value="">&nbsp;&nbsp;&nbsp;点击选择班组</option>
+
+				</select>
+			</div>
+			<h5 style="margin-top: -2px">入职日期：</h5>
+			<div class="mui-input-row mui-password">
+				<span id="chooseTime"><input id="hiredate" style="width:100%;" type="text" value="" placeholder="点击选择日期" readonly="readonly"/></span>			
+			</div>
+
+			<div style="text-align: center; margin-bottom:6px; margin-top:-18px; border-bottom-left-radius:20px; border-bottom-right-radius:20px; width:94%; margin-left:3%;">
+				<button type="button" onclick="submitInfo()"
+					style="width:95%; background: #4093C6; border: 0; height: 40px; margin-bottom: 20px; font-size: 18px; margin-top: 30px"
+					class="mui-btn mui-btn-danger grad1">提交信息</button>
+			</div>
+		</div>
+		<a type="button" href="#modal" id="btnFS" class="btn btn-success" >导入</a>
+	</div>
+	
+		<!-- 模态框 -->	
+	<div id="modal" class="mui-modal">
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-icon mui-icon-close mui-pull-right" href="#modal"></a>
+			<h1 class="mui-title">人员Excel导入</h1>
+		</header>
+		<div class="mui-content" style="height:100%">
+			<form id="importForm" action="/TFMobile/tf-api/wx-member/importExcel" method="post" enctype="multipart/form-data" onsubmit="return clicks();">
+				<div style="padding:70px 30px 30px 30px;margin-left:10px;text-align:left">
+					<input id="uploadFile" name="file" type="file"/>	
+					<p style="margin-top:20px;color:red;font-size:14px">提示：导入文件不能超过5M，仅允许导入“xls”或“xlsx”格式的文件！</p>　
+				</div>				　		
+				<div  style="text-align:center;margin-top: 100px;margin-bottom: 10px;border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;width:94%;margin-left:3%;">
+						<button type="submit" id="inputExcel" style="width:80%;background:#4093C6;border:0;height:40px;font-size: 18px;"
+						class="mui-btn mui-btn-danger">确认导入</button>		
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(11);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+
+var wxId = getUrlParam("wxId");
+if(position.indexOf('助理')!=-1){
+	if(wxId && wxId!="" && wxId!="null"){//编辑
+		$("title").text("编辑人员信息");
+		$("#title_tip").text("编辑人员信息");
+		$("#btnFS").attr("style","display:none");
+		findInfo(wxId);
+	}else{//新增
+		//赋值完毕结束过场动画
+		setTimeout(function(){
+			$("#loading").hide();
+			$("#muiContent").show();
+			$("body").css("background-color","#eee");						
+		}, 10);	
+	}
+}else{
+	mui.alert('您无此操作权限！', '提示', function() {
+		wx.closeWindow();
+	});
+}
+
+//如果是编辑获取人员信息
+function findInfo(wxId){	
+	mui.ajax('/TFMobile/tf-api/wx-member/info', {
+		data : {
+			wxId : wxId
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				$("#name").val(result.body.member.name);
+				$("#no").val(result.body.member.no);
+				$("#position").val(result.body.member.position);
+		   		$("#organization option[value='"+result.body.member.organization+"']").attr("selected","selected")
+		   		$("#department option[value='"+result.body.member.department+"']").attr("selected","selected")
+		   		$("#team option[value='"+result.body.member.team+"']").attr("selected","selected")		   		
+		   		$("#hiredate").val(findDate(result.body.member.hiredate));
+		   		
+		   		$("#loading").hide();
+				$("#muiContent").show();
+				$("body").css("background-color","#eee");
+			}else{
+				mui.toast(result.message);
+			}
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("系统出错啦，请联系管理员！");
+		}
+	});
+}
+
+//提交数据信息
+var flag = true;
+function submitInfo(){
+	var name = $("#name").val().replace(/ /g,'');	
+	var no = $("#no").val().replace(/ /g,'');	
+	var position = $("#position").val().replace(/ /g,'');	
+	if($("#organization").val()==""){
+		mui.toast("请选择所属中心");
+		return;
+	}
+	var organization = arr_organization[$("#organization").val()];	
+	if($("#department").val()==""){
+		mui.toast("请选择所属部门");
+		return;
+	}
+	var departmentName =  arr_department[$("#organization").val()][$("#department").val()];	
+	if($("#team").val()==""){
+		mui.toast("请选择所属班组");
+		return;
+	}
+	var team = arr_team[$("#organization").val()][$("#department").val()][$("#team").val()];	
+	var hiredate = $("#hiredate").val().replace(/ /g,'');	
+	
+	if(name==""){
+		mui.toast("请输入姓名");
+		return;
+	}
+	if(no==""){
+		mui.toast("请输入工号");
+		return;
+	}
+	if(position==""){
+		mui.toast("职位");
+		return;
+	}
+	if(organization=="" || organization==undefined){
+		mui.toast("请选择所属中心");
+		return;
+	}
+	if(departmentName=="" || departmentName==undefined){
+		mui.toast("请选择所属部门");
+		return;
+	}
+	if(team=="" || team==undefined){
+		mui.toast("请选择所属班组");
+		return;
+	}
+	if(hiredate==""){
+		mui.toast("请选择入职日期");
+		return;
+	}
+	
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;					
+				setTimeout(function(){
+					infoSave(name,no,position,organization,departmentName,team,hiredate);
+				 }, 10); 
+			}
+		}
+	});	
+}
+
+//保存信息
+function infoSave(name,no,position,organization,departmentName,team,hiredate){	
+	var url;
+	if(wxId && wxId!="" && wxId!="null"){//编辑
+		url = '/TFMobile/tf-api/wx-member/edit';
+	}else{//新增
+		url = '/TFMobile/tf-api/wx-member/add';
+	}
+	mui.ajax(url, {
+		data : {
+			wxId : wxId,
+			name : name,
+			no : no,
+			position : position,
+			organization : organization,
+			department : departmentName,
+			team : team,
+			hiredate : hiredate
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				setTimeout(function(){
+					document.location.href = 'departmentMemberList.html';
+				}, 1000);				
+				mui.toast("信息提交成功！");
+			}else{
+				mui.toast(result.message);
+			}
+			flag = true;
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("系统出错啦！");
+			flag = true;	
+		}
+	});
+}
+</script>
+<script type="text/javascript">
+			function clicks(){
+				var file = $("#uploadFile").val();
+				if(file==""){
+					mui.toast('请选择文件！');
+					return false;
+				}
+				if(file.length>4){
+					if(file.length==5){
+						var xlsSuffix=file.substring(file.length-4,file.length);
+						if(xlsSuffix!=".xls"){
+							mui.toast('格式不正确，请选择格式为:xlsx/xls后缀的excel文件');
+							return false;
+						}
+					}
+					var xlsxSuffix=file.substring(file.length-5,file.length);
+					var xlsSuffix=file.substring(file.length-4,file.length);
+					
+					if(xlsxSuffix==".xlsx"||xlsSuffix==".xls"){
+						mui.toast('正在导入中，请稍等。。。');
+						$("#inputExcel").attr("type","button");
+						return true;
+					}
+					mui.toast('格式不正确，请选择格式为:xlsx/xls后缀的excel文件');
+					return false;
+					
+				}else{
+					mui.toast('格式不正确，请选择格式为:xlsx/xls后缀的excel文件');
+					return false;
+				}
+			}			
+			</script>
+<script>
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("hiredate");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2010";　　　　　　
+		options.beginMonth = "01";　　　　　　
+		options.beginDay = "01";　　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+			result.value = rs.text;　　　　　　　　
+			picker.dispose();　
+	    });　　　　
+	}, false);　　　
+})(mui);
+</script>
+<script>
+    var organization_select = document.getElementById("organization");
+    var department_select = document.getElementById("department");
+    var team_select = document.getElementById("team");
+
+    var arr_organization = ["制造中心","质量中心"];
+
+    var arr_department=[
+        ["生产部","工程部","仓储部","工业技术部"],
+        ["质量部"]
+    ];
+
+    var arr_team=[
+            [
+                ["A线包装","A线测试","A线装配","B线包装","B线测试","B线装配","E线包装","E线测试","E线装配","F线","备料组","资料组","服务器","生产办"],
+                ["工程办","母盘组"],
+                ["仓储办"],
+                ["工业办","设备组"]
+            ],
+            [
+            	 ["质量办","ORT","DOA","IQC","OQC"]
+            ]
+    ];
+
+    var  quanju_arr;//创建一个全局对象，用于存储一个中间数组
+    
+    input_arr(arr_organization,organization_select);
+    
+    function input_arr(arr,event){
+        for(var i=0;i<arr.length;i++){
+            var option = new Option(arr[i],i);
+            event.appendChild(option);
+        }
+    }
+
+    organization_select.onchange = function () {
+    	department_select.options.length=1;
+    	team_select.options.length=1;
+        var index=this.value;
+        var arr_department_next=arr_department[index];
+        quanju_arr=arr_team[index];
+        input_arr(arr_department_next,department_select);
+    }
+
+    department_select.onchange= function () {
+    	team_select.options.length=1;
+        var index=this.value;
+        var arr_team_next=quanju_arr[index];
+        input_arr(arr_team_next,team_select);
+    }
+</script>
+<script>
+    var block = document.getElementById("btnFS");
+     var oW, oH;
+     block.addEventListener("touchstart", function(e) {
+         var touches = e.touches[0];
+         oW = touches.clientX - block.offsetLeft;
+         oH = touches.clientY - block.offsetTop;
+         document.addEventListener("touchmove", defaultEvent, false);
+     }, false)
+ 
+     block.addEventListener("touchmove", function(e) {
+         var touches = e.touches[0];
+         var oLeft = touches.clientX - oW;
+         var oTop = touches.clientY - oH;
+         if (oLeft < 0) {
+             oLeft = 0;
+         } else if (oLeft > document.documentElement.clientWidth - block.offsetWidth) {
+             oLeft = (document.documentElement.clientWidth - block.offsetWidth);
+         }
+         if (oTop < 0) {
+             oTop = 0;
+         } else if (oTop > document.documentElement.clientHeight - block.offsetHeight) {
+             oTop = (document.documentElement.clientHeight - block.offsetHeight);
+         }
+         block.style.left = oLeft + "px";
+         block.style.top = oTop + "px";
+     }, false);
+ 
+     block.addEventListener("touchend", function() {
+         document.removeEventListener("touchmove", defaultEvent, false);
+     }, false);
+ 
+     function defaultEvent(e) {
+         e.preventDefault();
+     }
+</script>
+</html>

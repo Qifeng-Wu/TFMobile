@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+	content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>DOA图片信息查询</title>
+<link href="../../static/mui/css/mui.min.css" rel="stylesheet" />
+<link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+<script src="../../static/js/jquery-3.1.1.min.js"></script>
+<script src="../../static/js/jquery-1.8.3.min.js"></script>
+<script src="../../static/js/exif.js"></script>
+<script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<script src="../../static/mui/js/mui.min.js"></script>
+<script src="../../static/mui/js/mui.zoom.js"></script>
+<script src="../../static/mui/js/mui.previewimage.js"></script>
+<script src="../../static/mui/js/mui.picker.min.js"></script>
+<script src="../../static/js/common.js"></script>
+<style type="text/css">
+	.mui-preview-image.mui-fullscreen {
+		position: fixed;
+		z-index: 20;
+		background-color: #000;
+	}
+	.mui-preview-header,
+	.mui-preview-footer {
+		position: absolute;
+		width: 100%;
+		left: 0;
+		z-index: 10;
+	}
+	.mui-preview-header {
+		height: 44px;
+		top: 0;
+	}
+	.mui-preview-footer {
+		height: 50px;
+		bottom: 0px;
+	}
+	.mui-preview-header .mui-preview-indicator {
+		display: block;
+		line-height: 25px;
+		color: #fff;
+		text-align: center;
+		margin: 15px auto 4;
+		width: 70px;
+		background-color: rgba(0, 0, 0, 0.4);
+		border-radius: 12px;
+		font-size: 16px;
+	}
+	.mui-preview-image {
+		display: none;
+		-webkit-animation-duration: 0.5s;
+		animation-duration: 0.5s;
+		-webkit-animation-fill-mode: both;
+		animation-fill-mode: both;
+	}
+	.mui-preview-image.mui-preview-in {
+		-webkit-animation-name: fadeIn;
+		animation-name: fadeIn;
+	}
+	.mui-preview-image.mui-preview-out {
+		background: none;
+		-webkit-animation-name: fadeOut;
+		animation-name: fadeOut;
+	}
+	.mui-preview-image.mui-preview-out .mui-preview-header,
+	.mui-preview-image.mui-preview-out .mui-preview-footer {
+		display: none;
+	}
+	.mui-zoom-scroller {
+		position: absolute;
+		display: -webkit-box;
+		display: -webkit-flex;
+		display: flex;
+		-webkit-box-align: center;
+		-webkit-align-items: center;
+		align-items: center;
+		-webkit-box-pack: center;
+		-webkit-justify-content: center;
+		justify-content: center;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		-webkit-backface-visibility: hidden;
+	}
+	.mui-zoom {
+		-webkit-transform-style: preserve-3d;
+		transform-style: preserve-3d;
+	}
+	.mui-slider .mui-slider-group .mui-slider-item img {
+		width: auto;
+		height: auto;
+		max-width: 100%;
+		max-height: 100%;
+	}
+	.mui-android-4-1 .mui-slider .mui-slider-group .mui-slider-item img {
+		width: 100%;
+	}
+	.mui-android-4-1 .mui-slider.mui-preview-image .mui-slider-group .mui-slider-item {
+		display: inline-table;
+	}
+	.mui-android-4-1 .mui-slider.mui-preview-image .mui-zoom-scroller img {
+		display: table-cell;
+		vertical-align: middle;
+	}
+	.mui-preview-loading {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		display: none;
+	}
+	.mui-preview-loading.mui-active {
+		display: block;
+	}
+	.mui-preview-loading .mui-spinner-white {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		margin-left: -25px;
+		margin-top: -25px;
+		height: 50px;
+		width: 50px;
+	}
+	.mui-preview-image img.mui-transitioning {
+		-webkit-transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+		transition: transform 0.5s ease, opacity 0.5s ease;
+	}
+	@-webkit-keyframes fadeIn {
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+	@keyframes fadeIn {
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+	@-webkit-keyframes fadeOut {
+		0% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes fadeOut {
+		0% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
+	p img {
+		max-width: 100%;
+		height: auto;
+	}
+</style>
+<style>
+  #btnFS{
+      position: absolute;
+      width:55px;
+      height:55px;
+      bottom: 15px;
+      right: 10px;
+      cursor: pointer;
+      background-color: #4093C6;
+      border-radius: 55px;
+      border: 0;
+      color:#fff;
+  }
+</style>
+</head>
+<body>
+	<!--页面加载 loading-->
+    <div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;" id="loading_text">加载中...</span>
+	</div>
+
+	<div class="mui-content" id="muiContent" style="display: none;background-color:#fff;padding-top:10px">
+		<div class="mui-input-row mui-search" style="margin:0px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入退换货单号查询">
+		</div>
+		<div style="padding: 0 3% 0 3%;">			
+			<span id="chooseTime"><input id="endTime" style="width:50%;" type="text" value="" placeholder="结束日期" readonly="readonly"/></span>
+			<span id="chooseTime1"><input id="startTime" style="width:50%;float: left;" type="text" value="" placeholder="开始日期" readonly="readonly"/></span>
+		</div>
+		<div>
+		    <ul class="mui-table-view mui-grid-view" id="imageList">
+
+		    </ul>  
+	    </div> 
+	    <div id="loadText" style="text-align:center;padding: 10px 0;display:none;">
+			<span id="text" style="font-size:15px;color:#6D6D72;font-family:'Microsoft YaHei';">正在加载......</span>
+		</div>
+	    <button id="btnFS" onclick="downloadImage()" class="btn btn-success" >下载</button>
+	</div>
+</body>
+<script type="text/javascript">
+	mui.init();	
+	mui.init({
+		swipeBack:true //启用右滑关闭功能
+	});
+	mui.previewImage();//图片预览	
+	var picturePath = "http://www.stephen7.top/";
+	var page= 0;
+ 	//获取企业成员信息
+	var memberInfo = getMemberInfo(9);
+	var memberId = memberInfo[0];	
+	var userId = memberInfo[1];  		
+	var name = memberInfo[2];  				
+	var department = memberInfo[3]; 
+	var position = memberInfo[4]; 
+	var isleader = memberInfo[5];
+	var phone = memberInfo[6];  
+	
+	if(userId){
+		if((department=="[5]" && isleader==1) || userId=="YangMeng" || userId=="WuQiFeng"){
+			setImageList();
+		}else{
+			mui.alert('您无此操作权限！', '提示', function() {
+				wx.closeWindow();
+			});
+		}
+	}else{
+		setTimeout(function(){
+			location.reload(); 
+		}, 1000);
+	} 
+
+	//图片赋值
+	function setImageList(){
+		var list = findImageList(page);
+		if(list.length>0){
+			for(var i=0;i< list.length;i++){
+				var html = '';
+				html += ' <li class="mui-table-view-cell mui-media mui-col-xs-6">';
+				html += '<a>';
+				html += '<img class="mui-media-object" src="'+picturePath+list[i].image+'" data-preview-src="" style="height:110px">';		
+				html += '<div class="mui-media-body">'+list[i].doa_sn+'</div>';
+				html += '<div class="mui-media-body" style="font-size:12px;color:#777">'+findDate(list[i].create_time)+" "+list[i].description+'</div>';
+				html += '</a>';
+				html += '</li>';	
+				$("#imageList").append(html);
+			}
+		} else if(page ==0){
+			$("#imageList").append('<div style="padding-top:100px;text-align: center;">'+
+					'<span style="color: #696969;">暂无图片数据信息！</span><br><br>'+
+					'<span style="color: #696969;">（⊙o⊙）</span></div>');
+		} else{
+			$("#loadText").css("display","none");
+			mui.toast("无更多数据！");
+		}
+	}
+	
+	//触发搜索框事件
+	$("#keyword").on('keypress',function(e) {  
+	    var keycode = e.keyCode;  
+	    var searchName = $(this).val();
+		if(searchName.replace(/ /g,'')==""){
+			mui.toast("请输入搜索内容");
+			return;
+		}
+	    if(keycode=='13') {  
+	        e.preventDefault(); 
+	        //请求搜索接口  
+			mui.ajax('/TFMobile/tf-api/doa/image/search', {
+				data : {
+					searchName : searchName
+				},
+				dataType : 'json',//服务器返回json格式数据
+				type : 'post',//HTTP请求类型
+				async : false,
+				success : function(result) {
+					$("#imageList").empty();
+					if(result.success == true){
+						var list = result.body.imageList;
+						
+						if(list.length>0){
+							for(var i=0;i< list.length;i++){
+								var html = '';
+								html += ' <li class="mui-table-view-cell mui-media mui-col-xs-6">';
+								html += '<a href="#">';
+								html += '<img class="mui-media-object" src="'+picturePath+list[i].image+'" data-preview-src="" style="height:110px">';		
+								html += '<div class="mui-media-body">'+list[i].doa_sn+'</div>';
+								html += '<div class="mui-media-body" style="font-size:12px;color:#777">'+findDate(list[i].create_time)+" "+list[i].description+'</div>';
+								html += '</a>';
+								html += '</li>';	
+								$("#imageList").append(html);
+							}
+						}else{
+							mui.toast("没有此单号图片信息");
+						}
+					}else{
+						mui.toast(result.message);
+					}								
+				},
+				error : function(xhr, type, errorThrown) {
+					mui.toast("系统出错啦");						
+				}
+			});
+	          
+	    }  
+	 })
+	 
+	  //通过日期搜索查询
+ function dateSearch(startTime,endTime){
+        //请求搜索接口  
+		mui.ajax('/TFMobile/tf-api/doa/image/dateSearch', {
+			data : {
+				startTime : startTime,
+				endTime : endTime
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				$("#imageList").empty();
+				if(result.success == true){
+					var list = result.body.imageList;				
+					if(list.length>0){
+						for(var i=0;i< list.length;i++){
+							var html = '';
+							html += ' <li class="mui-table-view-cell mui-media mui-col-xs-6">';
+							html += '<a href="#">';
+							html += '<img class="mui-media-object" src="'+picturePath+list[i].image+'" data-preview-src="" style="height:110px">';		
+							html += '<div class="mui-media-body">'+list[i].doa_sn+'</div>';
+							html += '<div class="mui-media-body" style="font-size:12px;color:#777">'+findDate(list[i].create_time)+" "+list[i].description+'</div>';
+							html += '</a>';
+							html += '</li>';	
+							$("#imageList").append(html);
+						}
+					}else{
+						mui.toast("没有该时间段图片信息");
+					}
+					//赋值完毕结束过场动画
+					setTimeout(function(){
+						document.getElementById("loading").style.display="none";
+						$("body").css("background-color","#eee");
+						document.getElementById("muiContent").style.display="";
+					}, 1);
+				}else{
+					mui.toast(result.message);
+				}								
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦");						
+			}
+		});
+}
+	
+	//获取图片信息
+	function findImageList(page){
+		var imageList = null;
+			mui.ajax('/TFMobile/tf-api/doa/image/list', {
+				data : {
+					page : page
+				},
+				dataType : 'json',//服务器返回json格式数据
+				type : 'post',//HTTP请求类型
+				async : false,
+				success : function(result) {
+					if(result.success == true){
+						imageList = result.body.imageList;
+						//赋值完毕结束过场动画
+						setTimeout(function(){
+							document.getElementById("loading").style.display="none";
+							$("body").css("background-color","#eee");
+							document.getElementById("muiContent").style.display="";
+						}, 1000);
+					}else{
+						mui.toast(result.message);
+					}				
+				},
+				error : function(xhr, type, errorThrown) {
+					mui.toast("系统出错啦");						
+				}
+			});
+		return imageList;
+	}
+	
+	
+	//下载页面图片
+	function downloadImage(){
+		//改变按钮颜色
+		$("#btnFS").attr("disabled","disabled");
+	 	
+		//判断是手机还是PC端打开,true为手机，false为pc
+      	if (!!navigator.userAgent.match(/AppleWebKit.*Mobile.*/)) {
+           //手机移动端
+      		mui.alert('暂不支持手机端下载，请至PC电脑端进行下载！', '提示', function() {
+      			$("#btnFS").removeAttr("disabled");
+			});
+      	} else if (!navigator.userAgent.match(/AppleWebKit.*Mobile.*/)) {
+          //pc端
+
+    	    var alink = document.createElement("a");
+    		var image_length = $("#imageList img").length;
+    		if(image_length>0){
+        		for(var i=0;i<image_length;i++){
+        			alink.download = "";
+        		    alink.href = $("#imageList img").eq(i).attr("src");
+        		    alink.click();
+        		    if((i+1)==image_length){
+        		    	$("#btnFS").removeAttr("disabled");
+        		    }
+        		}
+    		}else{
+    			$("#btnFS").removeAttr("disabled");
+    			mui.toast("无可下载图片！");
+    		}
+     	}
+	} 
+	
+</script>
+<script>
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("endTime");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+
+		var optionsJson = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2019";　　　　　　
+		options.beginMonth = "04";　　　　　　
+		options.beginDay = "01";　　　　　　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　
+
+			 result.value = rs.text;　
+			 picker.hide();　　　　　　　　
+			 picker.dispose();
+			 //判断有没有选择开始日期
+			 var startTime = document.getElementById("startTime").value;
+			 var endTime = document.getElementById("endTime").value;
+			 if(startTime==""){
+				 document.getElementById("endTime").value = '';
+				 mui.toast("请选择开始日期"); 
+			 }else if(!dateCompare(startTime,endTime)){
+				 mui.toast("开始日期不能大于结束日期"); 
+			 }else{
+				 document.getElementById("loading_text").innerText = "正在查询中...";
+				 document.getElementById("loading").style.display="block";
+				 document.getElementById("muiContent").style.display="none";
+				 setTimeout(function(){
+					 	dateSearch(startTime,endTime); 			
+					}, 200); 			
+			 }
+		});
+		
+	}, false);　　
+	var result1 = document.getElementById("startTime");　　　　
+	$(chooseTime1)[0].addEventListener('tap', function() {　
+
+		var optionsJson1 = this.getAttribute('data-options') || '{"type":"date"}';　　　　　　
+		var options1 = JSON.parse(optionsJson1);　　　　
+		options1.beginYear = "2019";　　　　　　
+		options1.beginMonth = "04";　　　　　　
+		options1.beginDay = "01";　　　　　　
+		var picker1 = new $.DtPicker(options1);　　　　　　
+		picker1.show(function(rs) {　　
+			result1.value = rs.text;　　　　　　　　
+			picker1.dispose();
+			 //点击开始时间就把结束时间清空
+			 var startTime = document.getElementById("startTime").value;
+			 document.getElementById("endTime").value = '';			　
+		 });　　　　
+	}, false);　　
+})(mui);
+
+//js日期比较(yyyy-mm-dd)
+function dateCompare(a,b) {
+   var arr = a.split("-");
+   var starttime = new Date(arr[0], arr[1], arr[2]);
+   var starttimes = starttime.getTime();
+
+   var arrs = b.split("-");
+   var endtime = new Date(arrs[0], arrs[1], arrs[2]);
+   var endtimes = endtime.getTime();
+   if (starttimes > endtimes) {
+       return false;
+   }else{
+       return true; 
+   }
+}
+</script>
+<script>
+    var block = document.getElementById("btnFS");
+     var oW, oH;
+     block.addEventListener("touchstart", function(e) {
+         var touches = e.touches[0];
+         oW = touches.clientX - block.offsetLeft;
+         oH = touches.clientY - block.offsetTop;
+         document.addEventListener("touchmove", defaultEvent, false);
+     }, false)
+ 
+     block.addEventListener("touchmove", function(e) {
+         var touches = e.touches[0];
+         var oLeft = touches.clientX - oW;
+         var oTop = touches.clientY - oH;
+         if (oLeft < 0) {
+             oLeft = 0;
+         } else if (oLeft > document.documentElement.clientWidth - block.offsetWidth) {
+             oLeft = (document.documentElement.clientWidth - block.offsetWidth);
+         }
+         if (oTop < 0) {
+             oTop = 0;
+         } else if (oTop > document.documentElement.clientHeight - block.offsetHeight) {
+             oTop = (document.documentElement.clientHeight - block.offsetHeight);
+         }
+         block.style.left = oLeft + "px";
+         block.style.top = oTop + "px";
+     }, false);
+ 
+     block.addEventListener("touchend", function() {
+         document.removeEventListener("touchmove", defaultEvent, false);
+     }, false);
+ 
+     function defaultEvent(e) {
+         e.preventDefault();
+     }
+</script>
+</html>

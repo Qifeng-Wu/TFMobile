@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>SFC跳站信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	
+	<div class="mui-content" id="muiContent" style="display:none">
+		<div class="mui-card">
+			<form class="mui-input-group">
+				<div style="text-align: center;opacity:1;color: #FFF;font-size:20px; background-color: #4093C6;padding:18px 20px 18px 20px;">
+					<span>SFC跳站信息</span><br>
+				</div>
+				<br>
+				<div class="mui-input-row" >
+					<label>制令单号</label>
+					<input type="text" id="ordermaking" placeholder="输入制令单号 " maxlength="15">
+				</div>
+				<div class="mui-input-row">
+					<label>SN编码</label>
+					<input type="text" id="sn" placeholder="输入SN编码 " maxlength="19">
+				</div>			
+				<div class="mui-input-row">
+					<label>当前站点</label>
+					<select class="mui-btn-block" id="presentStation">
+						<option value="">选择当前站点</option>
+						<option value="装配">装配</option>
+						<option value="高温">高温</option>
+						<option value="安规">安规</option>
+						<option value="终检">终检</option>
+						<option value="包装">包装</option>
+						<option value="OQC">OQC</option>
+					</select>
+				</div>
+				<div class="mui-input-row">
+					<label>跳至站点</label>
+					<select class="mui-btn-block" id="toStation">
+						<option value="">选择跳至站点</option>
+						<option value="高温">高温</option>
+						<option value="安规">安规</option>
+						<option value="终检">终检</option>
+						<option value="包装">包装</option>
+						<option value="OQC">OQC</option>
+					</select>
+				</div>
+				<div class="mui-input-row" style="height:200px">
+					<label>跳站原因</label>
+					<textarea id="reason" rows="5" placeholder="输入跳站原因" maxlength="350"></textarea>
+				</div>				
+			</form>
+			<div  style="text-align:center;margin-bottom: 10px;margin-top: -10px;border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;width:94%;margin-left:3%;">
+				<button type="button" id="submitBtn" style="width:95%;background:#4093C6;border:0;height:40px;margin-bottom: 20px;font-size: 18px;margin-top: 30px "
+				class="mui-btn mui-btn-danger grad1">提交信息</button>		
+			</div> 
+		</div>
+	</div>
+
+	
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(6);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+
+//网页授权完成再处理其他信息
+if(memberId){	
+   	//赋值完毕结束过场动画
+    setTimeout(function(){
+   		document.getElementById("loading").style.display="none";
+   		$("body").css("background-color","#eee");
+   		document.getElementById("muiContent").style.display="";
+   	}, 1);
+}
+
+	//表单提交
+	var flag = true;
+	document.getElementById('submitBtn').addEventListener('tap',function() {
+
+		//判断当前成员是否有权限处理（是否为生产部）
+		var pass = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==4){
+				pass = true;
+			}		
+		}
+		if(!pass){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+
+   		var ordermaking = $("#ordermaking").val().replace(/ /g,'');
+   		var sn = $("#sn").val().replace(/ /g,'');  		
+   		var presentStation = $("#presentStation").val().replace(/ /g,'');
+   		var toStation = $("#toStation").val().replace(/ /g,'');
+   		var reason = $("#reason").val().replace(/ /g,'');
+   		var reg = /\d{9}$/;//19位正整数正则/^[0-9]\d{19}$/
+   		var re = /\d{19}$/;//19位正整数正则/^[0-9]\d{19}$/
+
+   		if(ordermaking==null||ordermaking==""){
+   			mui.toast("请输入制令单号");
+   			return;
+   		}
+   		if(!reg.test(ordermaking)){
+   			mui.toast("制令单号格式不正确");
+   			return;
+   		}
+   		if(sn==null||sn==""){
+   			mui.toast("请输入SN");
+   			return;
+   		}
+   		if(!re.test(sn)){
+   			mui.toast("SN码格式不正确");
+   			return;
+   		}
+   		if(presentStation==null||presentStation==""){
+   			mui.toast("请选择当前站点");
+   			return;
+   		}
+   		if(toStation==null||toStation==""){
+   			mui.toast("请选择跳至站点");
+   			return;
+   		}
+   		if(reason==null||reason==""){
+   			mui.toast("请输入跳站原由");
+   			return;
+   		} 		
+
+   				
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					save(ordermaking,sn,presentStation,toStation,reason);
+					return;
+				}
+			}
+		});
+	});
+	
+	
+	//保存提交内容
+	function save(ordermaking,sn,presentStation,toStation,reason){
+
+		mui.ajax('/TFMobile/tf-api/jumpStation/submit', {
+			data : {
+				submitMan : memberId,
+				submitManName : name,//发文人姓名
+				ordermaking : ordermaking,
+				sn : sn,
+				presentStation : presentStation,
+				toStation : toStation,
+				reason : reason,
+				department : department//根据发文人的部门找到对应领导推送消息
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				if(result.success == true){
+					setTimeout(function(){
+						location.reload(); 
+					}, 1000);
+					mui.toast("表单提交成功！");
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("网络出错了");
+			}
+		});
+	}
+</script>
+</html>

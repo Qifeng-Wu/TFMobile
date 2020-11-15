@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>成品出货信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <style>
+    	.mui-card{
+    		background-color:#4093C6;
+    	}
+    	.span_color{
+    		color:#4093C6;
+    	}
+    	.span_color2{
+    		color:#339900;
+    	}
+    	.span_color3{
+    		color:#990000;
+    	}
+    </style>
+</head>
+<body>
+ 	<!--页面加载 loading-->
+	<!-- <div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div> -->
+	<div class="mui-content"  style="display:block;background-color:#eee;padding-bottom:15px" id="muiContent">
+		<div class="mui-input-row mui-search" style="margin:10px 10px 0px 10px;">
+			<input type="search" id="keyword" class="mui-input-clear" placeholder="输入运输单编号、交货单编号、订单号搜索">
+		</div>
+		<div style="padding: 0 3% 0 3%;">
+			<span id="chooseTime"><input id="handleTime" style="width:100%;" type="text" value="" placeholder="点击选择发货日期查询" readonly="readonly" /></span>			
+		</div>
+	<div style="margin-top:-10px">
+		<div class="mui-card">
+			<ul class="mui-table-view">
+			<li class="mui-table-view-cell mui-media">		
+			<div class="mui-media-body" style="padding-top:6px;padding-left:12px">
+			<div style="font-size:14px;">运&nbsp;输&nbsp;单&nbsp;编&nbsp;号：<span class="span_color">100663239</span></div>				
+			<div style="font-size:14px;">交&nbsp;货&nbsp;单&nbsp;编&nbsp;号：<span class="span_color">800704508</span></div>				
+			<div style="font-size:14px;">订&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;单&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;号：<span class="span_color">212090279</span></div>				
+			<div style="font-size:14px;">行&nbsp;&nbsp;&nbsp;项&nbsp;&nbsp;&nbsp;目&nbsp;&nbsp;号：<span class="span_color">10</span></div>				
+			<div style="font-size:14px;">工&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;厂：<span class="span_color">3040</span></div>				
+			<div style="font-size:14px;">工&nbsp;&nbsp;&nbsp;厂&nbsp;&nbsp;&nbsp;名&nbsp;&nbsp;称：<span class="span_color">终端行业台式工厂</span></div>				
+			<div style="font-size:14px;">库&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;位：<span class="span_color">5012</span></div>				
+			<div style="font-size:14px;">库&nbsp;&nbsp;&nbsp;位&nbsp;&nbsp;&nbsp;描&nbsp;&nbsp;述：<span class="span_color">无锡良品成品库</span></div>				
+			<div style="font-size:14px;">路&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;线：<span class="span_color">WHN404</span></div>				
+			<div style="font-size:14px;">路&nbsp;&nbsp;&nbsp;线&nbsp;&nbsp;&nbsp;描&nbsp;&nbsp;述：<span class="span_color">无锡==>海口美兰区</span></div>				
+			<div style="font-size:14px;">发&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;站：<span class="span_color">4012</span></div>				
+			<div style="font-size:14px;">发&nbsp;&nbsp;&nbsp;站&nbsp;&nbsp;&nbsp;描&nbsp;&nbsp;述：<span class="span_color">无锡</span></div>				
+			<div style="font-size:14px;">到&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;站：<span class="span_color">640104</span></div>				
+			<div style="font-size:14px;">到&nbsp;&nbsp;&nbsp;站&nbsp;&nbsp;&nbsp;描&nbsp;&nbsp;述：<span class="span_color">海口美兰区</span></div>				
+			<div style="font-size:14px;">承&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;运&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;商：<span class="span_color">900003</span></div>				
+			<div style="font-size:14px;">承&nbsp;运&nbsp;商&nbsp;名&nbsp;称：<span class="span_color">中铁物流上海有限公司(无锡项目部)</span></div>				
+			<div style="font-size:14px;">订货单位编号：<span class="span_color">2010002304</span></div>				
+			<div style="font-size:14px;">订货单位名称：<span class="span_color">海南网融网络科技有限公司</span></div>				
+			<div style="font-size:14px;">收货单位编号：<span class="span_color">4012</span></div>				
+			<div style="font-size:14px;">收货单位名称：<span class="span_color">海南网融网络科技有限公司</span></div>				
+			<div style="font-size:14px;">到&nbsp;&nbsp;&nbsp;货&nbsp;&nbsp;&nbsp;地&nbsp;&nbsp;址：<span class="span_color">海口市美兰区海府路美苑小区4栋104</span></div>				
+			<div style="font-size:14px;">收&nbsp;货&nbsp;联&nbsp;系&nbsp;人：<span class="span_color">谭瑞瑞</span></div>				
+			<div style="font-size:14px;">收货联系电话：<span class="span_color">0898-65239233</span></div>				
+			<div style="font-size:14px;">收货联系手机：<span class="span_color">15595958766</span></div>				
+			<div style="font-size:14px;">物&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;料：<span class="span_color">201002723</span></div>				
+			<div style="font-size:14px;">物&nbsp;&nbsp;&nbsp;料&nbsp;&nbsp;&nbsp;描&nbsp;&nbsp;述：<span class="span_color">大宇黑色VGA外置电源显示器</span></div>				
+			<div style="font-size:14px;">批&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;次：<span class="span_color">DY01</span></div>				
+			<div style="font-size:14px;">库&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;房：<span class="span_color">5012</span></div>				
+			<div style="font-size:14px;">数&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;量：<span class="span_color">888</span></div>							
+			<div style="font-size:14px;">备&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;注：<span class="span_color">特殊需求标注</span></div>	
+			<div style="font-size:14px;">装&nbsp;&nbsp;&nbsp;运&nbsp;&nbsp;&nbsp;类&nbsp;&nbsp;型：<span class="span_color">1</span></div>				
+			<div style="font-size:14px;">装运类型描述：<span class="span_color">公路or航空</span></div>							
+			<div style="font-size:14px;">总&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;件&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;数：<span class="span_color">18</span></div>							
+			<div style="font-size:14px;">A&nbsp;&nbsp;类&nbsp;总&nbsp;件&nbsp;数：<span class="span_color">10</span></div>							
+			<div style="font-size:14px;">B&nbsp;&nbsp;类&nbsp;总&nbsp;件&nbsp;数：<span class="span_color">8</span></div>							
+			<div style="font-size:14px;">C&nbsp;&nbsp;类&nbsp;总&nbsp;件&nbsp;数：<span class="span_color">0</span></div>							
+			<div style="font-size:14px;">总&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;体&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;积：<span class="span_color">0.824</span></div>							
+			<div style="font-size:14px;">总&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;重&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;量：<span class="span_color">155</span></div>							
+			<div style="font-size:14px;">发&nbsp;&nbsp;&nbsp;货&nbsp;&nbsp;&nbsp;日&nbsp;&nbsp;期：<span class="span_color">2018-06-08</span></div>							
+			<div style="font-size:14px;">交&nbsp;货&nbsp;单&nbsp;日&nbsp;期：<span class="span_color">2018-06-18</span></div>							
+			<div style="font-size:14px;">预计到货日期：<span class="span_color">2018-06-18</span></div>																				
+			</div>
+			</li></ul>
+		</div>
+		
+		
+	</div>			
+	</div>			
+</body>
+<script>
+(function($) {				　　　　
+	$.init();　　　　
+	var result = document.getElementById("handleTime");　　　　
+	$(chooseTime)[0].addEventListener('tap', function() {　
+
+		var optionsJson = this.getAttribute('data-options') || '{}';　　　　　　
+		var options = JSON.parse(optionsJson);　　　　
+		options.beginYear = "2018";　　　　　　
+		options.beginMonth = "01";　　　　　　
+		options.beginDay = "01";　　　　　　
+		/* options.beginHours = "00";　　　　　　
+		options.beginMinutes = "00"; */　
+		var picker = new $.DtPicker(options);　　　　　　
+		picker.show(function(rs) {　　
+			　　　　　　 result.value = rs.text;　　　　　　　　
+			picker.dispose();　
+			　　　　　 });　　　　
+	}, false);　　　
+})(mui);
+</script>
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>修改改善提案</title>
+	<link href="../../static/mui/css/mui.min.css" rel="stylesheet" />
+	<script src="../../static/js/jquery-3.1.1.min.js"></script>
+	<script src="../../static/js/jquery-1.8.3.min.js"></script>
+	<script src="../../static/js/exif.js"></script>
+	<script type="text/javascript"src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+	<script src="../../static/mui/js/mui.min.js"></script>
+	<script src="../../static/mui/js/mui.zoom.js"></script>
+	<script src="../../static/mui/js/mui.previewimage.js"></script>
+	<script src="../../static/js/common.js"></script>
+	<script type="text/javascript">
+  //扩展mui.showLoading
+    (function($, window) {
+        //显示加载框
+        $.showLoading = function(message,type) {
+            if ($.os.plus && type !== 'div') {
+                $.plusReady(function() {
+                    plus.nativeUI.showWaiting(message);
+                });
+            } else {
+                var html = '';
+                html += '<i class="mui-spinner mui-spinner-white"></i>';
+                html += '<p class="text">' + (message || "数据加载中") + '</p>';
+
+                //遮罩层
+                var mask=document.getElementsByClassName("mui-show-loading-mask");
+                if(mask.length==0){
+                    mask = document.createElement('div');
+                    mask.classList.add("mui-show-loading-mask");
+                    document.body.appendChild(mask);
+                    mask.addEventListener("touchmove", function(e){e.stopPropagation();e.preventDefault();});
+                }else{
+                    mask[0].classList.remove("mui-show-loading-mask-hidden");
+                }
+                //加载框
+                var toast=document.getElementsByClassName("mui-show-loading");
+                if(toast.length==0){
+                    toast = document.createElement('div');
+                    toast.classList.add("mui-show-loading");
+                    toast.classList.add('loading-visible');
+                    document.body.appendChild(toast);
+                    toast.innerHTML = html;
+                    toast.addEventListener("touchmove", function(e){e.stopPropagation();e.preventDefault();});
+                }else{
+                    toast[0].innerHTML = html;
+                    toast[0].classList.add("loading-visible");
+                }
+            }   
+        };
+
+        //隐藏加载框
+          $.hideLoading = function(callback) {
+            if ($.os.plus) {
+                $.plusReady(function() {
+                    plus.nativeUI.closeWaiting();
+                });
+            } 
+            var mask=document.getElementsByClassName("mui-show-loading-mask");
+            var toast=document.getElementsByClassName("mui-show-loading");
+            if(mask.length>0){
+                mask[0].classList.add("mui-show-loading-mask-hidden");
+            }
+            if(toast.length>0){
+                toast[0].classList.remove("loading-visible");
+                callback && callback();
+            }
+          }
+    })(mui, window);
+    </script>
+<style>
+.upload {
+	height: 100px;
+	margin-top: 7px;
+	margin-bottom: 20px;
+	position: relative;
+}
+
+.upload>p {
+	width: 45%;
+	line-height: 100px;
+	padding: 5px;
+	text-align: center;
+}
+
+.index1 {
+	border: 2px dashed #888;
+}
+
+.index2 {
+	border: 0;
+}
+
+.index2>img {
+	width: 98%;
+	height: 98%;
+	margin: 1% 1%;
+}
+
+.icon1, .img1, .input1 {
+	position: absolute;
+	top: 0;
+	left: 35%;
+}
+
+.index1 span {
+	font-size: 50px;
+	color: #888;
+}
+
+.index3 {
+	opacity: 0;
+	border: 0;
+}
+
+.index3 input {
+	border: 0;
+	width: 100%;
+	height: 100px;
+	margin: 0 auto;
+}
+</style>
+ <style>
+    	/*----------------mui.showLoading---------------*/
+		.mui-show-loading {
+		    position: fixed;
+		    padding: 5px;
+		    width: 120px;
+		    min-height: 120px;
+		    top: 45%;
+		    left: 50%;
+		    margin-left: -60px;
+		    background: rgba(0, 0, 0, 0.6);
+		    text-align: center;
+		    border-radius: 5px;
+		    color: #FFFFFF;
+		    visibility: hidden;
+		    margin: 0;
+		    z-index: 2000;
+		
+		    -webkit-transition-duration: .2s;
+		    transition-duration: .2s;
+		    opacity: 0.5;
+		    -webkit-transform: scale(0.9) translate(-50%, -50%);
+		    transform: scale(0.9) translate(-50%, -50%);
+		    -webkit-transform-origin: 0 0;
+		    transform-origin: 0 0;
+		}
+		.mui-show-loading.loading-visible {
+		    opacity: 1;
+		    visibility: visible;
+		    -webkit-transform: scale(1) translate(-50%, -50%);
+		    transform: scale(1) translate(-50%, -50%);
+		}
+		.mui-show-loading .mui-spinner{
+		    margin-top: 24px;
+		    width: 36px;
+		    height: 36px;
+		}
+		.mui-show-loading .text {
+		    line-height: 1.6;
+		    font-family: -apple-system-font,"Helvetica Neue",sans-serif;
+		    font-size: 14px;
+		    margin: 10px 0 0;
+		    color: #fff;
+		}
+		
+		.mui-show-loading-mask {
+		  position: fixed;
+		  z-index: 1000;
+		  top: 0;
+		  right: 0;
+		  left: 0;
+		  bottom: 0;
+		}
+		.mui-show-loading-mask-hidden{
+		    display: none !important;
+		}
+    </style>
+    <style type="text/css">
+		.mui-preview-image.mui-fullscreen {
+			position: fixed;
+			z-index: 20;
+			background-color: #000;
+		}
+		.mui-preview-header,
+		.mui-preview-footer {
+			position: absolute;
+			width: 100%;
+			left: 0;
+			z-index: 10;
+		}
+		.mui-preview-header {
+			height: 44px;
+			top: 0;
+		}
+		.mui-preview-footer {
+			height: 50px;
+			bottom: 0px;
+		}
+		.mui-preview-header .mui-preview-indicator {
+			display: block;
+			line-height: 25px;
+			color: #fff;
+			text-align: center;
+			margin: 15px auto 4;
+			width: 70px;
+			background-color: rgba(0, 0, 0, 0.4);
+			border-radius: 12px;
+			font-size: 16px;
+		}
+		.mui-preview-image {
+			display: none;
+			-webkit-animation-duration: 0.5s;
+			animation-duration: 0.5s;
+			-webkit-animation-fill-mode: both;
+			animation-fill-mode: both;
+		}
+		.mui-preview-image.mui-preview-in {
+			-webkit-animation-name: fadeIn;
+			animation-name: fadeIn;
+		}
+		.mui-preview-image.mui-preview-out {
+			background: none;
+			-webkit-animation-name: fadeOut;
+			animation-name: fadeOut;
+		}
+		.mui-preview-image.mui-preview-out .mui-preview-header,
+		.mui-preview-image.mui-preview-out .mui-preview-footer {
+			display: none;
+		}
+		.mui-zoom-scroller {
+			position: absolute;
+			display: -webkit-box;
+			display: -webkit-flex;
+			display: flex;
+			-webkit-box-align: center;
+			-webkit-align-items: center;
+			align-items: center;
+			-webkit-box-pack: center;
+			-webkit-justify-content: center;
+			justify-content: center;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			-webkit-backface-visibility: hidden;
+		}
+		.mui-zoom {
+			-webkit-transform-style: preserve-3d;
+			transform-style: preserve-3d;
+		}
+		.mui-slider .mui-slider-group .mui-slider-item img {
+			width: auto;
+			height: auto;
+			max-width: 100%;
+			max-height: 100%;
+		}
+		.mui-android-4-1 .mui-slider .mui-slider-group .mui-slider-item img {
+			width: 100%;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-slider-group .mui-slider-item {
+			display: inline-table;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-zoom-scroller img {
+			display: table-cell;
+			vertical-align: middle;
+		}
+		.mui-preview-loading {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			display: none;
+		}
+		.mui-preview-loading.mui-active {
+			display: block;
+		}
+		.mui-preview-loading .mui-spinner-white {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin-left: -25px;
+			margin-top: -25px;
+			height: 50px;
+			width: 50px;
+		}
+		.mui-preview-image img.mui-transitioning {
+			-webkit-transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+			transition: transform 0.5s ease, opacity 0.5s ease;
+		}
+		@-webkit-keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@-webkit-keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		@keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		p img {
+			max-width: 100%;
+			height: auto;
+		}
+	</style>  
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>
+	
+	<div class="mui-content" id="muiContent" style="display: none">
+		<div class="mui-content-padded" style="margin:7% 7% 0 7%;">
+			<div style="margin-top: -22px; text-align: center; opacity: 1; color: #FFF; font-size: 20px; background-color: #4093C6; padding: 12px;">
+				<span>修改提案表</span><br>
+			</div>
+
+			<h5 style="margin-top: 10px">提案名称：</h5>
+			<div class="mui-input-row mui-password">
+				<input type="text" class="mui-input" maxlength="30" id="title">
+			</div>
+			<h5 style="margin-top: -8px">目前做法：</h5>
+			<div class="mui-input-row">
+				<textarea id="current_measure" maxlength="100" rows="3" placeholder="输入目前做法"></textarea>
+			</div>
+			<h5 style="margin-top: -8px">改善办法：</h5>
+			<div class="mui-input-row">
+				<textarea id="improve_measure" maxlength="150" rows="3" placeholder="输入改善办法"></textarea>
+			</div>
+			<h5 style="margin-top: -8px">预期效果：</h5>
+			<div class="mui-input-row">
+				<textarea id="anticipate_effect" maxlength="100" rows="3" placeholder="输入预期效果"></textarea>
+			</div>
+			<h5 style="margin-top: -8px">图片信息：</h5>
+					<div class="mui-input-row" style="background-color: #fff">
+				<div class="upload">
+					<p class="index1 icon1">
+						<span class="mui-icon mui-icon-plus"></span>
+					</p>
+					<p class="index2 img1" id="upload1Pic" style="display: none;">
+						<img class="upload1" style="height: 96%;" />
+					</p>
+					<p class="index3 input1">
+						<input style="border: 0; position: relative; top: -35px;"
+							type="file" id="upload1" accept="image/*"
+							onchange="compress(this);">
+					</p>
+					<input id="upload1z" type="hidden" readonly="readonly" />
+				</div>
+			</div>
+
+			<div style="text-align: center; margin-bottom:6px; margin-top:-18px; border-bottom-left-radius:20px; border-bottom-right-radius:20px; width:94%; margin-left:3%;">
+				<button type="button" onclick="submitInfo()"
+					style="width:95%; background: #4093C6; border: 0; height: 40px; margin-bottom: 20px; font-size: 18px; margin-top: 30px"
+					class="mui-btn mui-btn-danger">提交信息</button>
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getAnotherMemberInfo(2);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+//获取url中的参数
+var improvementId = getUrlParam("improvementId");
+
+if(memberId){
+	findImprovementInfo(improvementId);//获取改善提案信息
+	var team;
+	if(department=="[4]" && isleader!=1) {
+		if(position.indexOf("A线")!=-1) {
+			team = "A线";
+			//赋值完毕结束过场动画
+			setTimeout(function(){
+				$("#loading").hide();
+				$("#muiContent").show();
+				$("body").css("background-color","#eee");						
+			}, 100);	
+		}else if(position.indexOf("B线")!=-1) {
+			team = "B线";
+			//赋值完毕结束过场动画
+			setTimeout(function(){
+				$("#loading").hide();
+				$("#muiContent").show();
+				$("body").css("background-color","#eee");						
+			}, 100);	
+		}else if(position.indexOf("E线")!=-1) {
+			team = "L线";
+			//赋值完毕结束过场动画
+			setTimeout(function(){
+				$("#loading").hide();
+				$("#muiContent").show();
+				$("body").css("background-color","#eee");						
+			}, 100);	
+		}else if(position.indexOf("L线")!=-1) {
+			team = "E线";
+			//赋值完毕结束过场动画
+			setTimeout(function(){
+				$("#loading").hide();
+				$("#muiContent").show();
+				$("body").css("background-color","#eee");						
+			}, 100);	
+		}else if(position.indexOf("HP")!=-1) {
+			team = "HP";
+			//赋值完毕结束过场动画
+			setTimeout(function(){
+				$("#loading").hide();
+				$("#muiContent").show();
+				$("body").css("background-color","#eee");						
+			}, 100);	
+		}else if(position.indexOf("产能")!=-1) {
+			team = "产能";
+			//赋值完毕结束过场动画
+			setTimeout(function(){
+				$("#loading").hide();
+				$("#muiContent").show();
+				$("body").css("background-color","#eee");						
+			}, 100);	
+		}else {
+			mui.alert('暂不支持该班组提交改善提案！', '提示', function() {
+				wx.closeWindow();
+			});
+		}
+	}else {
+		mui.alert('暂不支持该部门或部门经理提交改善提案！', '提示', function() {
+			wx.closeWindow();
+		});
+	}
+}else{
+	mui.alert('您无此操作权限！', '提示', function() {
+		wx.closeWindow();
+	});
+}
+
+//获取改善提案信息
+function findImprovementInfo(improvementId){
+	if(improvementId){
+		mui.ajax('/TFMobile/tf-api/improvement/findInfo', {
+			data : {
+				improvementId : improvementId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {			
+				if(result.success == true){
+					var improvement = result.body.improvement;
+					if(improvement!=null && improvement!="null" && improvement!=""){	
+						$("#title").val(improvement.title);
+						$("#current_measure").val(improvement.current_measure);
+						$("#improve_measure").val(improvement.improve_measure);
+						$("#anticipate_effect").val(improvement.anticipate_effect);				   		
+					}else{
+						mui.toast("系统出错啦，请联系管理员");
+					}
+
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦，请联系管理员");
+			}
+		});
+	}
+}
+
+//提交数据信息
+var flag = true;
+function submitInfo(){
+	var title = $("#title").val().replace(/ /g,'');	
+	var current_measure = $("#current_measure").val().replace(/ /g,'');	
+	var improve_measure = $("#improve_measure").val().replace(/ /g,'');	
+	var anticipate_effect = $("#anticipate_effect").val().replace(/ /g,'');	
+	var picture = $("#upload1z").val();
+
+	if(title==""){
+		mui.toast("请填写提案名称");
+		return;
+	}
+	if(current_measure==""){
+		mui.toast("请填写目前做法");
+		return;
+	}
+	if(improve_measure==""){
+		mui.toast("请填写改善办法");
+		return;
+	}
+	if(anticipate_effect==""){
+		mui.toast("请填写预期效果");
+		return;
+	}
+
+	
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;	
+				mui.showLoading("正在提交..","div"); //加载文字和类型，plus环境中类型为div时强制以div方式显示
+				setTimeout(function(){
+					infoSave(title,current_measure,improve_measure,anticipate_effect,picture);
+				 }, 10); 
+			}
+		}
+	});	
+}
+
+//保存信息
+function infoSave(title,current_measure,improve_measure,anticipate_effect,picture){	
+	mui.ajax('/TFMobile/tf-api/improvement/edit', {
+		data : {
+			improvementId : improvementId,
+			proposer : memberId,
+			name : name,
+			position : position,
+			department : department,
+			team : team,
+			title : title,
+			current_measure : current_measure,
+			improve_measure : improve_measure,
+			anticipate_effect : anticipate_effect,
+			picture : picture
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			mui.hideLoading();//隐藏loading
+			if(result.success == true){
+				setTimeout(function(){
+					document.location.href = 'myImprovementList.html';
+				}, 1000);				
+				mui.toast("信息提交成功！");
+			}else{
+				mui.toast(result.message);
+			}
+			flag = true;
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("系统出错啦，请联系管理员！");
+			mui.hideLoading();//隐藏loading
+			flag = true;	
+		}
+	});
+}
+
+//压缩图片
+function compress(ele) {
+    var self = ele;
+    var fileName = $(ele).attr("name");
+    var file = self.files[0];
+    var r = new FileReader();
+    r.readAsDataURL(file);
+    $(r).load(function () {
+        var fileStream = ele.result;//base64图片流
+        var URL = window.URL || window.webkitURL,
+        canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+        if (URL && file && ctx) {
+            var fileURL = URL.createObjectURL(file),
+            img = new Image();
+            img.src = fileURL;
+            img.onload = function () {
+                var orientation=null;
+                EXIF.getData(img, function () {
+                	EXIF.getAllTags(this);
+                    orientation = EXIF.getTag(this, "Orientation");
+                   var degree = 0, drawWidth = img.width, drawHeight = img.height, width, height;  
+                    //以下改变一下图片大小
+                   	var maxSide = Math.max(drawWidth, drawHeight);
+                    var tarSize = 512;//0.54M
+                    if (maxSide > tarSize) {
+                        var minSide = Math.min(drawWidth, drawHeight);
+                        minSide = minSide / maxSide * tarSize;  
+                        maxSide = tarSize;  
+                        if (drawWidth > drawHeight) { 
+                            drawWidth = maxSide;  
+                            drawHeight = minSide;
+                        } else {
+                            drawWidth = minSide;  
+                            drawHeight = maxSide;
+                        }
+                    }
+                   	
+                    canvas.width = width = drawWidth;
+                    canvas.height = height = drawHeight;
+                   
+                   switch (orientation) {//横屏竖屏转化  
+					//横屏拍摄，此时home键在左侧  
+					case 3:
+						degree = 180;
+						drawWidth = -width;
+						drawHeight = -height;
+						break;
+					//竖屏拍摄，此时home键在下方(正常拿手机的方向)  
+					case 6:
+						canvas.width = height;
+						canvas.height = width;
+						degree = 90;
+						drawWidth = width;
+						drawHeight = -height;
+						break;
+					//竖屏拍摄，此时home键在上方  
+					case 8:
+						canvas.width = height;
+						canvas.height = width;
+						degree = 270;
+						drawWidth = -width;
+						drawHeight = height;
+						break;
+					}
+                  //使用canvas旋转校正  
+					ctx.rotate(degree* Math.PI/180);
+                  
+					ctx.drawImage(img, 0, 0, drawWidth, drawHeight);  
+                    var base64 = canvas.toDataURL('image/jpeg',1);  
+                    var reader = new FileReader();
+                    reader.readAsDataURL(ele.files[0]);
+                    reader.onload = function(e){
+                    	$("."+ele.id).attr("src",e.target.result);
+                    	$("#"+ele.id+"z").val(base64);
+                    	$("#"+ele.id+"Pic").show();
+          		    };
+                    canvas = null;  
+                    img = null;  
+                });
+            }
+        } else {
+        	var reader = new FileReader();
+            reader.readAsDataURL(ele.files[0]);
+            reader.onload = function(e){
+            	$("."+ele.id).attr("src",e.target.result);
+            	$("#"+ele.id+"z").val(e.target.result);
+  		    };
+        }  
+    });
+}
+</script>
+</html>

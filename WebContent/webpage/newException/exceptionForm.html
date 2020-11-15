@@ -1,0 +1,3898 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>异常问题通报信息</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/flowChart.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script src="../../static/js/jquery-1.8.3.min.js"></script>
+    <script src="../../static/js/exif.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.zoom.js"></script>
+    <script src="../../static/mui/js/mui.previewimage.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <script type="text/javascript">
+  //扩展mui.showLoading
+    (function($, window) {
+        //显示加载框
+        $.showLoading = function(message,type) {
+            if ($.os.plus && type !== 'div') {
+                $.plusReady(function() {
+                    plus.nativeUI.showWaiting(message);
+                });
+            } else {
+                var html = '';
+                html += '<i class="mui-spinner mui-spinner-white"></i>';
+                html += '<p class="text">' + (message || "数据加载中") + '</p>';
+
+                //遮罩层
+                var mask=document.getElementsByClassName("mui-show-loading-mask");
+                if(mask.length==0){
+                    mask = document.createElement('div');
+                    mask.classList.add("mui-show-loading-mask");
+                    document.body.appendChild(mask);
+                    mask.addEventListener("touchmove", function(e){e.stopPropagation();e.preventDefault();});
+                }else{
+                    mask[0].classList.remove("mui-show-loading-mask-hidden");
+                }
+                //加载框
+                var toast=document.getElementsByClassName("mui-show-loading");
+                if(toast.length==0){
+                    toast = document.createElement('div');
+                    toast.classList.add("mui-show-loading");
+                    toast.classList.add('loading-visible');
+                    document.body.appendChild(toast);
+                    toast.innerHTML = html;
+                    toast.addEventListener("touchmove", function(e){e.stopPropagation();e.preventDefault();});
+                }else{
+                    toast[0].innerHTML = html;
+                    toast[0].classList.add("loading-visible");
+                }
+            }   
+        };
+
+        //隐藏加载框
+          $.hideLoading = function(callback) {
+            if ($.os.plus) {
+                $.plusReady(function() {
+                    plus.nativeUI.closeWaiting();
+                });
+            } 
+            var mask=document.getElementsByClassName("mui-show-loading-mask");
+            var toast=document.getElementsByClassName("mui-show-loading");
+            if(mask.length>0){
+                mask[0].classList.add("mui-show-loading-mask-hidden");
+            }
+            if(toast.length>0){
+                toast[0].classList.remove("loading-visible");
+                callback && callback();
+            }
+          }
+    })(mui, window);
+    </script>
+    <style>
+    	/*----------------mui.showLoading---------------*/
+		.mui-show-loading {
+		    position: fixed;
+		    padding: 5px;
+		    width: 120px;
+		    min-height: 120px;
+		    top: 45%;
+		    left: 50%;
+		    margin-left: -60px;
+		    background: rgba(0, 0, 0, 0.6);
+		    text-align: center;
+		    border-radius: 5px;
+		    color: #FFFFFF;
+		    visibility: hidden;
+		    margin: 0;
+		    z-index: 2000;
+		
+		    -webkit-transition-duration: .2s;
+		    transition-duration: .2s;
+		    opacity: 0.5;
+		    -webkit-transform: scale(0.9) translate(-50%, -50%);
+		    transform: scale(0.9) translate(-50%, -50%);
+		    -webkit-transform-origin: 0 0;
+		    transform-origin: 0 0;
+		}
+		.mui-show-loading.loading-visible {
+		    opacity: 1;
+		    visibility: visible;
+		    -webkit-transform: scale(1) translate(-50%, -50%);
+		    transform: scale(1) translate(-50%, -50%);
+		}
+		.mui-show-loading .mui-spinner{
+		    margin-top: 24px;
+		    width: 36px;
+		    height: 36px;
+		}
+		.mui-show-loading .text {
+		    line-height: 1.6;
+		    font-family: -apple-system-font,"Helvetica Neue",sans-serif;
+		    font-size: 14px;
+		    margin: 10px 0 0;
+		    color: #fff;
+		}
+		
+		.mui-show-loading-mask {
+		  position: fixed;
+		  z-index: 1000;
+		  top: 0;
+		  right: 0;
+		  left: 0;
+		  bottom: 0;
+		}
+		.mui-show-loading-mask-hidden{
+		    display: none !important;
+		}
+    </style>
+   	<style type="text/css">
+		.mui-preview-image.mui-fullscreen {
+			position: fixed;
+			z-index: 20;
+			background-color: #000;
+		}
+		.mui-preview-header,
+		.mui-preview-footer {
+			position: absolute;
+			width: 100%;
+			left: 0;
+			z-index: 10;
+		}
+		.mui-preview-header {
+			height: 44px;
+			top: 0;
+		}
+		.mui-preview-footer {
+			height: 50px;
+			bottom: 0px;
+		}
+		.mui-preview-header .mui-preview-indicator {
+			display: block;
+			line-height: 25px;
+			color: #fff;
+			text-align: center;
+			margin: 15px auto 4;
+			width: 70px;
+			background-color: rgba(0, 0, 0, 0.4);
+			border-radius: 12px;
+			font-size: 16px;
+		}
+		.mui-preview-image {
+			display: none;
+			-webkit-animation-duration: 0.5s;
+			animation-duration: 0.5s;
+			-webkit-animation-fill-mode: both;
+			animation-fill-mode: both;
+		}
+		.mui-preview-image.mui-preview-in {
+			-webkit-animation-name: fadeIn;
+			animation-name: fadeIn;
+		}
+		.mui-preview-image.mui-preview-out {
+			background: none;
+			-webkit-animation-name: fadeOut;
+			animation-name: fadeOut;
+		}
+		.mui-preview-image.mui-preview-out .mui-preview-header,
+		.mui-preview-image.mui-preview-out .mui-preview-footer {
+			display: none;
+		}
+		.mui-zoom-scroller {
+			position: absolute;
+			display: -webkit-box;
+			display: -webkit-flex;
+			display: flex;
+			-webkit-box-align: center;
+			-webkit-align-items: center;
+			align-items: center;
+			-webkit-box-pack: center;
+			-webkit-justify-content: center;
+			justify-content: center;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			-webkit-backface-visibility: hidden;
+		}
+		.mui-zoom {
+			-webkit-transform-style: preserve-3d;
+			transform-style: preserve-3d;
+		}
+		.mui-slider .mui-slider-group .mui-slider-item img {
+			width: auto;
+			height: auto;
+			max-width: 100%;
+			max-height: 100%;
+		}
+		.mui-android-4-1 .mui-slider .mui-slider-group .mui-slider-item img {
+			width: 100%;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-slider-group .mui-slider-item {
+			display: inline-table;
+		}
+		.mui-android-4-1 .mui-slider.mui-preview-image .mui-zoom-scroller img {
+			display: table-cell;
+			vertical-align: middle;
+		}
+		.mui-preview-loading {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			display: none;
+		}
+		.mui-preview-loading.mui-active {
+			display: block;
+		}
+		.mui-preview-loading .mui-spinner-white {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin-left: -25px;
+			margin-top: -25px;
+			height: 50px;
+			width: 50px;
+		}
+		.mui-preview-image img.mui-transitioning {
+			-webkit-transition: -webkit-transform 0.5s ease, opacity 0.5s ease;
+			transition: transform 0.5s ease, opacity 0.5s ease;
+		}
+		@-webkit-keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@keyframes fadeIn {
+			0% {
+				opacity: 0;
+			}
+			100% {
+				opacity: 1;
+			}
+		}
+		@-webkit-keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		@keyframes fadeOut {
+			0% {
+				opacity: 1;
+			}
+			100% {
+				opacity: 0;
+			}
+		}
+		p img {
+			max-width: 100%;
+			height: auto;
+		}
+	</style>
+    <style>
+		.upload{
+			height:100px;
+			margin-top:7px;
+			margin-bottom:20px;
+			position:relative;
+		}
+		.upload>p{
+			width:40%;
+			height:100px;
+			line-height:100px;
+			padding:5px;
+			text-align:center;
+		}
+		.index1{
+			border:2px dashed #888;
+		}
+		.index2{
+			border:0;
+		}
+		.index2>img{
+			width:98%;
+			height:98%;
+			margin:1% 1%;
+		}
+		.icon1,.img1,.input1{
+			position:absolute;
+			top:0;
+			left:5%;
+		}
+		.index1 span{
+			font-size:50px;
+			color:#888;
+		}
+		.index3{
+			opacity:0;
+			border:0;
+		}
+		.index3 input{
+			border:0;
+			width:100%;
+			height:100px;
+			margin:0 auto;
+		}
+	</style>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">
+		
+		<!-- 问题描述 -->
+		<div class="mui-card" id="wentimiaoshu">
+			<div id="finished_picture" style="position:absolute;margin:30% 30%;"><img src="../../static/mui/images/finished_flag.png" style="max-width:10em; height:auto;"/></div>
+			<div id="deleted_picture" style="position:absolute;margin:33% 33%;"><img src="../../static/mui/images/deleted_picture.png" style="max-width:10em; height:auto;"/></div>
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">问题描述
+				<span id="backBtn" style="display:none" class="mui-btn mui-btn-danger" onclick="window.history.go(-1)">返回<span class="mui-icon mui-icon-forward"></span></span>
+			</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner">
+					<div><span style="color: gray">文件序号：</span><span class="mui-pull-right" id="serialNumber"></span></div>
+					<div><span style="color: gray">发文部门：</span><span class="mui-pull-right" id="submitDepartment"></span></div>
+					<div><span style="color: gray">线&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;别：</span><span class="mui-pull-right" id="line"></span></div>
+					<div><span style="color: gray">发现组别：</span><span class="mui-pull-right" id="findStation"></span></div>
+					<div><span style="color: gray">订单类别：</span><span class="mui-pull-right" id="orderCategory"></span></div>
+					<div><span style="color: gray">产品类型：</span><span class="mui-pull-right" id="productCategory"></span></div>
+					<div><span style="color: gray">制令单号：</span><span class="mui-pull-right" id="ordermaking"></span></div>
+					<div><span style="color: gray">机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;型：</span><span class="mui-pull-right" id="model"></span></div>
+					<div><span style="color: gray">订单数量：</span><span class="mui-pull-right" id="orderQuantity"></span></div>
+					<div><span style="color: gray">已生产数量：</span><span class="mui-pull-right" id="producedQuantity"></span></div>	
+					<div><span style="color: gray">检验数量：</span><span class="mui-pull-right" id="checkQuantity"></span></div>
+					<div><span style="color: gray">故障数量：</span><span class="mui-pull-right" id="failuresQuantity"></span></div>				
+					<div><span style="color: gray">不&nbsp;&nbsp;良&nbsp;&nbsp;率：</span><span class="mui-pull-right" id="defectiveRate"></span></div>					
+					<div><span style="color: gray">异常描述：</span><span id="exceptionDescription"></span></div>
+					<div><span style="color: gray">异常图片：</span><span class="mui-pull-right" id="exceptionPictureTip"></span>	
+						<img style="display:none" id="exceptionPicture" src="" data-preview-src="" data-preview-group="1" width="100%" height="150px">
+					</div>
+				</div>
+			</div>
+		<div class="mui-card-footer">
+			<span class="mui-card-link">报告人：<span id="reporter"></span></span>
+			<span class="mui-card-link">报告时间：<span id="reporterTime"></span></span>			
+		</div>
+		<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+			<div id="reportManagerSpan" style="display:none">
+				<span class="mui-card-link">审核经理：<span id="reportManager"></span></span>
+				<span class="mui-pull-right">审核时间：<span id="reportManagerTime"></span></span>
+			</div>
+			<div id="questionDiv">
+				<a class="mui-pull-left" id="questionRefuse">驳回</a>
+				<a class="mui-pull-right" id="questionConfirm">审核确认</a>
+			</div>
+		</div>
+		</div>
+		<div class="mui-card" id="questionTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待发文部门审核</div>
+		</div>
+		<!-- 问题描述不通过 修改问题描述 -->
+		<div class="mui-card" id="submitRefuseCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">问题描述被驳回（部门经理驳回）</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="submitRefuseMan"></span></div>
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="submitRefuseTime"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="reportManagerRefuse"></span></div>					
+				</div>
+			</div>
+		<div class="mui-card-footer" id="submitRefuseFootDiv">
+			<a class="mui-card-link" onclick="exceptionDelete()">撤销</a>
+			<a class="mui-card-link" onclick="questionEdit()">修改异常问题描述</a>
+		</div>
+		</div>		
+		<!-- 问题描述不通过 修改问题描述 -->
+		<div class="mui-card" id="questionRefuseCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">问题描述被驳回（质量判定驳回）</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="questionRefuseMan"></span></div>
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="questionRefuseTime"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="questionRefuseReason"></span></div>					
+				</div>
+			</div>
+		<div class="mui-card-footer" id="questionFootDiv">
+			<a class="mui-card-link" onclick="exceptionDelete()">撤销</a>
+			<a class="mui-card-link" onclick="questionEdit()">修改异常问题描述</a>
+		</div>
+		</div>		
+		<!-- 问题描述撤销删除信息card -->
+		<div class="mui-card" id="deleteCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">问题描述撤销信息</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">撤销人：</span><span class="mui-pull-right" id="deleteMan"></span></div>
+					<div><span style="color: gray">撤销时间：</span><span class="mui-pull-right" id="deleteTime"></span></div>
+					<div><span style="color: gray">撤销原因：</span><span class="" id="deleteReason"></span></div>					
+				</div>
+			</div>
+		</div>		
+		<!-- 质量判定 -->
+		<div class="mui-card" id="zhiliangpandingForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">质量判定处理</div>
+				<div class="mui-input-row">
+					<label>通报类型</label>
+					<select class="mui-btn-block" id="exceptionType">
+						<option value="">选择通报类型</option>
+						<option value="普通类">普通类</option>
+						<option value="CCC类">CCC类</option>
+						<option value="能效类">能效类</option>
+					</select>
+				</div>
+				<label style="margin-left:4.5%">处理意见</label>
+				<div class="mui-input-row" style="margin: 5px 15px -8px 15px;">
+				<textarea id="handlingDescription" rows="5" maxlength="80" placeholder="输入处理意见"></textarea>
+				</div>
+				<label style="margin-left:4.5%">图片上传（选填）</label>
+				<div class="upload">
+					<p class="index1 icon1"><span class="mui-icon mui-icon-plus"></span></p >
+					<p class="index2 img1" id="upload3Pic" style="display: none;"><img class="upload3" style="height: 96%;"/></p >
+					<p class="index3 input1"><input style="border:0;position:relative;top:-35px;" type="file" id="upload3" accept="image/*" onchange="compress(this);"></p >
+				</div>
+				<input id="upload3z" type="hidden" value="" readonly="readonly" />						
+		<div class="mui-card-footer">
+			<span class="mui-card-link"></span>
+			<a class="mui-card-link" id="zhiliangpandingSubmit">立即提交</a>
+		</div>
+		</div>
+		<div class="mui-card" id="zhiliangpandingCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">质量判定</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">通报类型：</span><span class="mui-pull-right" id="exceptionTypeShow"></span></div>
+					<div><span style="color: gray">处理意见：</span><span class="" id="handlingDescriptionShow"></span></div>					
+					<div><span style="color: gray">判定图片：</span><span class="mui-pull-right" id="determinePictureShowTip"></span>	
+						<img style="display:none" id="determinePictureShow" src="" data-preview-src="" data-preview-group="1" width="100%" height="150px">
+					</div>		
+				</div>
+			</div>
+		<div class="mui-card-footer">
+			<span class="mui-card-link">处理人：<span id="determineHandler"></span></span>
+			<span class="mui-card-link">处理时间：<span id="determineHandlerTime"></span></span>	
+		</div>
+		<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+			<div id="determineManagerSpan" style="display:none">
+				<span class="mui-card-link">审核经理：<span id="determineManager"></span></span>
+				<span class="mui-pull-right">审核时间：<span id="determineManagerTime"></span></span>
+			</div>
+			<div id="zhiliangpandingDiv" style="display:none">
+				<a class="mui-pull-left"><span id="zhiliangpandingRefuse">驳回</span><span style="margin-left:35px" id="zhikongEdit">修改</span></a>
+				<a class="mui-pull-right" id="zhiliangpandingConfirm">审核确认</a>
+			</div>			
+		</div>
+		</div>
+		<!-- 质量判定不通过（工程驳回） -->
+	 	<div class="mui-card" id="zerenbumenRefuseCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">质量判定被驳回</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="zerenbumenRefuseMan"></span></div>
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="zerenbumenRefuseTime"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="zerenbumenRefuseReason"></span></div>					
+				</div>
+			</div>
+			<div class="mui-card-footer" id="zerenbumenFootDiv">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" onclick="pandingEdit()">修改判定</a>
+			</div>
+		</div>
+		<div class="mui-card" id="zhiliangpandingTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待质量判定处理</div>
+		</div>
+		<div class="mui-card" id="zhiliangpandingTip1" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待质量判定审核</div>
+		</div>
+
+		<!-- 责任部门 -->
+		<div class="mui-card" id="zerenbumenForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">异常问题分析处理</div>
+				<div class="mui-input-row" style="margin: 10px 5px;">
+				<textarea id="exceptionReason" rows="5" maxlength="200" placeholder="输入问题造成原因"></textarea>
+				</div>	
+				<div class="mui-input-row" style="margin: -12px 5px;">
+				<textarea id="exceptionSolve" rows="5" maxlength="200" placeholder="输入临时处理方案"></textarea>
+				</div>
+			<div style="margin:10px 5px;padding:7px 0px;border:solid 1px #ccc">
+				<div class="mui-input-row">
+					<label>是否返工</label>
+					<select class="mui-btn-block" id="isRework">
+						<option value="">选择是否返工</option>
+						<option value="是">是</option>
+						<option value="否">否</option>
+					</select>
+				</div>
+				<div class="mui-input-row">
+					<label>问题归属</label>
+					<select class="mui-btn-block" id="problemAttribution" onchange="problemAttributionChoose()">
+						<option value="">选择问题归属</option>
+						<option value="无">无</option>
+						<option value="工艺制程">工艺制程（工程）</option>
+						<option value="操作">操作（生产）</option>
+						<option value="材料">材料（质量）</option>
+						<option value="设计">设计（研发）</option>
+					</select>
+				</div>
+				<div class="mui-input-row" style="display:none" id="isSignDiv">
+					<label>归属部门会签</label>
+					<select class="mui-btn-block" id="isSign" onchange="isSign()">
+						<option value="">选择是否需要归属部门会签</option>
+						<option value="是">是</option>
+						<option value="否">否</option>
+					</select>
+				</div>
+				<div class="mui-input-row" style="margin: 10px 15px;display:none" id="longExceptionSolveDiv">
+					<textarea id="longExceptionSolve" rows="5" maxlength="300" placeholder="输入长期方案（选填）"></textarea>
+				</div>
+			</div>
+				<script type="text/javascript">
+					function problemAttributionChoose(){
+						var problemAttribution = $("#problemAttribution").val();
+						if(problemAttribution=="工艺制程"||problemAttribution=="无"){
+							$("#longExceptionSolveDiv").show();
+							$("#isSignDiv").hide();
+							$("#isSign").val("");
+						}else if(problemAttribution==""){
+							$("#longExceptionSolveDiv").hide();
+							$("#isSignDiv").hide();
+						}else{
+							$("#longExceptionSolveDiv").hide();
+							$("#isSignDiv").show();							
+						}
+					}
+					function isSign(){
+						var isSign = $("#isSign").val();
+						if(isSign=="否"){
+							$("#longExceptionSolveDiv").show();
+						}else{
+							$("#longExceptionSolveDiv").hide();
+						}
+					}
+				</script>
+		<div class="mui-card-footer">
+			<span class="mui-card-link"></span>
+			<a class="mui-card-link" id="zerenbumenSubmit">立即提交</a>
+		</div>
+		</div>
+		<div class="mui-card" id="zerenbumenCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">责任部门</div>
+				<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">													
+					<div><span style="color: gray">造成原因：</span><span class="" style="overflow:auto" id="exceptionReasonShow"></span></div>				
+					<div><span style="color: gray">临时方案：</span><span class="" id="exceptionSolveShow"></span></div>
+					<div style="display:none" id="longExceptionSolveShowDiv"><span style="color: gray">长期方案：</span><span class="" id="longExceptionSolveShow1"></span></div>		
+					<div><span style="color: gray">是否返工：</span><span class="mui-pull-right" id="isReworkShow"></span></div>				
+					<div><span style="color: gray">问题归属：</span><span class="mui-pull-right" id="problemAttributionShow"></span></div>
+					<div style="display:none" id="isSignShowDiv"><span style="color: gray">是否转签：</span><span class="mui-pull-right" id="isSignShow"></span></div>	
+					<div style="display:none" id="signDepartmentShowDiv"><span style="color: gray">转签部门：</span><span class="mui-pull-right" id="signDepartmentShow"></span></div>														
+				</div>
+			</div>		
+		<div class="mui-card-footer">
+			<span class="mui-card-link">处理人：<span id="responsibilityHandler"></span></span>
+			<span class="mui-card-link">处理时间：<span id="responsibilityHandlerTime"></span></span>
+		</div>
+		<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+			<div id="responsibilityManagerSpan" style="display:none">
+				<span class="mui-card-link">审核经理：<span id="responsibilityManager"></span></span>
+				<span class="mui-pull-right">审核时间：<span id="responsibilityManagerTime"></span></span>
+			</div>
+			<div id="zerenbumenDiv" style="display:none">
+				<a class="mui-pull-left"><span id="zerenbumenRefuse">驳回</span><span style="margin-left:30px" id="zerenbumenEdit">修改</span></a>
+				<a class="mui-pull-right" id="zerenbumenConfirm">审核确认</a>
+			</div>	
+		</div>
+		</div>		
+			
+		<!-- 责任部门不通过（转签部门驳回） -->
+	 	<div class="mui-card" id="huiqianbumenRefuseCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">责任部门异常处理被驳回</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="huiqianbumenRefuseMan"></span></div>
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="huiqianbumenRefuseTime"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="huiqianbumenRefuseReason"></span></div>					
+				</div>
+			</div>
+		<div class="mui-card-footer" id="huiqianbumenFootDiv">
+			<span class="mui-card-link"></span>
+			<a class="mui-card-link" onclick="zerenEdit()">修改异常问题处理</a>
+		</div>
+		</div>
+			
+		<div class="mui-card" id="zerenbumenTip1" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待工程部门审核</div>
+		</div>
+		<!-- 会签部门处理 -->
+		<div class="mui-card" id="huiqianbumenForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">转签部门会签处理</div>
+				<div class="mui-input-row" style="margin: 13px 5px -10px 5px;">
+				<textarea id="signHandleDescription" rows="5" maxlength="300" placeholder="输入原因及处理意见"></textarea>
+				</div>
+				<div class="mui-card-content-inner" id="huiqianDiv" style="display:none">
+				<div><span style="color: gray">处理人：</span><span class="mui-pull-right" id="huiqianSpan1"></span></div>	
+				<div><span style="color: gray">处理时间：</span><span class="mui-pull-right" id="huiqianSpan2"></span></div>
+				</div>	
+		<div class="mui-card-footer">
+			<span class="mui-card-link"></span>
+			<a class="mui-card-link" id="huiqianbumenSubmit">立即提交</a>
+		</div>
+		</div>
+		<!-- 部门会签确认-->	
+		<div class="mui-card" id="huiqianbumenCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">转签部门会签</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">问题转签部门：</span><span class="mui-pull-right" id="problemAttributionShow1"></span></div>				
+					<div><span style="color: gray">原因及处理意见：</span><span class="" id="longExceptionSolveDescriptionShow"></span></div>
+				</div>
+			</div>
+			<div class="mui-card-footer">
+				<span class="mui-card-link">处理人：<span id="signHandler"></span></span>
+				<span class="mui-card-link">处理时间：<span id="signHandlerTime"></span></span>
+			</div>
+			<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+				<div id="signManagerSpan" style="display:none">
+					<span class="mui-card-link">审核经理：<span id="signManager"></span></span>
+					<span class="mui-pull-right">审核时间：<span id="signManagerTime"></span></span>
+				</div>
+				<div id="huiqianbumenFoot" style="display:none">
+					<a class="mui-pull-left"><span id="huiqianbumenRefuse">驳回</span><span style="margin-left:30px" id="huiqianbumenEdit">修改</span></a>
+					<a class="mui-pull-right" id="huiqianbumenConfirm">审核确认</a>
+				</div>	
+			</div>		
+		</div>
+		
+		<div class="mui-card" id="huiqianTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:27%">待转签部门会签处理</div>
+		</div>
+		<div class="mui-card" id="huiqianTip1" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:27%">待转签部门会签审核</div>
+		</div>
+		
+		<!-- 责任部门不通过（质量验证驳回） -->
+	 	<div class="mui-card" id="zhiliangyanzhengRefuseCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">责任部门异常问题分析处理被驳回</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="zhiliangyanzhengRefuseMan"></span></div>
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="zhiliangyanzhengRefuseTime"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="zhiliangyanzhengRefuseReason"></span></div>					
+				</div>
+			</div>
+			<div class="mui-card-footer" style="display:none" id="zhiliangyanzhengRefuseCardFoot">
+				<a class="mui-card-link" style="float:right" id="zhiliangyanzhengRefuseEdit">修改</a>
+			</div>	
+		</div>
+		
+		<div class="mui-card" id="zerenbumenTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待工程部门处理</div>
+		</div>
+		
+		<!-- 质量验证-->
+		<div class="mui-card" id="zhiliangyanzhengForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff;">质量验证</div>
+				<div class="mui-input-row" style="display:none;margin-top:10px" id="verifyResult_div">
+					<label>验证结果</label>
+					<select class="mui-btn-block" id="verifyResult">
+						<option value="">选择质量验证结果</option>
+						<option value="QC重检OK">QC重检OK</option>
+						<option value="放行">放行</option>
+					</select>
+				</div>
+				<div class="mui-input-row" style="margin: 17px 5px -10px 5px;">
+					<textarea id="verifyConclusion" rows="5" maxlength="300" placeholder="输入验证结论"></textarea>
+				</div>
+				<div>
+				<label style="margin-left:4.5%">图片上传（选填）</label>
+					<div class="upload">
+						<p class="index1 icon1"><span class="mui-icon mui-icon-plus"></span></p >
+						<p class="index2 img1" id="upload4Pic" style="display: none;"><img class="upload4" style="height: 96%;"/></p >
+						<p class="index3 input1"><input style="border:0;position:relative;top:-35px;" type="file" id="upload4" accept="image/*" onchange="compress(this);"></p >
+					</div>
+					<input id="upload4z" type="hidden" value="" readonly="readonly" />
+				</div>
+				<div style="margin:10px 5px;padding:7px 0px;border:solid 1px #ccc">
+					<div class="mui-input-row">
+						<label>长期方案</label>
+						<select class="mui-btn-block" id="isLongSolveMeasure" onchange="isLongSolveMeasureChoose()">
+							<option value="">选择是否需要长期方案</option>
+							<option value="是">是</option>
+							<option value="否">否</option>
+						</select>
+					</div>
+					<div class="mui-input-row" style="display:none" id="problemDepartmentDiv">
+						<label>责任部门</label>
+						<select class="mui-btn-block" id="problemDepartment">
+							<option value="">选择责任部门</option>
+							<option value="工程部">工程部</option>
+							<option value="生产部">生产部</option>
+							<option value="质量部">质量部</option>
+							<option value="研发部">研发部</option>
+						</select>
+					</div>
+					<div class="mui-input-row" style="display:none" id="longSolveMeasureBriefDiv">
+						<label>长期方案简述</label>
+						<textarea style="border:solid 1px #ccc;width:62%;float:left" id="longSolveMeasureBrief" rows="4" maxlength="50" placeholder="输入长期方案简述"></textarea>
+					</div>
+					<script type="text/javascript">
+						function isLongSolveMeasureChoose(){
+							var isLongSolveMeasure = $("#isLongSolveMeasure").val();
+							if(isLongSolveMeasure=="是"){
+								$("#problemDepartmentDiv").show();
+								$("#longSolveMeasureBriefDiv").show();
+							}else{
+								$("#problemDepartmentDiv").hide();
+								$("#longSolveMeasureBriefDiv").hide();
+							}
+						}
+					</script>
+				</div>	
+			
+		<div class="mui-card-footer">
+			<span class="mui-card-link"></span>
+			<a class="mui-card-link" id="zhiliangyanzhengSubmit">立即提交</a>
+		</div>
+		</div>		
+		<div class="mui-card" id="zhiliangyanzhengCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">质量验证</div>
+				<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:27px;">		
+					<div id="verifyResultShow_div" style="display:none"><span style="color: gray">质量验证结果：</span><span class="mui-pull-right" id="verifyResultShow"></span></div>											
+					<div><span style="color: gray">质量验证结论：</span><span class="" id="verifyConclusionShow"></span></div>
+					<div><span style="color: gray">质量验证图片：</span><span class="" id="verifyPictureShowTip"></span>	
+						<img style="display:none" id="verifyPictureShow" src="" data-preview-src="" data-preview-group="1" width="100%" height="150px">
+					</div>												
+					<div><span style="color: gray">需要长期方案：</span><span class="" id="isLongSolveMeasureShow"></span></div>
+					<div id="isLongSolveMeasureDiv">											
+						<div><span style="color: gray">责任归属部门：</span><span class="" id="problemDepartmentShow"></span></div>											
+						<div><span style="color: gray">长期方案简述：</span><span class="" id="longSolveMeasureBriefShow"></span></div>
+					</div>											
+				</div>
+			</div>		
+		<div class="mui-card-footer">
+			<span class="mui-card-link">处理人：<span id="verifyHandler"></span></span>
+			<span class="mui-card-link">处理时间：<span id="verifyHandlerTime"></span></span>
+		</div>
+		<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+			<div id="verifyManagerSpan" style="display:none">
+				<span class="mui-card-link">审核经理：<span id="verifyManager"></span></span>
+				<span class="mui-pull-right">审核时间：<span id="verifyManagerTime"></span></span>
+			</div>
+			<div  id="zhiliangyanzhengFoot" style="display:none">
+				<a class="mui-pull-left" href="#modal" id="zhiliangyanzhengRefuse">驳回</a> <span style="margin-left:30px;color:#4093C6" onclick="zhiliangyanzhengEdit()">修改</span>
+				<a class="mui-pull-right" id="zhiliangyanzhengConfirm">立即审核</a>
+			</div>		
+		</div>
+		</div>
+				
+		
+		
+				<!-- 长期方案跟踪记录-->
+		<div class="mui-card" id="changqifanganCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">长期方案跟踪记录</div>
+<!--事件时间轴-->
+<div class="flowChart">
+	<!--左侧轴-->
+	<div class="flowChart-left">
+	<!--虚线-->
+		<div class="dashed"></div>
+	</div>
+	<!--右侧内容-->
+	<div class="flowChart-right" id="measureList">
+		<!--一个节点-->
+<!-- 		<div class="oneNode">
+			左侧小球
+			<div class="check check-danger">5</div>
+			<div class="tag-boder">
+				<div class="tag"></div>
+			</div>
+			右侧内容
+			<div class="NodeDetail">
+				上
+				<div class="NodeDetail-title">
+					头像
+					<img src="https://p.qlogo.cn/bizmail/SAwCcWiaibgIateaVWIwLVk1GGuhJIrObed1RicClEJQa1LpC9ENrABnw/0" />
+					内容
+					<div class="details">
+						<h4>吴其峰</h4>
+						<p style="margin-bottom:-5px;">质量工程师</p>
+					</div>
+				</div>
+				中
+				<div class="NodeDetail-content">
+					<p>两年后，前女友突然发短信来说：“我们复合吧，转了一圈才发现你是最好的，我后悔了。”
+短短几字倾刻间击溃我所有的伪装与防备，热泪流进挥之不去的记忆，夜夜思念的那些牵手在一起的美好日子又悄然浮上心头，感觉不再累多么温暖。
+紧张，激动，焦急，我颤抖着双手解脱般地回复道：“活该！”</p>
+				</div>
+				下
+				<div class="NodeDetail-footer">
+					<span>2017-10-31 22:22:31</span>
+
+				</div>
+			</div>
+		</div> -->
+	</div>
+</div>	
+		<div class="mui-card-footer" id="changqifanganFoot" style="display:none">
+			<a class="mui-card-link" onclick="endMeasure()">结束方案跟踪</a>
+			<a class="mui-card-link" onclick="addMeasure()">继续添加记录</a>
+		</div>
+		<div class="mui-card-footer" id="endLongSolveMeasureFoot" style="display:none">
+			<span class="mui-card-link">跟踪结束人：<span id="longSolveMeasureEnder"></span></span>
+			<span class="mui-card-link">结束时间：<span id="longSolveMeasureEnderTime"></span></span>
+		</div>
+
+		</div>	
+		
+		<!-- 责任归属部门长期方案填写-->
+		<div class="mui-card" id="changqifanganForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">责任归属部门长期方案跟踪处理</div>
+				<div class="mui-input-row" style="margin: 17px 5px -10px 5px;">
+					<textarea id="measure" rows="5" maxlength="300" placeholder="输入长期方案跟踪记录"></textarea>
+				</div>			
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="changqifanganSubmit">立即提交</a>
+			</div>
+		</div>	
+		<!-- 长期方案驳回 -->
+		<div class="mui-card" id="changqifanganRefuseCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">长期方案被驳回（质量部长期方案验证驳回）</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="longSolveMeasureRefuseMan"></span></div>
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="longSolveMeasureRefuseTime"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="longSolveMeasureRefuse"></span></div>					
+				</div>
+			</div>
+		<div class="mui-card-footer" id="changqifanganRefuseFootDiv" style="display:none">
+			<a class="mui-card-link"></a>
+			<a class="mui-card-link" onclick="addMeasure()">修改跟踪长期方案</a>
+		</div>
+		</div>	
+		
+		<!-- 质量部门部门长期方案验证处理填写-->
+		<div class="mui-card" id="changqifanganyanzhengForm" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">长期方案验证处理</div>
+				<div class="mui-input-row" style="margin: 17px 5px -10px 5px;">
+					<textarea id="longSolveMeasureVerifyDescription" rows="5" maxlength="80" placeholder="验证处理结果"></textarea>
+				</div>			
+			<div class="mui-card-footer">
+				<span class="mui-card-link"></span>
+				<a class="mui-card-link" id="changqifanganyanzhengSubmit">立即提交</a>
+			</div>
+		</div>	
+		
+		<div class="mui-card" id="changqifanganyanzhengCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">长期方案验证结果</div>
+				<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:27px;">		
+					<div><span style="color: gray">长期方案验证结果：</span><span class="" id="longSolveMeasureVerifyDescriptionShow"></span></div>											
+				</div>
+			</div>		
+		<div class="mui-card-footer">
+			<span class="mui-card-link">处理人：<span id="longSolveMeasureVerifier"></span></span>
+			<span class="mui-card-link">处理时间：<span id="longSolveMeasureVerifierTime"></span></span>
+		</div>
+		<div style="color:#6d6d72;padding:0px 15px 20px 15px">
+			<div id="verifyReviewerSpan" style="display:none">
+				<span class="mui-card-link">审核经理：<span id="longSolveMeasureReviewer"></span></span>
+				<span class="mui-pull-right">审核时间：<span id="longSolveMeasureReviewerTime"></span></span>
+			</div>
+			<div  id="verifyReviewerFoot" style="display:none">
+				<a class="mui-pull-left" id="changqifanganyanzhengRefuse">长期方案驳回</a>
+				<a class="mui-pull-right" id="changqifanganyanzhengConfirm">立即审核</a>
+			</div>		
+		</div>
+		</div>
+				
+		<div class="mui-card" id="zhiliangyanzhengTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待质量验证处理</div>
+		</div>
+		<div class="mui-card" id="zhiliangyanzhengTip1" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:30%">待质量验证审核</div>
+		</div>
+		<div class="mui-card" id="tixizhuanyuanyanzhengTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:26%">待体系专员维护验证结果</div>
+		</div>
+		<div class="mui-card" id="changqifanganTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:18%">待责任归属部门长期方案处理</div>
+		</div>
+		<div class="mui-card" id="changqifanganyanzhengTip" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:18%">待质量部门长期方案验证处理</div>
+		</div>
+		<div class="mui-card" id="changqifanganyanzhengTip1" style="display:none">
+			<div class="mui-card-header" style="background-color:#19af33;color:#fff;padding-left:18%">待质量部门长期方案验证审核</div>
+		</div>
+	</div>
+<div id="modal" class="mui-modal">
+	<header class="mui-bar mui-bar-nav">
+		<a class="mui-icon mui-icon-close mui-pull-right" href="#modal"></a>
+		<h1 class="mui-title">选择驳回到的位置</h1>
+	</header>
+	<div class="mui-content" style="height: 100%;">
+		<select class="mui-btn-block" id="selectState" style="height:8%;padding:0 30%;margin-top:25px">
+			<option value="">点击选择驳回位置</option>
+			<option value="5">问题描述</option>
+			<option value="8">质量判定</option>
+			<option value="4">责任部门</option>
+		</select>
+		<div class="mui-input-row" style="margin: 30px 5px 5px 5px;">
+			<textarea id="verifyManagerRefuse" rows="5" maxlength="90" placeholder="输入驳回原因"></textarea>
+		</div>
+		<div  style="text-align:center;margin-bottom: 10px;margin-top: 100px;border-bottom-left-radius: 20px;border-bottom-right-radius: 20px;width:94%;margin-left:3%;">
+				<button type="button" id="zhiliangyanzhengRefuseSubmit" style="width:95%;background:#4093C6;border:0;height:40px;margin-bottom: 20px;font-size: 18px;margin-top: 30px "
+				class="mui-btn mui-btn-danger grad1">确认驳回</button>		
+			</div>
+	</div>
+</div>
+<!-- 放隐藏域的地方 重要-->	
+<input type="hidden" id="deleteFlagHidden">
+<input type="hidden" id="reportUserIdHidden">
+<input type="hidden" id="verifyManagerHidden">
+<input type="hidden" id="verifyManagerTimeHidden">
+<input type="hidden" id="verifyManagerReasonHidden">
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+mui.previewImage();//图片预览
+var picturePath = "http://www.stephen7.top/";
+//获取企业成员信息
+var memberInfo = getMemberInfo(10);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+var departmentJson = JSON.parse(department); 
+//获取url中的参数
+var exceptionId = getUrlParam("exceptionId");
+
+//判断是从列表页面过来的则有显示返回按钮
+var back = getUrlParam("back");
+if(back==1){
+	$("#backBtn").attr("style","display:block");
+}
+
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取异常问题表单信息
+	var status = findExceptionInfo(exceptionId);
+	if(status!=null && status!="null"){
+			//赋值完毕结束过场动画
+	   	setTimeout(function(){
+	   		document.getElementById("loading").style.display="none";
+	   		$("body").css("background-color","#eee");
+	   		document.getElementById("muiContent").style.display="";
+	   	}, 500);
+	}else{
+		mui.alert('通报不存在或已被删除！', '提示', function() {
+			document.location.href = 'exceptionList.html';
+		});
+	}
+	
+	//判断是否删除
+	var deleteFlag = $("#deleteFlagHidden").val();
+	if(deleteFlag && deleteFlag==0){
+		$("#deleted_picture").attr("style","display:none");//隐藏已删除图片
+	}
+	//根据这个status判断异常通报的状态
+	if(status!=20){
+		$("#finished_picture").attr("style","display:none");//隐藏已完成图片
+	}
+	if(status==0){
+		//判断是否为发文部门 否则隐藏修改按钮
+		var submitDepartment = $("#submitDepartment").text();
+		var p = false;
+		switch(submitDepartment){
+			case "工程部": 
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==3){
+						p =true;
+					}
+				}
+				 break;
+			case "生产部": 
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==4){
+						p =true;
+					}
+				}
+				 break;
+			case "质量部": 
+				for(var i=0;i<departmentJson.length;i++){
+					if(departmentJson[i]==5){
+						p =true;
+					}
+				}
+				break;
+			default: p =false;
+		}
+		if(!p||isleader!=1){
+			$("#questionTip").attr("style","display:block");
+			$("#questionDiv").attr("style","display:none");
+		}
+		
+	}else if(status==1){//发文部门经理驳回
+		var deleteFlag = $("#deleteFlagHidden").val();
+		if(deleteFlag==1){//已删除
+			$("#deleteCard").attr("style","display:block");
+			$("#questionDiv").attr("style","display:none");
+		}else{//未删除
+			$("#submitRefuseCard").attr("style","display:block");
+			$("#questionDiv").attr("style","display:none");
+			$("#reportManagerSpan").attr("style","display:block");
+			//判断是否为发文部门 否则隐藏修改按钮
+			var submitDepartment = $("#submitDepartment").text();
+			var pas = false;
+			switch(submitDepartment){
+				case "工程部": 
+					for(var i=0;i<departmentJson.length;i++){
+						if(departmentJson[i]==3){
+							pas =true;
+						}
+					}
+					 break;
+				case "生产部": 
+					for(var i=0;i<departmentJson.length;i++){
+						if(departmentJson[i]==4){
+							pas =true;
+						}
+					}
+					 break;
+				case "质量部": 
+					for(var i=0;i<departmentJson.length;i++){
+						if(departmentJson[i]==5){
+							pas =true;
+						}
+					}
+					break;
+				default: pas =false;
+			}
+			if(!pas){
+				$("#submitRefuseFootDiv").attr("style","display:none");
+			}
+		}		
+		
+	}else if(status==2){
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingTip").attr("style","display:block");
+		//是质量部查看处理
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				$("#zhiliangpandingForm").attr("style","display:block");
+			}
+		}
+	}else if(status==3){
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingTip1").attr("style","display:block");
+		//质量部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5 && isleader==1){//是质量部经理
+				$("#zhiliangpandingDiv").attr("style","display:block");
+			}
+			if(departmentJson[i]==5 && isleader!=1){//不是质量部经理
+				$("#zhiliangpandingDiv").attr("style","display:block");
+				$("#questionRefuse").attr("style","display:none");
+			}
+		}
+
+	}else if(status==4){
+		$("#zhiliangpandingCard").attr("style","display:block");	
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenTip").attr("style","display:block");
+		//如果是工程部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){//是工程部
+				$("#zerenbumenForm").attr("style","display:block");
+			}
+		}
+	}else if(status==5){
+		var deleteFlag = $("#deleteFlagHidden").val();
+		if(deleteFlag==1){//已删除
+			$("#deleteCard").attr("style","display:block");
+			$("#questionDiv").attr("style","display:none");
+		}else{//未删除
+			$("#questionRefuseCard").attr("style","display:block");
+			$("#questionDiv").attr("style","display:none");
+			$("#reportManagerSpan").attr("style","display:block");
+			//判断是否为发文部门 否则隐藏修改按钮
+			var submitDepartment = $("#submitDepartment").text();
+			var pas = false;
+			switch(submitDepartment){
+				case "工程部": 
+					for(var i=0;i<departmentJson.length;i++){
+						if(departmentJson[i]==3){
+							pas =true;
+						}
+					}
+					 break;
+				case "生产部": 
+					for(var i=0;i<departmentJson.length;i++){
+						if(departmentJson[i]==4){
+							pas =true;
+						}
+					}
+					 break;
+				case "质量部": 
+					for(var i=0;i<departmentJson.length;i++){
+						if(departmentJson[i]==5){
+							pas =true;
+						}
+					}
+					break;
+				default: pas =false;
+			}
+			if(!pas){
+				$("#questionFootDiv").attr("style","display:none");
+			}
+		}
+	}else if(status==6){
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#zerenbumenTip1").attr("style","display:block");
+		//如果是工程部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3 && isleader==1){//是工程部部经理
+				$("#zerenbumenDiv").attr("style","display:block");
+			}
+			if(departmentJson[i]==3 && isleader!=1){//不是工程部部经理
+				$("#zerenbumenDiv").attr("style","display:block");
+				$("#zerenbumenRefuse").attr("style","display:none");
+			}
+		}
+	}else if(status==7){
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");	
+		$("#huiqianTip").attr("style","display:block");
+		//判断当前成员是否为会签部门成员
+		var pas7 = false;
+		var needSignDept = $("#signDepartmentShow").text();//需要会签部门
+		var depNum = "";
+		if(needSignDept=="生产部"){
+			depNum = "4";				
+		}else if(needSignDept=="质量部"){
+			depNum = "5";			
+		}else if(needSignDept=="研发部"){
+			depNum = "7";			
+		}
+		for(var j=0;j<departmentJson.length;j++){
+			if(departmentJson[j]==depNum){
+				pas7 = true;
+			}
+		}		
+		if(pas7){
+			$("#huiqianbumenForm").attr("style","display:block");
+		}
+		
+	}else if(status==8){
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenRefuseCard").attr("style","display:block");
+		$("#zhiliangpandingTip").attr("style","display:block");	
+		//判断当前成员是否为质量判定部门人员即是否隐藏修改按钮
+		var submitDepartment = $("#submitDepartment").text();
+		var pas8 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pas8 = true;
+			}							
+		}
+		if(!pas8){
+			$("#zerenbumenFootDiv").attr("style","display:none");						
+		}
+
+	}else if(status==9){
+
+		//判断当前成员是否为会签部门成员
+		var pas9 = false;
+		var needSignDept = $("#signDepartmentShow").text();//需要会签部门
+		var depNum = "";
+		if(needSignDept=="生产部"){
+			depNum = "4";				
+		}else if(needSignDept=="质量部"){
+			depNum = "5";			
+		}else if(needSignDept=="研发部"){
+			depNum = "7";			
+		}
+		for(var j=0;j<departmentJson.length;j++){
+			if(departmentJson[j]==depNum){
+				pas9 = true;
+			}
+		}		
+		if(pas9){
+			$("#huiqianbumenFoot").attr("style","display:block");
+		}
+		
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenCard").attr("style","display:block");
+		$("#huiqianTip1").attr("style","display:block");
+		
+	}else if(status==10){
+		$("#huiqianbumenCard").attr("style","display:block");
+		//是质量部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){//是质量部成员
+				$("#zhiliangyanzhengForm").attr("style","display:block");
+			}
+		}
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#signManagerSpan").attr("style","display:block");
+		
+		//如果不需要转签部门则不现实转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{
+			//打开质量验证结果（是否放行）
+			$("#verifyResult_div").show();
+		}
+		if(exceptionType=="CCC类" || exceptionType=="能效类"){
+			$("#tixizhuanyuanyanzhengTip").attr("style","display:block");	
+		}else{
+			$("#zhiliangyanzhengTip").attr("style","display:block");	
+		}	
+		
+	}else if(status==11){		
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#huiqianbumenRefuseCard").attr("style","display:block");
+		$("#zerenbumenTip").attr("style","display:block");
+		//判断当前成员是否为工程部门人员
+		var pas11 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){
+				pas11 = true;
+			}							
+		}
+		if(!pas11){
+			$("#huiqianbumenFootDiv").attr("style","display:none");			
+		}
+		
+	}else if(status==12){
+		$("#huiqianbumenCard").attr("style","display:block");
+		//是质量部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5 && isleader==1){//是质量部经理
+				$("#zhiliangyanzhengFoot").attr("style","display:block");
+			}
+		}
+		$("#zhiliangyanzhengTip1").attr("style","display:block");		
+		$("#huiqianbumenCard").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#signManagerSpan").attr("style","display:block");
+		$("#zhiliangyanzhengCard").attr("style","display:block");
+		
+		//如果不需要转签部门则不显示转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		//如果不需要长期方案啊则不显示对应的DIV
+		var isLongSolveMeasure = $("#isLongSolveMeasureShow").text();
+		if(isLongSolveMeasure!="是"){
+			$("#isLongSolveMeasureDiv").attr("style","display:none");
+		}	
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{			
+			//打开质量验证结果显示（是否放行）
+			$("#verifyResultShow_div").show();
+		}
+	}else if(status==13){
+		$("#huiqianbumenCard").attr("style","display:block");		
+		//判断部门编号
+		var problemDepartment = $("#problemDepartmentShow").text();
+		var toparty = "";
+		if("工程部"==problemDepartment) {
+			toparty = "3";
+		}else if("生产部"==problemDepartment) {
+			toparty = "4";
+		}else if("质量部"==problemDepartment) {
+			toparty = "5";
+		}else if("研发部"==problemDepartment) {
+			toparty = "7";
+		}
+		//是责任归属部门
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==toparty){
+				if(toparty=="5"){
+					if(memberId=="15"||memberId=="21"||memberId=="25"||memberId=="64"){
+						$("#changqifanganForm").attr("style","display:block");
+					}
+				}else{
+					$("#changqifanganForm").attr("style","display:block");
+				}
+			}
+		}
+		$("#changqifanganTip").attr("style","display:block");		
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#zhiliangyanzhengCard").attr("style","display:block");
+		$("#signManagerSpan").attr("style","display:block");
+		$("#verifyManagerSpan").attr("style","display:block");
+		
+		//如果不需要转签部门则不显示转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{			
+			//打开质量验证结果显示（是否放行）
+			$("#verifyResultShow_div").show();
+		}
+	}else if(status==14){
+		findLongSolveMeasure();//解析长期方案措施记录
+		//判断部门编号
+		var problemDepartment = $("#problemDepartmentShow").text();
+		var toparty = "";
+		if("工程部"==problemDepartment) {
+			toparty = "3";
+		}else if("生产部"==problemDepartment) {
+			toparty = "4";
+		}else if("质量部"==problemDepartment) {
+			toparty = "5";
+		}else if("研发部"==problemDepartment) {
+			toparty = "7";
+		}
+		//是责任归属部门
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==toparty){
+				if(toparty=="5"){
+					if(memberId=="15"||memberId=="21"||memberId=="25"||memberId=="64"){
+						$("#changqifanganFoot").show();
+					}
+				}else{
+					$("#changqifanganFoot").show();
+				}
+			}
+		}
+		$("#changqifanganTip").attr("style","display:block");		
+		$("#huiqianbumenCard").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#zhiliangyanzhengCard").attr("style","display:block");
+		$("#zhiliangyanzhengFoot").attr("style","display:none");
+		$("#signManagerSpan").attr("style","display:block");
+		$("#verifyManagerSpan").attr("style","display:block");
+		$("#changqifanganCard").attr("style","display:block");
+		
+		//如果不需要转签部门则不显示转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{			
+			//打开质量验证结果显示（是否放行）
+			$("#verifyResultShow_div").show();
+		}
+		
+	}else if(status==15){
+		findLongSolveMeasure();//解析长期方案措施记录
+		//判断部门
+		//是质量部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){//是质量部成员
+				$("#changqifanganyanzhengForm").attr("style","display:block");
+			}
+		}
+
+		$("#changqifanganyanzhengTip").attr("style","display:block");		
+		$("#huiqianbumenCard").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#zhiliangyanzhengCard").attr("style","display:block");
+		$("#zhiliangyanzhengFoot").attr("style","display:none");
+		$("#signManagerSpan").attr("style","display:block");
+		$("#verifyManagerSpan").attr("style","display:block");
+		$("#changqifanganCard").attr("style","display:block");
+		$("#endLongSolveMeasureFoot").show();
+		
+		//如果不需要转签部门则不显示转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{			
+			//打开质量验证结果显示（是否放行）
+			$("#verifyResultShow_div").show();
+		}
+		
+	}else if(status==16){
+		findLongSolveMeasure();//解析长期方案措施记录
+		//判断部门
+		//是质量部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5 && isleader==1){//是质量部成员
+				$("#verifyReviewerFoot").show();
+			}
+		}
+
+		$("#changqifanganyanzhengTip1").attr("style","display:block");		
+		$("#huiqianbumenCard").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#zhiliangyanzhengCard").attr("style","display:block");
+		$("#zhiliangyanzhengFoot").attr("style","display:none");
+		$("#signManagerSpan").attr("style","display:block");
+		$("#verifyManagerSpan").attr("style","display:block");
+		$("#changqifanganCard").attr("style","display:block");
+		$("#endLongSolveMeasureFoot").show();
+		$("#changqifanganyanzhengCard").show();
+		
+		//如果不需要转签部门则不显示转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{			
+			//打开质量验证结果显示（是否放行）
+			$("#verifyResultShow_div").show();
+		}
+		
+	}else if(status==17){
+		findLongSolveMeasure();//解析长期方案措施记录
+		//判断部门编号
+		var problemDepartment = $("#problemDepartmentShow").text();
+		var toparty = "";
+		if("工程部"==problemDepartment) {
+			toparty = "3";
+		}else if("生产部"==problemDepartment) {
+			toparty = "4";
+		}else if("质量部"==problemDepartment) {
+			toparty = "5";
+		}else if("研发部"==problemDepartment) {
+			toparty = "7";
+		}
+		//是责任归属部门
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==toparty){
+				if(toparty=="5"){
+					if(memberId=="15"||memberId=="21"||memberId=="25"||memberId=="64"){
+						$("#changqifanganRefuseFootDiv").show();
+					}
+				}else{
+					$("#changqifanganRefuseFootDiv").show();
+				}
+			}
+		}
+
+		$("#changqifanganTip").attr("style","display:block");		
+		$("#huiqianbumenCard").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#zhiliangyanzhengCard").attr("style","display:block");
+		$("#zhiliangyanzhengFoot").attr("style","display:none");
+		$("#signManagerSpan").attr("style","display:block");
+		$("#verifyManagerSpan").attr("style","display:block");
+		$("#changqifanganCard").attr("style","display:block");
+		$("#endLongSolveMeasureFoot").show();
+		$("#changqifanganRefuseCard").show();
+		
+		//如果不需要转签部门则不显示转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{			
+			//打开质量验证结果显示（是否放行）
+			$("#verifyResultShow_div").show();
+		}
+		
+	}else if(status==20){
+		findLongSolveMeasure();//解析长期方案措施记录
+		$("#huiqianbumenCard").attr("style","display:block");
+		$("#questionDiv").attr("style","display:none");
+		$("#zhiliangpandingCard").attr("style","display:block");
+		$("#reportManagerSpan").attr("style","display:block");
+		$("#determineManagerSpan").attr("style","display:block");
+		$("#responsibilityManagerSpan").attr("style","display:block");
+		$("#zhiliangpandingDiv").attr("style","display:none");
+		$("#zerenbumenDiv").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:block");
+		$("#huiqianbumenFoot").attr("style","display:none");
+		$("#zhiliangyanzhengCard").attr("style","display:block");
+		$("#zhiliangyanzhengFoot").attr("style","display:none");
+		$("#signManagerSpan").attr("style","display:block");
+		$("#verifyManagerSpan").attr("style","display:block");
+		$("#changqifanganCard").attr("style","display:block");
+		$("#endLongSolveMeasureFoot").show();
+		$("#changqifanganyanzhengCard").show();
+		$("#verifyReviewerSpan").show();
+		
+		//如果不需要转签部门则不显示转签部门DIV
+		var signDepartment = $("#isSignShow").text();
+		if(signDepartment!="是"){
+			$("#huiqianbumenCard").attr("style","display:none");
+		}
+		//如果不需要长期方案啊则不显示对应的DIV
+		var isLongSolveMeasure = $("#isLongSolveMeasureShow").text();
+		if(isLongSolveMeasure!="是"){
+			$("#isLongSolveMeasureDiv").attr("style","display:none");
+			$("#changqifanganCard").hide();
+			$("#changqifanganyanzhengCard").hide();
+		}
+		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+		if(exceptionType!="普通类"){
+			$("#zerenbumenForm").attr("style","display:none");
+			$("#zerenbumenCard").attr("style","display:none");
+			$("#huiqianbumenForm").attr("style","display:none");
+			$("#huiqianbumenCard").attr("style","display:none");
+		}else{			
+			//打开质量验证结果显示（是否放行）
+			$("#verifyResultShow_div").show();
+		}
+	}
+	
+	
+	//驳回状态判断
+	var verifyManagerHidden = $("#verifyManagerHidden").val();
+	var verifyManagerTimeHidden = $("#verifyManagerTimeHidden").val();
+	var verifyManagerReasonHidden = $("#verifyManagerReasonHidden").val();
+	if(status==5 && verifyManagerHidden!="" && verifyManagerHidden!="null"){
+		$("#questionRefuseMan").text(verifyManagerHidden);
+   		$("#questionRefuseTime").text(verifyManagerTimeHidden);
+   		$("#questionRefuseReason").text(verifyManagerReasonHidden);
+	}else if(status==8 && verifyManagerHidden!="" && verifyManagerHidden!="null"){
+		$("#zerenbumenRefuseMan").text(verifyManagerHidden);
+   		$("#zerenbumenRefuseTime").text(verifyManagerTimeHidden);
+   		$("#zerenbumenRefuseReason").text(verifyManagerReasonHidden);  		
+	}else if(status==4 && verifyManagerHidden!="" && verifyManagerHidden!="null"){
+		$("#zhiliangyanzhengRefuseCard").attr("style","display:block");
+		$("#zhiliangyanzhengRefuseMan").text(verifyManagerHidden);
+   		$("#zhiliangyanzhengRefuseTime").text(verifyManagerTimeHidden);
+   		$("#zhiliangyanzhengRefuseReason").text(verifyManagerReasonHidden);
+   		$("#responsibilityManagerSpan").attr("style","display:block");
+   		$("#zerenbumenCard").attr("style","display:block");
+   		$("#zerenbumenForm").attr("style","display:none");
+   		$("#huiqianbumenCard").attr("style","display:block");
+   		$("#huiqianbumenFoot").attr("style","display:none");
+   		//如果是工程部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){//是工程部
+				$("#zhiliangyanzhengRefuseCardFoot").attr("style","display:block");
+			}else{
+				$("#zhiliangyanzhengRefuseCardFoot").attr("style","display:none");
+			}
+		}
+
+	}	
+}
+
+function findExceptionInfo(exceptionId){
+	var state = null;
+	if(exceptionId){
+		mui.ajax('/TFMobile/tf-api/new-exception/findInfo', {
+			data : {
+				exceptionId : exceptionId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {
+				
+				if(result.success == true){
+					var exception = result.body.exception;
+					if(exception!=null && exception!="null" && exception!=""){	
+						state = exception.state;//获取异常状态（非常重要）
+						$("#deleteFlagHidden").val(exception.deleteFlag);
+						//问题描述内容
+						$("#serialNumber").text(exception.serialNumber);
+				   		$("#submitDepartment").text(exception.submitDepartment);
+				   		$("#line").text(exception.line);
+				   		$("#orderCategory").text(exception.orderCategory);
+				   		$("#productCategory").text(exception.productCategory);
+				   		$("#ordermaking").text(exception.ordermaking);
+				   		$("#model").text(exception.model);
+				   		$("#orderQuantity").text(exception.orderQuantity);
+				   		$("#checkQuantity").text(exception.checkQuantity);
+				   		$("#producedQuantity").text(exception.producedQuantity);
+				   		$("#failuresQuantity").text(exception.failuresQuantity);
+				   		$("#defectiveRate").text(toDecimal2((exception.defectiveRate)*100)+"%");
+				   		$("#findStation").text(exception.findStation);
+				   		if(exception.exceptionDescription!=null && exception.exceptionDescription!="" &&
+				   				exception.exceptionDescription.length<16){
+				   			$("#exceptionDescription").attr('class','mui-pull-right');
+				   		}
+				   		$("#exceptionDescription").text(exception.exceptionDescription);
+				   		var exceptionPicture = exception.exceptionPicture;
+				   		if(exceptionPicture!=null&&exceptionPicture!=""&&exceptionPicture!="null"){
+				   			$("#exceptionPicture").attr("src",picturePath+exceptionPicture);
+				   			$("#exceptionPicture").show();
+				   		}else{			   			
+				   			$("#exceptionPictureTip").text("未上传");
+				   		}
+			
+				   		$("#reporter").text(getInfo(exception.reporter)[1]);
+				   		$("#reportUserIdHidden").val(getInfo(exception.reporter)[0]);
+				   		$("#reporterTime").text(getDate(exception.reporterTime));
+				   		$("#reportManagerTime").text(getDate(exception.reportManagerTime));						
+						$("#reportManager").text(getInfo(exception.reportManager)[1]);
+				   				   		
+				   		$("#submitRefuseTime").text(getDate(exception.reportManagerTime));
+				   		$("#submitRefuseMan").text(getInfo(exception.reportManager)[1]);
+				   		if(exception.reportManagerRefuse!=null && exception.reportManagerRefuse!="" &&
+				   				exception.reportManagerRefuse.length<16){
+				   			$("#reportManagerRefuse").attr('class','mui-pull-right');
+				   		}
+				   		$("#reportManagerRefuse").text(exception.reportManagerRefuse);
+				   			
+				   		//撤销信息
+				   		$("#deleteTime").text(getDate(exception.deleteTime));
+				   		$("#deleteMan").text(getInfo(exception.deleteMan)[1]);
+				   		if(exception.deleteReason!=null && exception.deleteReason!="" &&
+				   				exception.deleteReason.length<16){
+				   			$("#deleteReason").attr('class','mui-pull-right');
+				   		}
+				   		$("#deleteReason").text(exception.deleteReason);
+				   		
+				   		//质量判定内容
+				   		$("#exceptionTypeShow").text(exception.exceptionType);
+				   		if(exception.handlingDescription!=null && exception.handlingDescription!="" &&
+				   				exception.handlingDescription.length<16){
+				   			$("#handlingDescriptionShow").attr('class','mui-pull-right');
+				   		}
+				   		$("#handlingDescriptionShow").text(exception.handlingDescription);
+				   		$("#determineHandler").text(getInfo(exception.determineHandler)[1]);
+				   		$("#determineHandlerTime").text(getDate(exception.determineHandlerTime));
+						$("#determineManager").text(getInfo(exception.determineManager)[1]);
+				   		$("#determineManagerTime").text(getDate(exception.determineManagerTime));
+				   		if(exception.determinePicture!=null&&exception.determinePicture!=""&&
+				   				exception.determinePicture!="null"){
+				   			$("#determinePictureShow").attr("src",picturePath+exception.determinePicture);
+				   			$("#determinePictureShow").show();
+				   		}else{			   			
+				   			$("#determinePictureShowTip").text("无");
+				   		}
+				   				 							
+				   		//质量判定驳回内容信息
+				   		$("#questionRefuseMan").text(getInfo(exception.determineManager)[1]);
+				   		$("#questionRefuseTime").text(getDate(exception.determineManagerTime));
+				   		if(exception.questionRefuseReason!=null && exception.questionRefuseReason!="" &&
+				   				exception.questionRefuseReason.length<16){
+				   			$("#questionRefuseReason").attr('class','mui-pull-right');
+				   		}
+				   		$("#questionRefuseReason").text(exception.determineManagerRefuse);
+				   		//责任部门内容
+				   		if(exception.exceptionReason!=null && exception.exceptionReason!="" &&
+				   				exception.exceptionReason.length<16){
+				   			$("#exceptionReasonShow").attr('class','mui-pull-right');
+				   		}
+				   		$("#exceptionReasonShow").text(exception.exceptionReason);
+				   		if(exception.exceptionSolve!=null && exception.exceptionSolve!="" &&
+				   				exception.exceptionSolve.length<16){
+				   			$("#exceptionSolveShow").attr('class','mui-pull-right');
+				   		}
+				   		$("#exceptionSolveShow").text(exception.exceptionSolve);
+				   		$("#isReworkShow").text(exception.isRework);
+				   		$("#problemAttributionShow").text(exception.problemAttribution);
+				   		if(exception.longExceptionSolve!=null && exception.longExceptionSolve!="" &&
+				   				exception.longExceptionSolve.length<16){
+				   			$("#longExceptionSolveShow1").attr('class','mui-pull-right');
+				   		}
+				   		$("#longExceptionSolveShow1").text(exception.longExceptionSolve);
+				   		var problemAttributionValue = exception.problemAttribution;
+				   		if(problemAttributionValue!="工艺制程"&&problemAttributionValue!="无"){
+				   			$("#isSignShow").text(exception.isSign);
+				   			$("#isSignShowDiv").show();
+				   			if(exception.isSign=="是"){
+				   				var dep = "";
+				   				if(problemAttributionValue=="操作"){
+				   					dep = "生产部";
+				   				}else if(problemAttributionValue=="材料"){
+				   					dep = "质量部";
+				   				}else if(problemAttributionValue=="设计"){
+				   					dep = "研发部";
+				   				}
+				   				$("#signDepartmentShow").text(dep);
+					   			$("#signDepartmentShowDiv").show();
+				   			}else{
+				   				$("#longExceptionSolveShowDiv").show();
+				   			}
+				   		}else{
+				   			var longExceptionSolve = exception.longExceptionSolve;
+				   			if(longExceptionSolve==null||longExceptionSolve=="null"||longExceptionSolve==""){
+				   				$("#longExceptionSolveShow1").text("无");
+				   			}
+				   			$("#longExceptionSolveShowDiv").show();
+				   		}
+				   		
+				   		$("#responsibilityHandler").text(getInfo(exception.responsibilityHandler)[1]);			   		
+				   		$("#responsibilityHandlerTime").text(getDate(exception.responsibilityHandlerTime));
+				   		$("#responsibilityManagerTime").text(getDate(exception.responsibilityManagerTime));				
+						$("#responsibilityManager").text(getInfo(exception.responsibilityManager)[1]);
+	
+				   		//责任部门（工程）驳回内容信息
+				   		$("#zerenbumenRefuseMan").text(getInfo(exception.responsibilityManager)[1]);
+				   		$("#zerenbumenRefuseTime").text(getDate(exception.responsibilityManagerTime));
+				   		if(exception.zerenbumenRefuseReason!=null && exception.zerenbumenRefuseReason!="" &&
+				   				exception.zerenbumenRefuseReason.length<16){
+				   			$("#zerenbumenRefuseReason").attr('class','mui-pull-right');
+				   		}
+				   		$("#zerenbumenRefuseReason").text(exception.responsibilityManagerRefuse);
+				   		//会签部门
+				   		var depart = "";
+		   				if(problemAttributionValue=="操作"){
+		   					depart = "生产部";
+		   				}else if(problemAttributionValue=="材料"){
+		   					depart = "质量部";
+		   				}else if(problemAttributionValue=="设计"){
+		   					depart = "研发部";
+		   				}
+		   				$("#problemAttributionShow1").text(depart);
+				   		$("#longExceptionSolveDescriptionShow").text(exception.longExceptionSolve);
+				   		$("#signHandler").text(getInfo(exception.signHandler)[1]);
+				   		$("#signManager").text(getInfo(exception.signManager)[1]);
+				   		$("#signHandlerTime").text(getDate(exception.signHandlerTime));
+				   		$("#signManagerTime").text(getDate(exception.signManagerTime));
+				   		//会签驳回内容信息
+				   		$("#huiqianbumenRefuseMan").text(getInfo(exception.signManager)[1]);
+				   		$("#huiqianbumenRefuseTime").text(getDate(exception.signManagerTime));
+				   		if(exception.huiqianbumenRefuseReason!=null && exception.huiqianbumenRefuseReason!="" && 
+				   				exception.huiqianbumenRefuseReason.length<16){
+				   			$("#huiqianbumenRefuseReason").attr('class','mui-pull-right');
+				   		}
+				   		$("#huiqianbumenRefuseReason").text(exception.signManagerRefuse);
+				   		
+				   		//质量验证
+				   		if(exception.verifyConclusion!=null && exception.verifyConclusion!="" && 
+				   				exception.verifyConclusion.length<16){
+				   			$("#verifyConclusionShow").attr('class','mui-pull-right');
+				   		}
+				   		$("#verifyConclusionShow").text(exception.verifyConclusion);
+				   		$("#verifyResultShow").text(exception.verifyResult);
+				   		if(exception.verifyPicture!=null&&exception.verifyPicture!=""&&
+				   				exception.verifyPicture!="null"){
+				   			$("#verifyPictureShow").attr("src",picturePath+exception.verifyPicture);
+				   			$("#verifyPictureShow").show();
+				   		}else{			   			
+				   			$("#verifyPictureShowTip").text("无");
+				   		}
+				   		$("#isLongSolveMeasureShow").text(exception.isLongSolveMeasure);
+				   		$("#problemDepartmentShow").text(exception.problemDepartment);
+				   		$("#longSolveMeasureBriefShow").text(exception.longSolveMeasureBrief);
+				   		$("#verifyHandler").text(getInfo(exception.verifyHandler)[1]);			
+					   	$("#verifyManager").text(getInfo(exception.verifyManager)[1]);			   					
+				   		$("#verifyHandlerTime").text(getDate(exception.verifyHandlerTime));
+				   		$("#verifyManagerTime").text(getDate(exception.verifyManagerTime));
+	
+				   		$("#verifyManagerHidden").val(getInfo(exception.verifyManager)[1]);
+				   		$("#verifyManagerTimeHidden").val(getDate(exception.verifyManagerTime));
+				   		$("#verifyManagerReasonHidden").val(exception.verifyManagerRefuse);
+				   		
+				   		//长期方案
+				   		$("#longSolveMeasureEnder").text(getInfo(exception.longSolveMeasureEnder)[1]);			
+				   		$("#longSolveMeasureEnderTime").text(getDate(exception.longSolveMeasureEnderTime));
+				   		if(exception.longSolveMeasureVerifyDescription!=null && exception.longSolveMeasureVerifyDescription!="" && 
+				   				exception.longSolveMeasureVerifyDescription.length<16){
+				   			$("#longSolveMeasureVerifyDescriptionShow").attr('class','mui-pull-right');
+				   		}
+				   		$("#longSolveMeasureVerifyDescriptionShow").text(exception.longSolveMeasureVerifyDescription);
+				   		$("#longSolveMeasureVerifier").text(getInfo(exception.longSolveMeasureVerifier)[1]);
+				   		$("#longSolveMeasureVerifierTime").text(getDate(exception.longSolveMeasureVerifierTime));
+				   		$("#longSolveMeasureReviewer").text(getInfo(exception.longSolveMeasureReviewer)[1]);
+				   		$("#longSolveMeasureReviewerTime").text(getDate(exception.longSolveMeasureReviewerTime));
+				   		//长期方案驳回信息
+				   		if(exception.longSolveMeasureRefuse!=null && exception.longSolveMeasureRefuse!="" && 
+				   				exception.longSolveMeasureRefuse.length<16){
+				   			$("#longSolveMeasureRefuse").attr('class','mui-pull-right');
+				   		}
+				   		$("#longSolveMeasureRefuse").text(exception.longSolveMeasureRefuse);
+				   		$("#longSolveMeasureRefuseMan").text(getInfo(exception.longSolveMeasureReviewer)[1]);
+				   		$("#longSolveMeasureRefuseTime").text(getDate(exception.longSolveMeasureReviewerTime));
+					}else{
+						$("#questionDiv").attr("style","display:none");
+					}
+
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				//mui.toast("网络出错了");
+			}
+		});
+	}
+	return state;
+}
+
+//1.问题描述部门经理审核确认
+var flag = true;	
+document.getElementById('questionConfirm').addEventListener('tap',function() { 		
+	//判断当前成员是否为发件部门经理即是否有权限确认审核
+	var submitDepartment = $("#submitDepartment").text();
+	var pass1 = false;
+	switch(submitDepartment){
+		case "工程部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==3){
+					pass1 =true;
+				}
+			}
+			if(isleader!=1||!pass1){
+				 mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		case "生产部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==4){
+					pass1 =true;
+				}
+			}
+			if(isleader!=1||!pass1){
+				 mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		case "质量部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==5){
+					pass1 =true;
+				}
+			}
+			if(isleader!=1||!pass1){
+				mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		default: mui.toast("您暂无此操作权限！"); return;
+	}
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/new-exception/reportManager', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 2,
+						serialNumber : serialNumber
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("审核成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});	
+			}
+		}
+	});
+});
+//2.问题描述部门经理驳回事件
+var flag = true;	
+document.getElementById('questionRefuse').addEventListener('tap',function(e) { 		
+	//判断当前成员是否为发件部门经理即是否有权限驳回
+	var submitDepartment = $("#submitDepartment").text();
+	var pass2 = false;
+	switch(submitDepartment){
+		case "工程部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==3){
+					pass2 =true;
+				}
+			}
+			if(isleader!=1||!pass2){
+				 mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		case "生产部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==4){
+					pass2 =true;
+				}
+			}
+			if(isleader!=1||!pass2){
+				 mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		case "质量部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==5){
+					pass2 =true;
+				}
+			}
+			if(isleader!=1||!pass2){
+				mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		default: mui.toast("您暂无此操作权限！"); return;
+	}
+	
+	var reporter = $("#reportUserIdHidden").val();//获去问题异常发文人的UserId
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var reportManagerRefuse = "";
+	//填写驳回原因
+	e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+	var btnArray1 = ['取消', '确定'];
+	mui.prompt('请输入驳回原因：', '', '', btnArray1, function(e) {
+		if (e.index == 1) {
+			reportManagerRefuse = e.value;
+			if(reportManagerRefuse==""){
+				mui.toast("请输入驳回原因！");
+				return;
+			}
+					
+			var btnArray = ['取消', '确认'];
+			mui.confirm('', '确认要驳回吗？',btnArray,function(e) {
+				if(e.index == 1){
+					if(flag==false){
+						return;
+					}else{
+						flag=false;
+						mui.ajax('/TFMobile/tf-api/new-exception/reportManagerRefuse', {
+							data : {
+								exceptionId : exceptionId,
+								state : 1,
+								memberId : memberId,
+								serialNumber : serialNumber,
+								reportManagerRefuse : reportManagerRefuse,
+								reporter : reporter//消息通知要发送的成员
+							},
+							dataType : 'json',//服务器返回json格式数据
+							type : 'post',//HTTP请求类型
+							async : false,
+							success : function(result) {						
+								if(result.success == true){
+									mui.toast("驳回成功！");
+									setTimeout(function(){
+										location.reload(); 
+									}, 1000);
+								}else{
+									mui.toast(result.message);
+								}				
+							},
+							error : function(xhr, type, errorThrown) {
+								mui.toast("网络出错了");						
+								flag=true;	
+							}
+						});
+					
+					}
+				}
+			});
+		}else{}	
+	});
+});
+
+//3.质量判定处理意见保存
+	//表单提交
+ 	document.getElementById('zhiliangpandingSubmit').addEventListener('tap',function() {
+		//判断当前成员是否有权限处理（是否为质量部门的成员）
+		var pass3 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass3 = true;
+			}
+		}		
+		if(!pass3){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+	    var exceptionType = $("#exceptionType").val().replace(/ /g,'');
+		var handlingDescription = $("#handlingDescription").val().replace(/ /g,'');
+		var determinePicture = $("#upload3z").val().replace(/ /g,'');
+		 
+   		if(exceptionType==null||exceptionType==""){
+   			mui.toast("请选择通报类型");
+   			return;
+   		}
+   		if(handlingDescription==null||handlingDescription==""){
+   			mui.toast("请输入处理意见");
+   			return;
+   		}
+   		var findStation = $("#findStation").text();//从文本中获取发现站别	
+   		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号		
+   		var model = $("#model").text();//从文本中获取机型		
+   		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.showLoading("正在提交..","div"); //加载文字和类型，plus环境中类型为div时强制以div方式显示
+					setTimeout(function(){						
+						mui.ajax('/TFMobile/tf-api/new-exception/determineHandle', {
+							data : {
+								exceptionId : exceptionId,
+								memberId : memberId,
+								state : 3,
+								serialNumber : serialNumber,
+								model : model,
+								findStation : findStation,
+								exceptionDescription : exceptionDescription,
+								exceptionType : exceptionType,
+								handlingDescription : handlingDescription,
+								determinePicture : determinePicture,
+								department : department//根据发文人的部门找到对应领导推送消息
+							},
+							dataType : 'json',//服务器返回json格式数据
+							type : 'post',//HTTP请求类型
+							async : false,
+							success : function(result) {
+								mui.hideLoading();//隐藏loading
+								if(result.success == true){									
+									mui.toast("提交信息成功！");
+									setTimeout(function(){
+										location.reload(); 
+									}, 1000);
+								}else{
+									mui.toast(result.message);
+								}				
+							},
+							error : function(xhr, type, errorThrown) {
+								mui.hideLoading();//隐藏loading
+								mui.toast("网络出错了");						
+								flag=true;	
+							}
+						});
+					 }, 10);
+				}
+			}
+		});
+	}); 
+
+//4.质量判定部门经理审核确认
+	var flag4 = true;	
+	document.getElementById('zhiliangpandingConfirm').addEventListener('tap',function() { 	
+		//判断当前成员是否为质量部经理，否则无权限处理
+		var pass4 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass4 = true;
+			}
+		}		
+		if(!pass4 || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+   		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+   		var exceptionType = $("#exceptionTypeShow").text();//从文本中获取异常通报类型
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag4==false){
+					return;
+				}else{
+					flag4 = false;
+					mui.ajax('/TFMobile/tf-api/new-exception/determineManager', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							state : 4,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							exceptionType : exceptionType
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("审核成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag4=true;	
+						}
+					});
+				
+				}
+			}
+		});
+	});
+//5.质量判定部门经理驳回
+	var flag = true;	
+	document.getElementById('zhiliangpandingRefuse').addEventListener('tap',function(e) { 	
+		//判断当前成员是否为质量部门经理，否则无权限处理
+		var submitDepartment = $("#submitDepartment").text();
+		var pass5 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass5 = true;
+			}
+		}
+		if(!pass5 || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		var determineManagerRefuse = "";
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var reporter = $("#reportUserIdHidden").val();//发文人UserId
+		//填写驳回原因
+		e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+		var btnArray1 = ['取消', '确定'];
+		mui.prompt('请输入驳回原因：', '', '', btnArray1, function(e) {
+			if (e.index == 1) {
+				determineManagerRefuse = e.value;
+				if(determineManagerRefuse==""){
+					mui.toast("请输入驳回原因！");
+					return;
+				}
+				//获取发文部门
+				var submitdeptText = $("#submitDepartment").text();
+				var submitdept = "";
+				if(submitdeptText=="生产部"){
+					submitdept ="4";
+				}else if(submitdeptText=="质量部"){
+					submitdept ="5";			
+				}else if(submitdeptText=="工程部"){
+					submitdept ="3";			
+				}
+						
+				var btnArray = ['取消', '确认'];
+				mui.confirm('', '确认要驳回吗？',btnArray,function(e) {
+					if(e.index == 1){
+						if(flag==false){
+							return;
+						}else{
+							flag=false;
+							mui.ajax('/TFMobile/tf-api/new-exception/determineManagerRefuse', {
+								data : {
+									exceptionId : exceptionId,
+									memberId : memberId,
+									state : 5,
+									serialNumber : serialNumber,
+									determineManagerRefuse : determineManagerRefuse,
+									reporter : reporter,
+									touser : "",//消息通知要发送的成员
+									toparty : submitdept//消息通知要发送的部门
+								},
+								dataType : 'json',//服务器返回json格式数据
+								type : 'post',//HTTP请求类型
+								async : false,
+								success : function(result) {						
+									if(result.success == true){
+										mui.toast("驳回成功！");
+										setTimeout(function(){
+											location.reload(); 
+										}, 1000);
+									}else{
+										mui.toast("驳回成功！");
+									}				
+								},
+								error : function(xhr, type, errorThrown) {
+									mui.toast("网络出错了");						
+									flag=true;	
+								}
+							});
+						
+						}
+					}
+				});
+			} else {
+				
+			}
+		})
+
+	});
+	
+//6.责任部门处理信息保存
+	//表单提交
+	document.getElementById('zerenbumenSubmit').addEventListener('tap',function() {		
+		//判断当前成员是否有权限处理（是否为工程部门的成员）
+		var pass6 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){
+				pass6 = true;
+			}
+		}
+		if(!pass6){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}		
+		
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+   		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+   		var exceptionReason = $("#exceptionReason").val().replace(/ /g,'');
+   		var exceptionSolve = $("#exceptionSolve").val().replace(/ /g,'');
+   		var isRework = $("#isRework").val().replace(/ /g,'');
+   		var isSign = $("#isSign").val().replace(/ /g,'');
+   		var problemAttribution = $("#problemAttribution").val().replace(/ /g,'');
+   		var longExceptionSolve = $("#longExceptionSolve").val().replace(/ /g,'');
+   		if(exceptionReason==null||exceptionReason==""){
+   			mui.toast("请输入造成原因");
+   			return;
+   		}
+   		if(exceptionSolve==null||exceptionSolve==""){
+   			mui.toast("请输入临时处理方案");
+   			return;
+   		}  
+   		if(isRework==null||isRework==""){
+   			mui.toast("请选择是否返工");
+   			return;
+   		}  
+   		if(problemAttribution==null||problemAttribution==""){
+   			mui.toast("请选择问题归属");
+   			return;
+   		} 
+   		if(problemAttribution!="工艺制程"&&problemAttribution!="无"&&isSign==""){
+   			mui.toast("请选择是否需要会签");
+   			return;
+		}
+   		  		
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/responsibility', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							state : 6,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							exceptionReason : exceptionReason,
+							exceptionSolve : exceptionSolve,
+							isRework : isRework,
+							problemAttribution : problemAttribution,
+							isSign : isSign,
+							longExceptionSolve : longExceptionSolve,
+							department : department
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("提交信息成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				}
+			}
+		});
+	});	
+	
+//7.责任(工程)部门经理审核确认	
+	document.getElementById('zerenbumenConfirm').addEventListener('tap',function() { 
+		//判断当前成员是否为责任部门经理，否则无权限处理
+		var pass7 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){
+				pass7 = true;
+			}
+		}
+		if(!pass7 || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		//判断是否需要问题归属部门会签
+		var isSign = $("#isSignShow").text();
+		var signDepartmentText = $("#signDepartmentShow").text();
+		var signDepartment = "";
+		if(signDepartmentText=="生产部"){
+			signDepartment = "[4]";
+		}else if(signDepartmentText=="质量部"){
+			signDepartment = "[5]";
+		}else if(signDepartmentText=="研发部"){
+			signDepartment = "[7]";
+		}
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+   		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/responsibilityManager', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							state : 7,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							isSign : isSign,
+							signDepartment : signDepartment//消息通知要发送的成员（会签部门）
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("审核成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				
+				}
+			}
+		});
+	});
+
+//8.责任（工程）部门经理驳回
+var flag = true;	
+document.getElementById('zerenbumenRefuse').addEventListener('tap',function(e) { 	
+	//判断当前成员是否为质量控制部门经理，否则无权限处理
+	var pass8 = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==3){
+			pass8 = true;
+		}
+	}
+	if(!pass8 || isleader!=1){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+		
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+	var responsibilityManagerRefuse = "";
+	//填写驳回原因
+	e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+	var btnArray1 = ['取消', '确定'];
+	mui.prompt('请输入驳回原因：', '', '', btnArray1, function(e) {
+		if (e.index == 1) {
+			responsibilityManagerRefuse = e.value;
+			if(responsibilityManagerRefuse==""){
+				mui.toast("请输入驳回原因！");
+				return;
+			}
+					
+			var btnArray = ['取消', '确认'];
+			mui.confirm('', '确认要驳回吗？',btnArray,function(e) {
+				if(e.index == 1){
+					if(flag==false){
+						return;
+					}else{
+						flag=false;
+						mui.ajax('/TFMobile/tf-api/new-exception/responsibilityManagerRefuse', {
+							data : {
+								exceptionId : exceptionId,
+								memberId : memberId,
+								state : 8,
+								responsibilityManagerRefuse : responsibilityManagerRefuse,
+								serialNumber : serialNumber
+							},
+							dataType : 'json',//服务器返回json格式数据
+							type : 'post',//HTTP请求类型
+							async : false,
+							success : function(result) {						
+								if(result.success == true){
+									mui.toast("驳回成功！");
+									setTimeout(function(){
+										location.reload(); 
+									}, 1000);
+								}else{
+									mui.toast(result.message);
+								}				
+							},
+							error : function(xhr, type, errorThrown) {
+								mui.toast("网络出错了");						
+								flag=true;	
+							}
+						});
+					
+					}
+				}
+			});
+		} else {
+			
+		}
+	})
+
+});
+	
+//9.会签部门处理信息保存
+//表单提交
+document.getElementById('huiqianbumenSubmit').addEventListener('tap',function() {	
+
+	//判断当前成员是否为会签部门成员
+	var pass9 = false;
+	var needSignDept = $("#signDepartmentShow").text();//需要会签部门
+	var depNum = "";
+	if(needSignDept=="生产部"){
+		depNum = "4";				
+	}else if(needSignDept=="质量部"){
+		depNum = "5";			
+	}else if(needSignDept=="研发部"){
+		depNum = "7";			
+	}
+	for(var j=0;j<departmentJson.length;j++){
+		if(departmentJson[j]==depNum){
+			pass9 = true;
+		}
+	}		
+	if(!pass9){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+	var model = $("#model").text();//从文本中获取机型		
+	var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+	var longExceptionSolve = $("#signHandleDescription").val().replace(/ /g,'');
+	if(longExceptionSolve==null||longExceptionSolve==""){
+		mui.toast("请输入长期方案处理意见");
+		return;
+	}
+		
+		  		
+	var btnArray = ['取消', '确认'];
+	mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+		if(e.index == 1){
+			if(flag==false){
+				return;
+			}else{
+				flag=false;
+				mui.ajax('/TFMobile/tf-api/new-exception/signHandle', {
+					data : {
+						exceptionId : exceptionId,
+						memberId : memberId,
+						state : 9,
+						longExceptionSolve : longExceptionSolve,
+						serialNumber : serialNumber,
+						model : model,
+						exceptionDescription : exceptionDescription,
+						department : department
+					},
+					dataType : 'json',//服务器返回json格式数据
+					type : 'post',//HTTP请求类型
+					async : false,
+					success : function(result) {						
+						if(result.success == true){
+							mui.toast("提交信息成功！");
+							setTimeout(function(){
+								location.reload(); 
+							}, 1000);
+						}else{
+							mui.toast(result.message);
+						}				
+					},
+					error : function(xhr, type, errorThrown) {
+						mui.toast("网络出错了");						
+						flag=true;	
+					}
+				});
+			}
+		}
+	});
+});	
+
+//10.部门会签经理审核确认	
+	document.getElementById('huiqianbumenConfirm').addEventListener('tap',function(e) { 
+		//判断当前成员是否为会签部门经理
+		var pass10 = false;
+		var needSignDept = $("#signDepartmentShow").text();//需要会签部门
+		var depNum = "";
+		if(needSignDept=="生产部"){
+			depNum = "4";				
+		}else if(needSignDept=="质量部"){
+			depNum = "5";			
+		}else if(needSignDept=="研发部"){
+			depNum = "7";			
+		}
+		for(var j=0;j<departmentJson.length;j++){
+			if(departmentJson[j]==depNum){
+				pass10 = true;
+			}
+		}				
+		if(!pass10 || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+					
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要会签吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/signManager', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							state : 10,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription					
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("审核成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				
+				}
+			}
+		});
+	});
+	
+//11.会签部门经理驳回
+	document.getElementById('huiqianbumenRefuse').addEventListener('tap',function(e) { 	
+		//判断当前成员是否为会签部门经理
+		var pass11 = false;
+		var needSignDept = $("#signDepartmentShow").text();//需要会签部门
+		var depNum = "";
+		if(needSignDept=="生产部"){
+			depNum = "4";				
+		}else if(needSignDept=="质量部"){
+			depNum = "5";			
+		}else if(needSignDept=="研发部"){
+			depNum = "7";			
+		}
+		for(var j=0;j<departmentJson.length;j++){
+			if(departmentJson[j]==depNum){
+				pass11 = true;
+			}
+		}				
+		if(!pass11 || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+			
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var signManagerRefuse = "";
+		//填写驳回原因
+		e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+		var btnArray1 = ['取消', '确定'];
+		mui.prompt('请输入驳回原因：', '', '', btnArray1, function(e) {
+			if (e.index == 1) {
+				signManagerRefuse = e.value;
+				if(signManagerRefuse.replace(/ /g,'')==""){
+					mui.toast("请输入驳回原因！");
+					return;
+				}
+						
+				var btnArray = ['取消', '确认'];
+				mui.confirm('', '确认要驳回吗？',btnArray,function(e) {
+					if(e.index == 1){
+						if(flag==false){
+							return;
+						}else{
+							flag=false;
+							mui.ajax('/TFMobile/tf-api/new-exception/signManagerRefuse', {
+								data : {
+									exceptionId : exceptionId,
+									memberId : memberId,
+									state : 11,
+									signManagerRefuse : signManagerRefuse,
+									serialNumber : serialNumber
+								},
+								dataType : 'json',//服务器返回json格式数据
+								type : 'post',//HTTP请求类型
+								async : false,
+								success : function(result) {						
+									if(result.success == true){
+										mui.toast("驳回成功！");
+										setTimeout(function(){
+											location.reload(); 
+										}, 1000);
+									}else{
+										mui.toast(result.message);
+									}				
+								},
+								error : function(xhr, type, errorThrown) {
+									mui.toast("网络出错了");						
+									flag=true;	
+								}
+							});
+						
+						}
+					}
+				});
+			} else {
+				
+			}
+		})
+
+	});
+	
+//12.质量验证信息保存
+	//表单提交
+	document.getElementById('zhiliangyanzhengSubmit').addEventListener('tap',function() {
+		//判断当前成员是否有权限处理（是否为质量控制部门或品质保障部的成员）
+		var pass12 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass12 = true;
+			}
+		}
+		
+		if(!pass12){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		var isLongSolveMeasure = $("#isLongSolveMeasure").val().replace(/ /g,'');
+		var problemDepartment = $("#problemDepartment").val().replace(/ /g,'');
+		var longSolveMeasureBrief = $("#longSolveMeasureBrief").val().replace(/ /g,'');
+		
+		var verifyPicture = $("#upload4z").val().replace(/ /g,'');
+   		var verifyResult = $("#verifyResult").val().replace(/ /g,'');
+   		var verifyConclusion = $("#verifyConclusion").val().replace(/ /g,'');
+   		
+   		//判断通报类型
+		var exceptionType = $("#exceptionTypeShow").text();
+   		if(exceptionType=="普通类"){
+   			if(verifyResult==null||verifyResult==""){
+   	   			mui.toast("请选择质量验证结果");
+   	   			return;
+   	   		}
+   		}
+   		
+   		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+   		var model = $("#model").text();//从文本中获取机型		
+		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+   		if(verifyConclusion==null||verifyConclusion==""){
+   			mui.toast("请输入验证结论");
+   			return;
+   		}
+   		if(isLongSolveMeasure==null||isLongSolveMeasure==""){
+   			mui.toast("请选择是否需要长期方案");
+   			return;
+   		}		  	
+		if(isLongSolveMeasure=="是"){
+			if(problemDepartment==null||problemDepartment==""){
+	   			mui.toast("请选择责任部门");
+	   			return;
+	   		}
+	   		if(longSolveMeasureBrief==null||longSolveMeasureBrief==""){
+	   			mui.toast("请输入长期方案简述");
+	   			return;
+	   		}
+		}else{
+			problemDepartment = "";
+			longSolveMeasureBrief = "";
+		}
+				
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/finalVerify', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							state : 12,
+							verifyPicture : verifyPicture,
+							verifyResult : verifyResult,
+							verifyConclusion : verifyConclusion,
+							isLongSolveMeasure : isLongSolveMeasure,
+							problemDepartment : problemDepartment,
+							longSolveMeasureBrief : longSolveMeasureBrief,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							department : department
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("提交信息成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				}
+			}
+		});
+	});
+//13.质量验证部门经理审核确认	
+	document.getElementById('zhiliangyanzhengConfirm').addEventListener('tap',function() { 		
+		//判断当前成员是否为质量部门经理，否则无权限处理
+		var pass13 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass13 = true;
+			}
+		}
+		if(!pass13 || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}			
+		var isLongSolveMeasure = $("#isLongSolveMeasureShow").text();//从文本中获取
+		var problemDepartment = $("#problemDepartmentShow").text();//从文本中获取
+		
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/verifyManager', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							isLongSolveMeasure : isLongSolveMeasure,
+							problemDepartment : problemDepartment,
+							state : 13
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("审核成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				
+				}
+			}
+		});
+	});  	
+	
+//14.质量验证部门经理驳回	 	
+	document.getElementById('zhiliangyanzhengRefuseSubmit').addEventListener('tap',function() { 		
+		//判断当前成员是否为质量部门经理，否则无权限处理
+		var pass14 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass14 = true;
+			}
+		}
+		if(!pass14 || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var state = $("#selectState").val().replace(/ /g,'');
+		var verifyManagerRefuse = $("#verifyManagerRefuse").val().replace(/ /g,'');		
+		if(state==null||state==""){
+   			mui.toast("请选择驳回位置");
+   			return;
+   		}
+		if(verifyManagerRefuse==null||verifyManagerRefuse==""){
+   			mui.toast("请输入驳回原因");
+   			return;
+   		}
+		//驳回到哪个位置的处理部门
+		var dep = "";
+		var submitDepartment = $("#submitDepartment").text();
+		if(state==5){
+			switch(submitDepartment){
+				case "工程部": dep = "[3]";break;
+				case "生产部": dep = "[4]";break;
+				case "质量部":dep = "[5]";break;
+				default: dep = "";
+			}
+		}else if(state==8){
+			dep = "[5]";
+		}else if(state==4){
+			dep = "[3]";
+		}
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要驳回吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/verifyManagerRefuse', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							state : state,
+							dep : dep,
+							serialNumber : serialNumber,
+							verifyManagerRefuse : verifyManagerRefuse
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("驳回成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				
+				}
+			}
+		});
+	});  	
+	
+//15.责任归属部门长期方案信息保存
+	document.getElementById('changqifanganSubmit').addEventListener('tap',function() {
+		//判断部门编号
+		var problemDepartment = $("#problemDepartmentShow").text();
+		var toparty = "";
+		if("工程部"==problemDepartment) {
+			toparty = "3";
+		}else if("生产部"==problemDepartment) {
+			toparty = "4";
+		}else if("质量部"==problemDepartment) {
+			toparty = "5";
+		}else if("研发部"==problemDepartment) {
+			toparty = "7";
+		}
+		var pass = false;
+		//是责任归属部门
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==toparty){
+				pass = true;
+			}
+		}		
+		if(!pass){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+				
+   		var measure = $("#measure").val().replace(/ /g,''); 
+   		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+   		var model = $("#model").text();//从文本中获取机型		
+		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+   		if(verifyConclusion==null||verifyConclusion==""){
+   			mui.toast("请输入长期方案措施");
+   			return;
+   		}
+   		
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/longSolveMeasure', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							state : 14,
+							measure : measure,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							department : department
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("提交信息成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				}
+			}
+		});
+	});
+
+	
+//16.结束长期方案跟踪
+function endMeasure(){
+		//判断部门编号
+		var pass = false;
+		var problemDepartment = $("#problemDepartmentShow").text();
+		var toparty = "";
+		if("工程部"==problemDepartment) {
+			toparty = "3";
+		}else if("生产部"==problemDepartment) {
+			toparty = "4";
+		}else if("质量部"==problemDepartment) {
+			toparty = "5";
+		}else if("研发部"==problemDepartment) {
+			toparty = "7";
+		}
+		//是责任归属部门
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==toparty){
+				if(toparty=="5"){
+					if(memberId=="15"||memberId=="21"||memberId=="25"||memberId=="64"){
+						pass = true;
+					}
+				}else{
+					pass = true;
+				}
+			}
+		}
+		
+		if(!pass){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要结束吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/endLongSolveMeasure', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							state : 15
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("确认结束成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				
+				}
+			}
+		});
+		
+	}
+//17.质量部门长期方案验证处理	
+	document.getElementById('changqifanganyanzhengSubmit').addEventListener('tap',function() { 		
+		//判断当前成员是否为质量部门成员，否则无权限处理
+		var pass = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass = true;
+			}
+		}
+		if(!pass){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}			
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+		
+		var longSolveMeasureVerifyDescription = $("#longSolveMeasureVerifyDescription").val().replace(/ /g,'');
+					
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要提交吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/longSolveMeasureVerify', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							longSolveMeasureVerifyDescription : longSolveMeasureVerifyDescription,
+							state : 16,
+							department : department
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("提交信息成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				
+				}
+			}
+		});	
+	});  	
+	
+//18.质量部门长期方案验证经理审核	
+	document.getElementById('changqifanganyanzhengConfirm').addEventListener('tap',function() { 		
+		//判断当前成员是否为质量部门成员，否则无权限处理
+		var pass = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass = true;
+			}
+		}
+		if(!pass || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}			
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var model = $("#model").text();//从文本中获取机型		
+		var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述	
+						
+		var btnArray = ['取消', '确认'];
+		mui.confirm('', '确认要审核吗？',btnArray,function(e) {
+			if(e.index == 1){
+				if(flag==false){
+					return;
+				}else{
+					flag=false;
+					mui.ajax('/TFMobile/tf-api/new-exception/longSolveMeasureReviewer', {
+						data : {
+							exceptionId : exceptionId,
+							memberId : memberId,
+							serialNumber : serialNumber,
+							model : model,
+							exceptionDescription : exceptionDescription,
+							state : 20
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("确认审核成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("网络出错了");						
+							flag=true;	
+						}
+					});
+				
+				}
+			}
+		});	
+	});  	
+//19.质量部门长期方案验证经理驳回
+	document.getElementById('changqifanganyanzhengRefuse').addEventListener('tap',function(e) { 		
+		//判断当前成员是否为质量部门成员，否则无权限处理
+		var pass = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass = true;
+			}
+		}
+		if(!pass || isleader!=1){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}			
+		var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号
+		var problemDepartment = $("#problemDepartmentShow").text();//从文本中获取长期方案责任部门
+		var longSolveMeasureRefuse = "";
+		//填写驳回原因
+		e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+		var btnArray1 = ['取消', '确定'];
+		mui.prompt('请输入驳回原因：', '', '', btnArray1, function(e) {
+			if (e.index == 1) {
+				longSolveMeasureRefuse = e.value;
+				if(longSolveMeasureRefuse.replace(/ /g,'')==""){
+					mui.toast("请输入驳回原因！");
+					return;
+				}
+						
+				var btnArray = ['取消', '确认'];
+				mui.confirm('', '确认要驳回吗？',btnArray,function(e) {
+					if(e.index == 1){
+						if(flag==false){
+							return;
+						}else{
+							flag=false;
+							mui.ajax('/TFMobile/tf-api/new-exception/longSolveMeasureRefuse', {
+								data : {
+									exceptionId : exceptionId,
+									memberId : memberId,
+									state : 17,
+									problemDepartment : problemDepartment,
+									longSolveMeasureRefuse : longSolveMeasureRefuse,
+									serialNumber : serialNumber
+								},
+								dataType : 'json',//服务器返回json格式数据
+								type : 'post',//HTTP请求类型
+								async : false,
+								success : function(result) {						
+									if(result.success == true){
+										mui.toast("驳回成功！");
+										setTimeout(function(){
+											location.reload(); 
+										}, 1000);
+									}else{
+										mui.toast(result.message);
+									}				
+								},
+								error : function(xhr, type, errorThrown) {
+									mui.toast("网络出错了");						
+									flag=true;	
+								}
+							});
+						
+						}
+					}
+				});
+			} else {
+				
+			}
+		})	
+	});  	
+
+//17.质量判定修改	 	
+	document.getElementById('zhikongEdit').addEventListener('tap',function() { 		
+		//判断当前成员是否为质量控制部门经理，否则无权限处理
+		var pass15 = false;	
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass15 = true;
+			}							
+		}		
+		if(!pass15){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		$("#zhiliangpandingCard").attr("style","display:none");
+		$("#zhiliangpandingForm").attr("style","display:block");
+	});  	
+//18.责任部门修改	 	
+	document.getElementById('zerenbumenEdit').addEventListener('tap',function() { 	
+		//判断当前成员是否为质量控制部门经理，否则无权限处理
+		var pass16 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){
+				pass16 = true;
+			}							
+		}
+		if(!pass16){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+		
+		$("#zerenbumenCard").attr("style","display:none");
+		$("#zerenbumenForm").attr("style","display:block");
+	});  	
+//19.会签部门修改	 	
+	document.getElementById('huiqianbumenEdit').addEventListener('tap',function() { 		
+
+		//判断当前成员是否为会签部门成员
+		var pass17 = false;
+		var needSignDept = $("#signDepartmentShow").text();//需要会签部门
+		var depNum = "";
+		if(needSignDept=="生产部"){
+			depNum = "4";				
+		}else if(needSignDept=="质量部"){
+			depNum = "5";			
+		}else if(needSignDept=="研发部"){
+			depNum = "7";			
+		}
+		for(var j=0;j<departmentJson.length;j++){
+			if(departmentJson[j]==depNum){
+				pass17 = true;
+			}
+		}		
+		if(!pass17){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+	
+		$("#huiqianbumenForm").attr("style","display:block");
+		$("#huiqianbumenCard").attr("style","display:none");
+	});  	
+//20.质量验证修改	 	
+	function zhiliangyanzhengEdit() { 
+		//判断当前成员是否有权限处理（是否为质量控制部门的成员）
+		var pass18 = false;
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==5){
+				pass18 = true;
+			}
+		}		
+		if(!pass18){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+	
+		$("#zhiliangyanzhengForm").attr("style","display:block");
+		$("#zhiliangyanzhengCard").attr("style","display:none");
+	}  	
+//21.质量验证驳回到责任部门点击修改事件	 	
+	document.getElementById('zhiliangyanzhengRefuseEdit').addEventListener('tap',function() { 
+		//判断当前成员是否有权限处理（是否为质量控制部门的成员）
+		var pass19 = false;
+		//如果是工程部
+		for(var i=0;i<departmentJson.length;i++){
+			if(departmentJson[i]==3){//是工程部
+				pass19 = true;
+			}
+		}
+		
+		if(!pass19){
+			mui.toast("您暂无此操作权限！");
+			return;
+		}
+	
+		$("#zerenbumenForm").attr("style","display:block");
+		$("#zhiliangyanzhengRefuseCard").attr("style","display:none");
+		$("#zerenbumenCard").attr("style","display:none");
+   		$("#huiqianbumenCard").attr("style","display:none");
+	});  	
+	
+	
+//22.根据主键memberId获取企业成员信息
+function getInfo(memberId){
+	var userId = null;
+	var name = null;
+	var department = null;
+	var position = null;
+	var isleader = null;
+	if(memberId==null || memberId=="" || memberId=="null"){
+		return [userId, name, department, position, isleader];
+	}
+	mui.ajax('/TFMobile/tf-api/member/getInfo', {
+		data : {
+			memberId : memberId			
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {
+			if(result.success == true){
+				userId = result.body.member.userId;
+				name = result.body.member.name;
+				department = result.body.member.department;
+				position = result.body.member.position;
+				isleader = result.body.member.isleader;
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");
+		}
+	});
+	return [userId, name, department, position, isleader];
+} 
+
+//10跳转到修改问题描述页面
+function questionEdit(){	
+	//判断当前成员是否有权限处理（是否为发文人员）
+	var reporter = $("#reportUserIdHidden").val();//发文人UserId
+	if(reporter!=userId){
+		mui.toast("仅有发文人员才可修改！");
+		return;
+	}
+	//判断当前成员是否为发件部门人员即是否有权限修改描述
+	var submitDepartment = $("#submitDepartment").text();
+	var pass0 = false;
+	switch(submitDepartment){
+		case "工程部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==3){
+					pass0 =true;
+				}
+			}
+			if(!pass0){
+				 mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		case "生产部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==4){
+					pass0 =true;
+				}
+			}
+			if(!pass0){
+				 mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		case "质量部": 
+			for(var i=0;i<departmentJson.length;i++){
+				if(departmentJson[i]==5){
+					pass0 =true;
+				}
+			}
+			if(!pass0){
+				mui.toast("您暂无此操作权限！");
+				return;
+			}; break;
+		default: mui.toast("您暂无此操作权限！"); return;
+	}
+	document.location.href = 'exceptionEdit.html?exceptionId='+ exceptionId;
+}
+//11跳转到修改质量判定页面
+function pandingEdit(){
+	//判断当前成员是否为质量判定部门人员即是否有权限修改描述
+	var pass00 = false;
+	var submitDepartment = $("#submitDepartment").text();
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==5){
+			pass00 = true;
+		}							
+	}
+	if(!pass00){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	$("#zerenbumenRefuseCard").attr("style","display:none");
+	$("#zhiliangpandingForm").attr("style","display:block");
+	$("#zhiliangpandingCard").attr("style","display:none");
+	
+}
+//12跳转到修改责任部门处理页面
+function zerenEdit(){
+	//判断当前成员是否为工程部门人员即是否有权限修改描述
+	var pass = false;
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==3){
+			pass = true;
+		}							
+	}
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	$("#huiqianbumenRefuseCard").attr("style","display:none");
+	$("#zerenbumenForm").attr("style","display:block");
+	$("#zerenbumenCard").attr("style","display:none");
+	
+}
+//13.继续添加长期方案跟踪记录
+function addMeasure(){
+	//判断部门编号
+	var pass = false;
+	var problemDepartment = $("#problemDepartmentShow").text();
+	var toparty = "";
+	if("工程部"==problemDepartment) {
+		toparty = "3";
+	}else if("生产部"==problemDepartment) {
+		toparty = "4";
+	}else if("质量部"==problemDepartment) {
+		toparty = "5";
+	}else if("研发部"==problemDepartment) {
+		toparty = "7";
+	}
+	//是责任归属部门
+	for(var i=0;i<departmentJson.length;i++){
+		if(departmentJson[i]==toparty){
+			if(toparty=="5"){
+				if(memberId=="15"||memberId=="21"||memberId=="25"||memberId=="64"){
+					pass = true;
+				}
+			}else{
+				pass = true;
+			}
+		}
+	}
+	
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
+	$("#changqifanganForm").show();
+	
+}
+
+
+//15.撤销异常通报（逻辑删除）
+function exceptionDelete(){
+	//判断当前成员是否有权限处理（是否为发文人员）
+	var reporter = $("#reportUserIdHidden").val();//发文人UserId
+	if(reporter!=userId){
+		mui.toast("仅有发文人员才可撤销！");
+		return;
+	}
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号		
+	var ordermaking = $("#ordermaking").text();//从文本中获取制令单号
+	var model = $("#model").text();//从文本中获取机型		
+	var exceptionDescription = $("#exceptionDescription").text();//从文本中获取异常描述
+	var reporterName = $("#reporter").text();//从文本中发文人姓名
+	var deleteReason = "";
+	//填写撤销原因
+	//e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+	var btnArray1 = ['取消', '确定'];
+	mui.prompt('请输入撤销原因', '', '', btnArray1, function(e) {
+		if (e.index == 1) {
+			deleteReason = e.value;
+			if(deleteReason==""){
+				mui.toast("请输入撤销原因！");
+				return;
+			}
+			
+			var btnArray = ['取消', '确认'];
+			mui.confirm('', '确认要撤销吗？',btnArray,function(e) {
+				if(e.index == 1){
+					if(flag==false){
+						return;
+					}else{
+						flag=false;
+						mui.ajax('/TFMobile/tf-api/new-exception/exceptionDelete', {
+							data : {
+								exceptionId : exceptionId,
+								memberId : memberId,
+								serialNumber : serialNumber,
+								ordermaking : ordermaking,
+								model : model,
+								memberId : memberId,
+								exceptionDescription : exceptionDescription,
+								reporter : reporterName,
+								deleteReason : deleteReason,
+								touser : "@all"//消息通知要发送的成员
+							},
+							dataType : 'json',//服务器返回json格式数据
+							type : 'post',//HTTP请求类型
+							async : false,
+							success : function(result) {						
+								if(result.success == true){
+									mui.toast("撤销成功！");
+									setTimeout(function(){
+										location.reload(); 
+									}, 1000);
+								}else{
+									mui.toast(result.message);
+								}				
+							},
+							error : function(xhr, type, errorThrown) {
+								mui.toast("网络出错了");						
+								flag=true;	
+							}
+						});
+					}
+				}
+			});
+		}
+	});
+}
+//16.获取并解析异常通报长期方案跟踪记录
+function findLongSolveMeasure(){
+	var longSolveMeasureRefuse = $("#longSolveMeasureRefuse").text();
+	var longSolveMeasureRefuseMan = $("#longSolveMeasureRefuseMan").text();
+	var longSolveMeasureRefuseTime = $("#longSolveMeasureRefuseTime").text();
+	mui.ajax('/TFMobile/tf-api/new-exception/findLongSolveMeasure', {
+		data : {
+			exceptionId : exceptionId
+		},
+		dataType : 'json',//服务器返回json格式数据
+		type : 'post',//HTTP请求类型
+		async : false,
+		success : function(result) {	
+			if(result.success == true){
+				var list = result.body.measure;
+				if(list.length>0){
+					$("#measureList").empty();
+					for(var i=0;i<list.length;i++){
+						var check_style = "";						
+						if(i%5==0){
+							check_style = "";
+						}else if(i%5==1){
+							check_style = "check-prime";
+						}else if(i%5==2){
+							check_style = "check-success";
+						}else if(i%5==3){
+							check_style = "check-warning";
+						}else if(i%5==4){
+							check_style = "check-danger";
+						}
+						var html = '';
+							html += '<div class="oneNode">';
+							html += '<div class="check '+check_style+'">'+(i+1)+'</div>';
+							html += '<div class="tag-boder">';
+							html += '<div class="tag"></div>';
+							html += '</div>';
+							html += '<div class="NodeDetail">';
+							html += '<div class="NodeDetail-title">';
+							html += '<img src="'+list[i].avatar+'"/>';
+							html += '<div class="details">';
+							html += '<h4>'+list[i].name+'</h4>';
+							html += '<p style="margin-bottom:-5px;">'+list[i].position+'</p>';
+							html += '</div>';
+							html += '</div>';
+							html += '<div class="NodeDetail-content">';
+							html += '<p style="color:black">'+list[i].measure+'</p>';
+							if(list[i].refuseFlag==1){
+								html += '<div style="width:95%;height:1px;margin:0px auto;padding:0px;background-color:#D5D5D5;overflow:hidden;"></div>';
+								html += '<p style="color:red">驳回原因：'+longSolveMeasureRefuse+'  ('+longSolveMeasureRefuseMan+'  '+longSolveMeasureRefuseTime+')</p>';
+								html += '<div style="position:absolute;margin:-40% -17% 0 22%"><img src="../../static/mui/images/refused_flag.png" style="width:100px;height:100px;border-radius:50px;"/></div>';
+							}
+							html += '</div>';
+							html += '<div class="NodeDetail-footer">';
+							html += '<span>'+getDate(list[i].createTime)+'</span>';
+							html += '</div>';
+							html += '</div>';
+							html += '</div>';
+						$("#measureList").append(html);
+					}
+						
+				}
+			}else{
+				mui.toast(result.message);
+			}				
+		},
+		error : function(xhr, type, errorThrown) {
+			mui.toast("网络出错了");						
+		}
+	});
+}
+
+//4.只保留2位小数，如：2，会在2后面补上00.即2.00    
+function toDecimal2(x) {    
+    var f = parseFloat(x);    
+    if (isNaN(f)) {    
+        return false;    
+    }    
+    var f = Math.round(x*100)/100;    
+    var s = f.toString();    
+    var rs = s.indexOf('.');    
+    if (rs < 0) {    
+        rs = s.length;    
+        s += '.';    
+    }    
+    while (s.length <= rs + 2) {    
+        s += '0';    
+    }    
+    return s;    
+}
+</script>
+<script type="text/javascript">
+//压缩图片
+function compress(ele) {
+    var self = ele;
+    var fileName = $(ele).attr("name");
+    var file = self.files[0];
+    var r = new FileReader();
+    r.readAsDataURL(file);
+    $(r).load(function () {
+        var fileStream = ele.result;//base64图片流
+        var URL = window.URL || window.webkitURL,
+        canvas = document.createElement('canvas'),
+        ctx = canvas.getContext('2d');
+        if (URL && file && ctx) {
+            var fileURL = URL.createObjectURL(file),
+            img = new Image();
+            img.src = fileURL;
+            img.onload = function () {
+                var orientation=null;
+                EXIF.getData(img, function () {
+                	EXIF.getAllTags(this);
+                    orientation = EXIF.getTag(this, "Orientation");
+                   var degree = 0, drawWidth = img.width, drawHeight = img.height, width, height;  
+                    //以下改变一下图片大小
+                   	var maxSide = Math.max(drawWidth, drawHeight);
+                    var tarSize = 1024;
+                    if (maxSide > tarSize) {
+                        var minSide = Math.min(drawWidth, drawHeight);
+                        minSide = minSide / maxSide * tarSize;  
+                        maxSide = tarSize;  
+                        if (drawWidth > drawHeight) { 
+                            drawWidth = maxSide;  
+                            drawHeight = minSide;
+                        } else {
+                            drawWidth = minSide;  
+                            drawHeight = maxSide;
+                        }
+                    }
+                   	
+                    canvas.width = width = drawWidth;
+                    canvas.height = height = drawHeight;
+                   
+                   switch (orientation) {//横屏竖屏转化  
+					//横屏拍摄，此时home键在左侧  
+					case 3:
+						degree = 180;
+						drawWidth = -width;
+						drawHeight = -height;
+						break;
+					//竖屏拍摄，此时home键在下方(正常拿手机的方向)  
+					case 6:
+						canvas.width = height;
+						canvas.height = width;
+						degree = 90;
+						drawWidth = width;
+						drawHeight = -height;
+						break;
+					//竖屏拍摄，此时home键在上方  
+					case 8:
+						canvas.width = height;
+						canvas.height = width;
+						degree = 270;
+						drawWidth = -width;
+						drawHeight = height;
+						break;
+					}
+                  //使用canvas旋转校正  
+					ctx.rotate(degree* Math.PI/180);
+                  
+					ctx.drawImage(img, 0, 0, drawWidth, drawHeight);  
+                    var base64 = canvas.toDataURL('image/jpeg',1);  
+                    var reader = new FileReader();
+                    reader.readAsDataURL(ele.files[0]);
+                    reader.onload = function(e){
+                    	$("."+ele.id).attr("src",e.target.result);
+                    	$("#"+ele.id+"z").val(base64);
+                    	$("#"+ele.id+"Pic").show();
+          		    };
+                    canvas = null;  
+                    img = null;  
+                });
+            }
+        } else {
+        	var reader = new FileReader();
+            reader.readAsDataURL(ele.files[0]);
+            reader.onload = function(e){
+            	$("."+ele.id).attr("src",e.target.result);
+            	$("#"+ele.id+"z").val(e.target.result);
+  		    };
+        }  
+    });
+}
+</script>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>多次维修预警</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/mui.picker.min.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/mui/js/mui.picker.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+</head>
+<body>
+   	<!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br />
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">
+		<div class="mui-card" style="min-height:500px">
+			<div style="text-align: center;height:47px;padding-top:14px;background-color:#4093C6;color:#fff">
+				<span style="font-size:17px">多次维修预警通知</span>
+				<span id="backBtn" style="display:none" class="mui-btn mui-btn-danger" onclick="window.history.go(-1)">返回<span class="mui-icon mui-icon-forward"></span></span>
+			</div>
+			<div style="text-align:center;color:#4093C6;font-size:15px;margin-top:10px;margin-bottom:-20px">预警详情</div>
+			<div class="mui-card-content-inner" style="margin:22px 5px;border:solid 1px #ccc">		
+				<div><span style="color: gray">预警时间：</span><span class="mui-pull-right" id="LateWaringDate"></span></div>	
+                <div><span style="color: gray">维修次数：</span><span class="mui-pull-right" id="ServCount"></span></div>       
+                <div><span style="color: gray">主机 SN：</span><span class="mui-pull-right" id="SN"></span></div> 			
+				<div><span style="color: gray">主机型号：</span><span class="mui-pull-right" id="HostType"></span></div>
+                <div><span style="color: gray">产品类型：</span><span class="mui-pull-right" id="ServProductType"></span></div> 
+                <div id="MonitorId" style="display:none"><span style="color: gray">显示器ID：</span><span class="mui-pull-right" id="MonitorNo"></span></div> 				
+				<div><span style="color: gray">服务单号：</span><span class="mui-pull-right" id="LateServID"></span></div>				
+				<div><span style="color: gray">故障明细：</span><span class="" id="LateFaultDesc"></span></div>				
+				<div><span style="color: gray">故障物料：</span><span class="" id="LateMaterialDesc"></span></div>
+                <div><span style="color: gray">所在大区：</span><span class="mui-pull-right" id="LateServAreaName"></span></div>        
+                <div><span style="color: gray">服务站：</span><span class="mui-pull-right" id="LateServStationName"></span></div>       
+                <div><span style="color: gray">购买时间：</span><span class="mui-pull-right" id="BuyDate"></span></div>       
+                <div><span style="color: gray">开单时间：</span><span class="mui-pull-right" id="LateServCreationDate"></span></div>        
+                <div><span style="color: gray">主机使用总天数：</span><span class="mui-pull-right" id="HostUsingDay"></span></div>
+                <div><span style="color: gray">服务完成时间：</span><span class="mui-pull-right" id="LateServCompleteDate"></span></div>        
+                																				
+			</div>
+			
+		</div>
+	</div>
+
+	
+</body>
+<script type="text/javascript" charset="UTF-8">
+    mui.init();
+    
+    //在页面加载后，给绑定事件
+	$(function(){
+		    var productId = getUrlParam("productId");
+		    var ProductType = decodeURI(getUrlParam("ProductType"));
+		    var MonitorNo = getUrlParam("MonitorNo");
+
+		    //获取预警信息
+		    var list=findWarningInfo(productId,ProductType,MonitorNo);
+		    if(list.length!=0){
+		    	var LateWaringDate	=list[0];
+			    var ServCount	=list[1];
+			    var SN	=list[2];
+			    var HostType	=list[3];
+			    var ServProductType	=list[4];
+			    var MonitorNo	=list[5];
+			    var LateServID	=list[6];
+			    var LateFaultDesc	=list[7];
+			    var LateMaterialDesc=list[8];	
+			    var LateServAreaName	=list[9];
+			    var LateServStationName	=list[10];
+			    var BuyDate	=list[11];
+			    var LateServCreationDate=list[12];	
+			    var HostUsingDay	=list[13];
+			    var LateServCompleteDate =list[14];
+
+			    $("#LateWaringDate").html(LateWaringDate);
+			    $("#ServCount").html(ServCount);
+			    $("#SN").html(SN);
+			    $("#HostType").html(HostType);
+			    $("#ServProductType").html(ServProductType);
+			    $("#MonitorNo").html(MonitorNo);
+			    if(ServProductType=="显示器"){
+			    	$("#MonitorId").show();	
+			    }
+			    $("#LateServID").html(LateServID);
+			    $("#LateFaultDesc").html(LateFaultDesc);
+			    $("#LateMaterialDesc").html(LateMaterialDesc);
+			    $("#LateServAreaName").html(LateServAreaName);
+			    $("#LateServStationName").html(LateServStationName);
+			    $("#BuyDate").html(BuyDate);
+			    $("#LateServCreationDate").html(LateServCreationDate);
+			    $("#HostUsingDay").html(HostUsingDay);
+			    $("#LateServCompleteDate").html(LateServCompleteDate);
+		    }
+		    
+		    
+		    
+	});
+   
+    
+
+    //页面加载获取预警通知信息
+    function findWarningInfo(productId,ProductType,MonitorNo){
+    	var DetailList = null;
+    	if(productId){
+    		mui.ajax('/TFMobile/tf-api/customerService/Waring/MultiSNWaringDetail', {
+    			data : {
+    				productId : productId,
+    				ProductType:ProductType,
+    				MonitorNo:MonitorNo
+    			},
+    			dataType : 'json',//服务器返回json格式数据
+    			type : 'post',//HTTP请求类型
+    			async : false,
+    			success : function(result) {
+    
+    				if(result.success == true){	
+    					//预警通知内容
+    					DetailList = result.body.DetailList;
+    					
+    				}else{
+    					mui.toast(result.message);
+    				}
+    				//赋值完毕结束过场动画
+    				setTimeout(function(){
+    					document.getElementById("loading").style.display="none";
+    					$("body").css("background-color","#eee");
+    					document.getElementById("muiContent").style.display="";
+    				}, 10);
+    			},
+    			error : function(xhr, type, errorThrown) {
+    				mui.toast("网络出错了");						
+    			}
+    		});
+    	}
+    	return DetailList;
+    }
+   
+
+</script>
+</html>

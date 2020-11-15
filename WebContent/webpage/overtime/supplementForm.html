@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="UTF-8">
+   	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>补充加班人员申请单</title>
+    <link href="../../static/mui/css/mui.min.css" rel="stylesheet"/>
+    <link href="../../static/mui/css/flowChart.css" rel="stylesheet"/>
+    <script src="../../static/js/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+    <script src="../../static/mui/js/mui.min.js"></script>
+    <script src="../../static/js/common.js"></script>
+    <style type="text/css">
+    	.mytable {
+		        border: 2px solid #cad9ea;
+		        font-size:12px;
+		        background-repeat: repeat-x;
+		        text-align:center;
+		        width:100%;
+    		}
+		.mytable thead {
+		        color: #FFF;
+		        background-color: #4093c6;
+		    }		
+		.mytable td,th {
+		        border: 1px solid #FFF;
+		        height: 36px
+		    }		    
+		.tr_color_1{
+    		background-color:#D2DEEF;
+    	}
+    	.tr_color_2{
+    		background-color:#EAEFF7;
+    	}    
+    </style>
+</head>
+<body>
+  	 <!--页面加载 loading-->
+	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
+		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
+		<br/>
+		<span style="font-size:0.8em;">加载中...</span>
+	</div>	
+	<div class="mui-content" id="muiContent" style="display:none">	
+		<div style="position:fixed;background-color:#cf5753;height:32px;width:100%;color:#fff;text-align:center;margin:-13px 0 10px 0;padding:7px 0;z-index:1">
+			<span style="font-size:16px"id="state_tip"></span>
+		</div>	
+		<!-- 加班人员列表 -->
+		<div class="mui-card">
+			<div class="mui-card-header" style="margin-top:20px;background-color:#4093C6;color:#fff">补充加班人员名单（日期：<span id="date_title"></span>）</div>
+			<!-- 部门级申请加班人员列表 -->
+			<ul class="mui-table-view mui-table-view-chevron">
+				<table class="mytable">
+		            <thead>
+		            	<tr style="background-color:#5B9BD5">
+			            	<th>序号</th>
+			            	<th>姓名</th>
+			            	<th>工号</th>
+			            	<th>开始时间</th>
+			            	<th>结束时间</th>
+		            	</tr>
+		            </thead>
+		            <tbody id="list_tbody">
+		
+				
+		            </tbody>
+		   		</table>
+			</ul>
+		</div>
+		<!-- 加班申请审批进度-->
+		<div class="mui-card">
+			<div class="mui-card-header"
+				style="background-color: #4093C6; color: #fff">补充申请审批进度</div>
+			<!--事件时间轴-->
+			<div class="flowChart">
+				<!--左侧轴-->
+				<div class="flowChart-left">
+					<!--虚线-->
+					<div class="dashed"></div>
+				</div>
+				<!--右侧内容-->
+				<div class="flowChart-right" id="stateList">
+					
+				</div>
+			</div>
+		</div>
+		<!-- 部门经理审核-->
+		<div style="display:none;padding-top:25px;padding-bottom:20px;" id="manager_confirm_div">
+			<button class="mui-btn mui-btn-danger"style="position: fixed;bottom:0;z-index:10;margin-left:30px;margin-top:20px;margin-bottom:10px" onclick="managerConirm(0);">驳回</button>
+			<button class="mui-btn mui-btn-success" style="position: fixed;bottom:0;z-index:10;right:0px;margin-right:30px;margin-bottom:10px" onclick="managerConirm(1);">确认</button>
+		</div>
+	</div>
+
+<!-- 放隐藏域的地方 重要-->	
+<input type="hidden" id="departmentNameHidden">
+<input type="hidden" id="applicantIdHidden">
+<input type="hidden" id="applicantTimeHidden">
+<input type="hidden" id="applicantReasonHidden">
+<input type="hidden" id="managerIdHidden">
+<input type="hidden" id="managerTimeHidden">
+</body>
+<script type="text/javascript" charset="UTF-8">
+mui.init();
+//获取企业成员信息
+var memberInfo = getMemberInfo(11);
+var memberId = memberInfo[0];  		
+var userId = memberInfo[1];  		
+var name = memberInfo[2];  		
+var department = memberInfo[3]; 
+var position = memberInfo[4]; 
+var isleader = memberInfo[5];
+//获取url中的参数
+var supplementId = getUrlParam("supplementId");
+var style_no = 0;
+
+//网页授权完成再处理其他信息
+if(memberId){
+	//获取异常问题表单信息
+	var status = findSupplementIdInfo(supplementId);
+	if(status!=null && status!="null"){
+			//赋值完毕结束过场动画
+	   	setTimeout(function(){
+	   		document.getElementById("loading").style.display="none";
+	   		$("body").css("background-color","#eee");
+	   		document.getElementById("muiContent").style.display="";
+	   	}, 50);		
+	}else{
+		mui.alert('加班申请单不存在或已被删除！', '提示', function() {
+			wx.closeWindow();
+		});
+	}	
+}
+
+//获取加班申请单信息
+function findSupplementIdInfo(supplementId){
+	var state = null;
+	if(supplementId){
+		mui.ajax('/TFMobile/tf-api/overtime/findSupplementInfo', {
+			data : {
+				supplementId : supplementId
+			},
+			dataType : 'json',//服务器返回json格式数据
+			type : 'post',//HTTP请求类型
+			async : false,
+			success : function(result) {			
+				if(result.success == true){
+					var supplement = result.body.supplement;
+					if(supplement!=null && supplement!="null" && supplement!=""){	
+						state = supplement.state;//获取异常状态（非常重要）
+						$("#date_title").text(supplement.date);
+						$("#departmentNameHidden").val(supplement.department);
+						$("#applicantIdHidden").val(supplement.applicant);
+						$("#applicantTimeHidden").val(getDate(supplement.apply_time));
+						$("#applicantReasonHidden").val(supplement.apply_reason);
+						$("#managerIdHidden").val(supplement.reviewer);
+						$("#managerTimeHidden").val(getDate(supplement.review_time));
+						
+						var memberList = result.body.memberList
+						setMemberList(memberList,getDate(supplement.start_time),getDate(supplement.end_time));//赋值补充加班人员信息
+						
+						//状态解析
+						statuseParse(state);
+					}else{
+						mui.toast("系统出错啦，请联系管理员");
+					}
+
+				}else{
+					mui.toast(result.message);
+				}				
+			},
+			error : function(xhr, type, errorThrown) {
+				mui.toast("系统出错啦，请联系管理员");
+			}
+		});
+	}
+	return state;
+}
+
+//状态解析
+function statuseParse(status){
+	//==============状态值判断==============================
+	if(status==0){//初始插入，待部门经理审核
+		$("#state_tip").text("待加班申请部门经理审核确认");
+		var departmentName = $("#departmentNameHidden").val();
+		var pass = false;
+		switch(departmentName){
+			case "工业技术部": if(department=="[2]"){pass =true;}break;
+			case "工程部": if(department=="[3]"){pass =true;}break;
+			case "生产部": if(department=="[4]"){pass =true;}break;
+			case "质量部": if(department=="[5]"){pass =true;}break;
+			default: pass = false;
+		}
+		if(pass && isleader==1){
+			$("#manager_confirm_div").show();
+		}
+		//解析加班申请流程进度
+		var applicantId = $("#applicantIdHidden").val();
+		var applicantTime = $("#applicantTimeHidden").val();
+		var applicantReason = $("#applicantReasonHidden").val();
+		progressParse(applicantId,applicantTime,applicantReason,1);
+	}else if(status==1){//部门经理已确认
+		$("#state_tip").text("部门经理已确认");
+		
+		//解析加班申请流程进度
+		var applicantId = $("#applicantIdHidden").val();
+		var applicantTime = $("#applicantTimeHidden").val();
+		var applicantReason = $("#applicantReasonHidden").val();
+		var managerId = $("#managerIdHidden").val();
+		var managerTime = $("#managerTimeHidden").val();
+		progressParse(managerId,managerTime,"同意",2);
+		progressParse(applicantId,applicantTime,applicantReason,1);
+	}	
+}
+//赋值补充加班班人员信息
+function setMemberList(list,starttime,endtime){
+	if(list.length>0){	
+		var a = 0;
+		for(var i=0;i<list.length;i++){	
+			if(a%2==0){
+				tr_color = "tr_color_1";
+			}else{
+				tr_color = "tr_color_2";
+			}
+			a++;
+			var html = '<tr class="'+tr_color+'">'+
+			            	'<td>'+a+'</td>'+
+			            	'<td>'+list[i].name+'</td>'+
+			            	'<td>'+list[i].no+'</td>'+
+			            	'<td>'+starttime+'</td>'+
+			            	'<td>'+endtime+'</td>'+
+			            '</tr>';	
+			$("#list_tbody").append(html);
+		}
+	} else{
+		$("#memberList").prev().remove();
+		$("#memberList").append('<div style="padding-top:50px;padding-bottom:50px;text-align: center;">'+
+				'<span style="color: #696969;">无补充加班人员信息！</span><br><br>'+
+				'<span style="color: #696969;">（⊙o⊙）</span></div>');
+	}
+}
+
+var flag = true;
+//1.部门经理审核确认（para：0驳回，1确认）
+function managerConirm(para){
+	if(para==0){
+		mui.alert('驳回功能待开发中！', '提示', function() {
+		});
+	}else if(para==1){
+		var btnArray = [ '取消', '确认' ];
+		mui.confirm('', '确认审核吗？', btnArray, function(e) {
+			if (e.index == 1) {
+				if (flag == false) {
+					return;
+				} else {
+					mui.ajax('/TFMobile/tf-api/overtime/supplementConfirm', {
+						data : {
+							supplementId : supplementId,
+							memberId : memberId,
+							department : department
+						},
+						dataType : 'json',//服务器返回json格式数据
+						type : 'post',//HTTP请求类型
+						async : false,
+						success : function(result) {						
+							if(result.success == true){
+								mui.toast("确认成功！");
+								setTimeout(function(){
+									location.reload(); 
+								}, 1000);
+							}else{
+								mui.toast(result.message);
+								flag = true;
+							}				
+						},
+						error : function(xhr, type, errorThrown) {
+							mui.toast("系统出错啦，请联系管理员");	
+							flag = true;
+						}
+					});
+				}
+			}
+		});		
+	}
+}
+
+//解析加班申请流程进度(其中position_no参数是放置位置号)
+function progressParse(member_id, time, desctiption, position_no) {
+	var member = getInfo(member_id);
+	var check_style = "";
+	if (position_no % 5 == 0) {
+		check_style = "";
+	} else if (position_no % 5 == 1) {
+		check_style = "check-prime";
+	} else if (position_no % 5 == 2) {
+		check_style = "check-success";
+	} else if (position_no % 5 == 3) {
+		check_style = "check-warning";
+	} else if (position_no % 5 == 4) {
+		check_style = "check-danger";
+	}
+	var html = '';
+	html += '<div class="oneNode">';
+	html += '<div class="check '+check_style+'">' + position_no + '</div>';
+	html += '<div class="tag-boder">';
+	html += '<div class="tag"></div>';
+	html += '</div>';
+	html += '<div class="NodeDetail">';
+	html += '<div class="NodeDetail-title">';
+	html += '<img src="'+member[5]+'"/>';
+	html += '<div class="details">';
+	html += '<h4>' + member[1] + '</h4>';
+	html += '<p style="margin-bottom:-5px;">' + member[3] + '</p>';
+	html += '</div>';
+	html += '</div>';
+	html += '<div class="NodeDetail-content">';
+	html += '<p style="color:black">' + desctiption + '</p>';
+	html += '</div>';
+	html += '<div class="NodeDetail-footer">';
+	html += '<span>' + time + '</span>';
+	html += '</div>';
+	html += '</div>';
+	html += '</div>';
+	$("#stateList").append(html);
+}
+</script>
+
+</html>
