@@ -1102,20 +1102,35 @@ public class IQCExceptionForm {
 		
 	/**
 	 * 从数据库获取对应userId的memberId
-	 * @param userId
-	 * @return memberId
+	 * @param userIds
+	 * @return memberIds
 	 */
 	@SuppressWarnings("unchecked")
-	public static String getMemberIdByUserId(String userId) {
+	public static String getMemberIdByUserId(String userIds) {
+        String userIdArray[] = userIds.split("\\|");
+        String sql = "select * from tf_member where userId = ";
+        for (int i=0; i<userIdArray.length; i++) {
+        	if(i==0) {
+        		sql = sql + "'" + userIdArray[i] + "'";
+        	}else {
+        		sql = sql + " or userId = '" + userIdArray[i] + "'"; 
+        	}
+        }
+		
 		SQLHelper sqlhe = new SQLHelper();
-		String sql = "select * from tf_member where userId = '" + userId + "'";
 		List<Object> result = sqlhe.query(sql);
-		if (!result.isEmpty() && result != null) {
-			Map<String, Object> map = (Map<String, Object>) result.get(0);
-			String memberId = String.valueOf(map.get("memberId"));
-			return memberId;
+		String memberIds = "";
+		if (!result.isEmpty() && result != null && result.size()>0) {
+			for(int i=0;i<result.size();i++) {				
+				Map<String, Object> map = (Map<String, Object>) result.get(i);
+				String memberId = String.valueOf(map.get("memberId"));
+				memberIds += memberId+",";					
+			  }
+			if(memberIds.substring(memberIds.length()-1).equals(",")){
+				memberIds = memberIds.substring(0,memberIds.length()-1);
+			}
 		}
-		return null;
+		return memberIds;
 	}
 	/**
 	 * 从数据库获取对应memberId的userId
