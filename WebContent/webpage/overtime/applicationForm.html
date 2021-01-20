@@ -238,12 +238,17 @@ function statuseParse(status){
 			case "工业技术部": if(department=="[2]"){pass =true;}break;
 			case "工程部": if(department=="[3]"){pass =true;}break;
 			case "生产部": if(department=="[4]"){pass =true;}break;
-			case "质量部": if(department=="[5]"){pass =true;}break;
 			case "研发部": if(department=="[7]"){pass =true;}break;
 			case "仓储部": if(department=="[11]"){pass =true;}break;
 			default: pass = false;
 		}
-		if(pass && isleader==1){
+		if(department=="[5]" && departmentName=="质量控制部" && userId=="WangWei"){
+			$("#manager_confirm_div").show();
+		}else if(department=="[5]" && departmentName=="品质保障部" && userId=="ZhangYin"){
+			$("#manager_confirm_div").show();
+		}else if(department=="[5]" && departmentName=="供应品质管理部" && userId=="ZhouMin"){
+			$("#manager_confirm_div").show();
+		}else if(pass && isleader==1){
 			$("#manager_confirm_div").show();
 		}		
 		if(departmentName=="生产部"){
@@ -310,7 +315,7 @@ function statuseParse(status){
 				if(userId=="XuFeng"){
 					$("#general_confirm_div").show();
 				}	
-			}else if(departmentName=="质量部"){
+			}else if(departmentName=="质量部" || departmentName=="质量控制部"|| departmentName=="品质保障部"|| departmentName=="供应品质管理部"){
 				if(userId=="ZhouMin"){
 					$("#general_confirm_div").show();
 				}	
@@ -342,7 +347,7 @@ function statuseParse(status){
 			var engineerTime = $("#engineerTimeHidden").val();
 			var generalId = $("#generalIdHidden").val();
 			var generalTime = $("#generalTimeHidden").val();	
-			progressParse(generalId,generalTime,"同意","结束");
+			progressParse(generalId,generalTime,"同意","完结");
 			progressParse(engineerId,engineerTime,"同意","确认");
 			progressParse(managerId,managerTime,"同意","审核");			
 			progressParse(dispatcherId,dispatcherTime,applicantReason,"理由");
@@ -355,7 +360,7 @@ function statuseParse(status){
 			var managerTime = $("#managerTimeHidden").val();
 			var generalId = $("#generalIdHidden").val();
 			var generalTime = $("#generalTimeHidden").val();		
-			progressParse(generalId,generalTime,"同意","结束");
+			progressParse(generalId,generalTime,"同意","完结");
 			progressParse(managerId,managerTime,"同意","审核");
 			progressParse(applicantId,applicantTime,applicantReason,"发起");
 		}
@@ -411,7 +416,8 @@ function managerConirm(para){
 						data : {
 							applicationId : applicationId,
 							manager : memberId,
-							department : department
+							department : department,
+							departmentName : $("#departmentNameHidden").val()
 						},
 						dataType : 'json',//服务器返回json格式数据
 						type : 'post',//HTTP请求类型
@@ -531,6 +537,7 @@ function generalConfirm(para){
 		});
 	}else if(para==1){
 		var departmentName = $("#departmentNameHidden").val();
+		var applicationDate = $("#date_title").text();
 		var btnArray = [ '取消', '确认' ];
 		mui.confirm('', '确认审核吗？', btnArray, function(e) {
 			if (e.index == 1) {
@@ -542,7 +549,8 @@ function generalConfirm(para){
 						data : {
 							applicationId : applicationId,
 							general : memberId,
-							departmentName : departmentName
+							departmentName : departmentName,
+							applicationDate : applicationDate
 						},
 						dataType : 'json',//服务器返回json格式数据
 						type : 'post',//HTTP请求类型

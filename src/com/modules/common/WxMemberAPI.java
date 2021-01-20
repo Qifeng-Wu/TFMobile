@@ -149,7 +149,11 @@ public class WxMemberAPI {
 			sql = "SELECT * FROM tf_wuxi_member WHERE delete_flag = 0 AND department = '"+department+"' AND team=  '"+team+"' ORDER BY team";
 			list = sh.query(sql);
 		}else if(department!=null && !department.isEmpty()){
-			sql = "select team from tf_wuxi_member where delete_flag = 0 and department = '"+department+"' group by team";
+			if("质量部".equals(department)) {
+				sql = "select team from tf_wuxi_member where delete_flag = 0 and organization = '质量中心' group by team desc";
+			}else {
+				sql = "select team from tf_wuxi_member where delete_flag = 0 and department = '"+department+"' group by team";
+			}
 			List<Object> teamGrouplist = sh.query(sql);
 			if(teamGrouplist!=null && teamGrouplist.size()>0) {
 				List<Object> memberList = new ArrayList<Object>();

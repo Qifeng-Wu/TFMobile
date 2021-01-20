@@ -44,6 +44,14 @@
 				});
 				</script>
 			</div>
+			<div class="mui-input-row mui-password" style="margin:0px 10px 0px 10px;display:none" id="overtime_department_div">
+				<select class="mui-btn-block" style="padding-left: 15px;" id="overtime_department" onchange="overtimeDepartment()">
+					<option value="">点击选择加班部门</option>
+					<option value="质量控制部">质量控制部</option>
+					<option value="品质保障部">品质保障部</option>
+					<option value="供应品质管理部">供应品质管理部</option>
+				</select>
+			</div>
 			<div class="mui-input-row mui-password" style="margin:0px 10px 0px 10px;display:none" id="overtime_type_div">
 				<select class="mui-btn-block" style="padding-left: 15px;" id="overtime_type" onchange="overtimeType()">
 					<option value="">点击选择加班类型</option>
@@ -60,6 +68,19 @@
 								$("#applicant_reason_div").hide();
 							}							
 						}
+					}
+					//选择加班部门
+					function overtimeDepartment(){
+						var dep = $("#overtime_department").val()
+						if(dep=="质量控制部"){
+							department = "[5]"
+						}else if(dep=="品质保障部"){
+							department = "[6]"
+						}else if(dep=="供应品质管理部"){
+							department = "[10]"
+						}
+						$("#list").empty();
+						setList($("#overtime_department").val(),"");
 					}
 				</script>
 			<div style="padding: 0 10px 0 10px;margin-bottom:-10px">		
@@ -114,6 +135,7 @@ if(department=="[2]"){
 	departmentName="生产部";
 }else if(department=="[5]"){
 	departmentName="质量部";
+	$("#overtime_department_div").show();
 }else if(department=="[7]"){
 	departmentName="研发部";
 }else if(department=="[11]"){
@@ -237,6 +259,13 @@ function submit(){
    }else{	
 	   var applicant_reason = $("#applicant_reason").val()
 	   var overtime_type = $("#overtime_type").val()
+	   var overtime_department = $("#overtime_department").val()
+	   if(department=="[5]"){
+		   if(overtime_department==""){
+				mui.toast("请选择加班部门");
+				return;
+			} 
+	   }
 	   if(overtime_type==""){
 			mui.toast("请选择加班类型");
 			return;

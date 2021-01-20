@@ -46,7 +46,7 @@ public class OvertimeDataAPI {
 			}else if("XuFeng".equals(userId)) {
 				sql = "select * from tf_overtime_application where state = 5 and department ='工程部'";
 			}else if("ZhouMin".equals(userId)) {
-				sql = "select * from tf_overtime_application where state = 5 and department ='质量部'";
+				sql = "select * from tf_overtime_application where state = 5 and department in('质量控制部','品质保障部','供应品质管理部')";
 			}else if("HuangZhongNan".equals(userId)) {
 				sql = "select * from tf_overtime_application where state = 5 and department ='研发部'";
 			}else{			
@@ -71,7 +71,16 @@ public class OvertimeDataAPI {
 			}
 			//获取补充加班人员信息数据待处理
 			if("1".equals(isleader)) {//待部门经理处理
-				String sqls = "select * from tf_overtime_supplement where state = 0 and department = '"+departmentName+"'";
+				String sqls;
+				if("WangWei".equals(userId)) {
+					sqls = "select * from tf_overtime_supplement where state = 0 and department = '质量控制部'";
+				}else if("ZhangYin".equals(userId)) {
+					sqls = "select * from tf_overtime_supplement where state = 0 and department = '品质保障部'";
+				}else if("ZhouMin".equals(userId)) {
+					sqls = "select * from tf_overtime_supplement where state = 0 and department = '供应品质管理部'";
+				}else {
+					sqls = "select * from tf_overtime_supplement where state = 0 and department = '"+departmentName+"'";
+				}
 				supplementList = sqlhe.query(sqls);
 			}
 		}else if("2".equals(type)){//已处理
@@ -154,7 +163,12 @@ public class OvertimeDataAPI {
 		String department = request.getParameter("department");
 		String departmentName = getDepartmentNameByCode(department);
 		SQLHelper sqlhe = new SQLHelper();
-		String sql = "select * from tf_overtime_application where department = '"+departmentName+"' order by date desc limit "+page+",10";		
+		String sql;
+		if("[5]".equals(department)) {
+			sql = "select * from tf_overtime_application where department in('质量控制部','品质保障部','供应品质管理部') order by date desc limit "+page+",10";	
+		}else {
+			sql = "select * from tf_overtime_application where department = '"+departmentName+"' order by date desc limit "+page+",10";	
+		}
 		List<Object> list = sqlhe.query(sql);
 		LinkedHashMap<String, Object> body = new LinkedHashMap<String, Object>();
 		body.put("list", list);
@@ -172,7 +186,12 @@ public class OvertimeDataAPI {
 		String department = request.getParameter("department");
 		String departmentName = getDepartmentNameByCode(department);
 		SQLHelper sqlhe = new SQLHelper();
-		String sql = "select * from tf_overtime_application where department = '"+departmentName+"' and date= '"+date+"'";		
+		String sql;
+		if("[5]".equals(department)) {
+			sql = "select * from tf_overtime_application where department in('质量控制部','品质保障部','供应品质管理部') and date= '"+date+"'";		
+		}else {
+		    sql = "select * from tf_overtime_application where department = '"+departmentName+"' and date= '"+date+"'";		
+		}
 		List<Object> list = sqlhe.query(sql);
 		LinkedHashMap<String, Object> body = new LinkedHashMap<String, Object>();
 		body.put("list", list);

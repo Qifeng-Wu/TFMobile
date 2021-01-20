@@ -118,8 +118,17 @@ public class OvertimeFormAPI {
 							//推送消息给部门经理审核
 							String title = "加班申请单审核通知";
 							String url = "/TFMobile/webpage/overtime/applicationForm.html?applicationId="+applicationId;
-							String[] managerInfo = getManagerInfo(department);//获取部门经理信息
-							String touser = managerInfo[1];//根据部门号找到对应经理领导发送消息
+							String touser = "";
+							if("质量控制部".equals(departmentName)) {
+								touser = "WangWei";
+							}else if("品质保障部".equals(departmentName)) {
+								touser = "ZhangYin";
+							}else if("供应品质管理部".equals(departmentName)) {
+								touser = "ZhouMin";
+							}else {
+								String[] managerInfo = getManagerInfo(department);//获取部门经理信息
+								touser = managerInfo[1];//根据部门号找到对应经理领导发送消息
+							}
 							String toparty = "";
 							String description = departmentName+"有一份"+startTime.substring(0, 10).replace("-", "/")+"的加班申请单待您审核，请及时处理！";
 							try {
@@ -226,8 +235,17 @@ public class OvertimeFormAPI {
 					//推送消息给部门经理审核
 					String title = "补充加班人员申请审核通知";
 					String url = "/TFMobile/webpage/overtime/supplementForm.html?supplementId="+supplementId;
-					String[] managerInfo = getManagerInfo(department);//获取部门经理信息
-					String touser = managerInfo[1];//根据部门号找到对应经理领导发送消息
+					String touser = "";
+					if("质量控制部".equals(departmentName)) {
+						touser = "WangWei";
+					}else if("品质保障部".equals(departmentName)) {
+						touser = "ZhangYin";
+					}else if("供应品质管理部".equals(departmentName)) {
+						touser = "ZhouMin";
+					}else {
+						String[] managerInfo = getManagerInfo(department);//获取部门经理信息
+						touser = managerInfo[1];//根据部门号找到对应经理领导发送消息
+					}
 					String toparty = "";
 					String description = departmentName+"有一份"+startTime.substring(0, 10).replace("-", "/")+"的补充加班人员申请待您审核，请及时处理！";
 					try {
@@ -428,9 +446,9 @@ public class OvertimeFormAPI {
 		Integer applicationId = Integer.parseInt(request.getParameter("applicationId"));
 		String department = request.getParameter("department");
 		String manager = request.getParameter("manager");
-		String departmentName = getDepartmentNameByCode(department);
+		String departmentName = request.getParameter("departmentName");
 		
-		int state = 5;//其他部门直接转到4状态
+		int state = 5;//其他部门直接转到5状态
 		if("[4]".equals(department)) {//生产部需推送给工程确认
 			state = 3;
 		}
@@ -523,34 +541,45 @@ public class OvertimeFormAPI {
 	public AjaxJson generalConfirm(AjaxJson ajax,HttpServletRequest request) throws ParseException{
 		Integer applicationId = Integer.parseInt(request.getParameter("applicationId"));
 		String departmentName = request.getParameter("departmentName");
+		String applicationDate = request.getParameter("applicationDate");
 		String general = request.getParameter("general");
 		
 		SQLHelper sh = new SQLHelper();		
 		String sql = "UPDATE tf_overtime_application SET state = 0,general = "+general+",general_time = now() WHERE applicationId = " + applicationId;
 		boolean boo = sh.update(sql);
 		if(boo) {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
 			//推送给中心副总
 			String title = "加班申请单审核通过通知";
 			String url = "/TFMobile/webpage/overtime/applicationForm.html?applicationId="+applicationId;
 			String department = "";
+			String touser = "";
 			if("生产部".equals(departmentName)) {
 				department = "[4]";
+				touser = getDepartmentManagerAndAssistantInfo(department)[1];
 			}else if("工程部".equals(departmentName)) {
 				department = "[3]";
+				touser = getDepartmentManagerAndAssistantInfo(department)[1];
 			}else if("工业技术部".equals(departmentName)) {
 				department = "[2]";
+				touser = getDepartmentManagerAndAssistantInfo(department)[1];
 			}else if("仓储部".equals(departmentName)) {
 				department = "[11]";
-			}else if("质量部".equals(departmentName)) {
+				touser = getDepartmentManagerAndAssistantInfo(department)[1];
+			}else if("质量控制部".equals(departmentName)) {
 				department = "[5]";
+				touser = "WangWei|"+getDepartmentAssistantInfo(department)[1];
+			}else if("品质保障部".equals(departmentName)) {
+				department = "[5]";
+				touser = "ZhangYin|"+getDepartmentAssistantInfo(department)[1];
+			}else if("供应品质管理部".equals(departmentName)) {
+				department = "[5]";
+				touser = "ZhouMin|"+getDepartmentAssistantInfo(department)[1];
 			}else if("研发部".equals(departmentName)) {
 				department = "[7]";
+				touser = getDepartmentManagerAndAssistantInfo(department)[1];
 			}
-			String[] managerInfo = getDepartmentManagerAndAssistantInfo(department);//获取部门经理和助理或调度
-			String touser = managerInfo[1];
 			String toparty = "";
-			String description = sdf.format(new Date())+"的加班申请单已审核完结并通过，查看详情！";
+			String description = departmentName+applicationDate+"的加班申请单已审核完结并通过，查看详情！";
 			try {
 				sendWXMessage(title, url, touser, toparty, description);
 			} catch (WexinReqException e) {
@@ -735,7 +764,11 @@ public class OvertimeFormAPI {
 		}else if("[4]".equals(department)) {
 			departmentName = "生产部";
 		}else if("[5]".equals(department)) {
-			departmentName = "质量部";
+			departmentName = "质量控制部";
+		}else if("[6]".equals(department)) {
+			departmentName = "品质保障部";
+		}else if("[10]".equals(department)) {
+			departmentName = "供应品质管理部";
 		}else if("[7]".equals(department)) {
 			departmentName = "研发部";
 		}else if("[11]".equals(department)) {

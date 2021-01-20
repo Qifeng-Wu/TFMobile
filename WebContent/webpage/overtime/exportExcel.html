@@ -12,17 +12,25 @@
     <script src="../../static/mui/js/mui.picker.min.js"></script>
     <script src="../../static/js/common.js"></script>
 </head>
-<body>
+<body style="text-align:-webkit-center">
  	<!--页面加载 loading-->
 	<div style="margin-top: 50%; width: 100%; text-align: center;" id="loading">
 		<span><img src="../../static/mui/images/loading.gif" style="max-width:5em; height:auto;"/></span>
 		<br/>
 		<span style="font-size:0.8em;">加载中...</span>
 	</div>
-	<div class="mui-content"  style="display:none;padding-bottom:15px" id="muiContent">
-		<div style="padding: 15px 30% 0 30%;">
+	<div class="mui-content"  style="display:none;padding-bottom:15px;width:50%;margin-top:20%" id="muiContent">
+		<div>
 			<span>加班日期：</span><span id="choose"><input id="dateTime" type="text" value="" placeholder="点击选择导出日期" readonly="readonly" /></span>			
 		</div>
+	</div>
+	<div class="mui-content"  style="display:none;padding-bottom:15px;width:50%" id="overtime_department_div">
+		<select class="mui-btn-block" style="padding-left: 15px;" id="overtime_department">
+			<option value="">点击选择加班部门</option>
+			<option value="质量控制部">质量控制部</option>
+			<option value="品质保障部">品质保障部</option>
+			<option value="供应品质管理部">供应品质管理部</option>
+		</select>
 	</div>
 	<nav class="mui-bar mui-bar-tab" style="background-color:#8a6de9">
 			<a class="mui-tab-item mui-active" onclick="exportExcel()">
@@ -53,6 +61,7 @@ if(memberId && (position.indexOf('助理')!=-1 || isleader==1)){
 		departmentName="生产部";
 	}else if(department=="[5]"){
 		departmentName="质量部";
+		$("#overtime_department_div").show();
 	}else if(department=="[7]"){
 		departmentName="研发部";
 	}else if(department=="[11]"){
@@ -66,9 +75,18 @@ if(memberId && (position.indexOf('助理')!=-1 || isleader==1)){
 	 //判断有没有选择开始日期
 	 var dateTime = document.getElementById("dateTime").value;
 	 if(dateTime==""){
-		 mui.toast("请输入加班日期");
+		 mui.toast("请选择加班日期");
 		 return;
-	 }	 
+	 }	
+	 var overtime_department = $("#overtime_department").val()
+	 if(department=="[5]"){
+		 if(overtime_department==""){
+			mui.toast("请选择加班部门");
+			return;
+		 }else{
+			 departmentName = overtime_department;
+		 } 
+	 }
 	 mui.toast("正在导出，请稍等。。。"); 
     //请求接口  
 	mui.ajax('/TFMobile/tf-api/overtime/excel/export', {
