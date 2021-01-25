@@ -46,7 +46,7 @@ public class OvertimeDataAPI {
 			}else if("XuFeng".equals(userId)) {
 				sql = "select * from tf_overtime_application where state = 5 and department ='工程部'";
 			}else if("ZhouMin".equals(userId)) {
-				sql = "select * from tf_overtime_application where state = 5 and department in('质量控制部','品质保障部','供应品质管理部')";
+				sql = "select * from tf_overtime_application where state = 5 and department in('质量控制部','品质保障部','体系管理部','供应品质管理部')";
 			}else if("HuangZhongNan".equals(userId)) {
 				sql = "select * from tf_overtime_application where state = 5 and department ='研发部'";
 			}else{			
@@ -72,10 +72,12 @@ public class OvertimeDataAPI {
 			//获取补充加班人员信息数据待处理
 			if("1".equals(isleader)) {//待部门经理处理
 				String sqls;
-				if("WangWei".equals(userId)) {
+				if("YanFang".equals(userId)) {
 					sqls = "select * from tf_overtime_supplement where state = 0 and department = '质量控制部'";
 				}else if("ZhangYin".equals(userId)) {
 					sqls = "select * from tf_overtime_supplement where state = 0 and department = '品质保障部'";
+				}else if("WangWei".equals(userId)) {
+					sqls = "select * from tf_overtime_supplement where state = 0 and department = '体系管理部'";
 				}else if("ZhouMin".equals(userId)) {
 					sqls = "select * from tf_overtime_supplement where state = 0 and department = '供应品质管理部'";
 				}else {
@@ -165,7 +167,7 @@ public class OvertimeDataAPI {
 		SQLHelper sqlhe = new SQLHelper();
 		String sql;
 		if("[5]".equals(department)) {
-			sql = "select * from tf_overtime_application where department in('质量控制部','品质保障部','供应品质管理部') order by date desc limit "+page+",10";	
+			sql = "select * from tf_overtime_application where department in('质量控制部','品质保障部','体系管理部','供应品质管理部') order by date desc limit "+page+",10";	
 		}else {
 			sql = "select * from tf_overtime_application where department = '"+departmentName+"' order by date desc limit "+page+",10";	
 		}
@@ -188,7 +190,7 @@ public class OvertimeDataAPI {
 		SQLHelper sqlhe = new SQLHelper();
 		String sql;
 		if("[5]".equals(department)) {
-			sql = "select * from tf_overtime_application where department in('质量控制部','品质保障部','供应品质管理部') and date= '"+date+"'";		
+			sql = "select * from tf_overtime_application where department in('质量控制部','品质保障部','体系管理部','供应品质管理部') and date= '"+date+"'";		
 		}else {
 		    sql = "select * from tf_overtime_application where department = '"+departmentName+"' and date= '"+date+"'";		
 		}

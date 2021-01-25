@@ -242,9 +242,11 @@ function statuseParse(status){
 			case "仓储部": if(department=="[11]"){pass =true;}break;
 			default: pass = false;
 		}
-		if(department=="[5]" && departmentName=="质量控制部" && userId=="WangWei"){
+		if(department=="[5]" && departmentName=="质量控制部" && userId=="YanFang"){
 			$("#manager_confirm_div").show();
 		}else if(department=="[5]" && departmentName=="品质保障部" && userId=="ZhangYin"){
+			$("#manager_confirm_div").show();
+		}else if(department=="[5]" && departmentName=="体系管理部" && userId=="WangWei"){
 			$("#manager_confirm_div").show();
 		}else if(department=="[5]" && departmentName=="供应品质管理部" && userId=="ZhouMin"){
 			$("#manager_confirm_div").show();
@@ -315,7 +317,8 @@ function statuseParse(status){
 				if(userId=="XuFeng"){
 					$("#general_confirm_div").show();
 				}	
-			}else if(departmentName=="质量部" || departmentName=="质量控制部"|| departmentName=="品质保障部"|| departmentName=="供应品质管理部"){
+			}else if(departmentName=="质量部"||departmentName=="质量控制部"|| 
+					departmentName=="品质保障部"|| departmentName=="体系管理部"||departmentName=="供应品质管理部"){
 				if(userId=="ZhouMin"){
 					$("#general_confirm_div").show();
 				}	

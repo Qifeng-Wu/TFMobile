@@ -120,9 +120,11 @@ public class OvertimeFormAPI {
 							String url = "/TFMobile/webpage/overtime/applicationForm.html?applicationId="+applicationId;
 							String touser = "";
 							if("质量控制部".equals(departmentName)) {
-								touser = "WangWei";
+								touser = "YanFang";
 							}else if("品质保障部".equals(departmentName)) {
 								touser = "ZhangYin";
+							}else if("体系管理部".equals(departmentName)) {
+								touser = "WangWei";
 							}else if("供应品质管理部".equals(departmentName)) {
 								touser = "ZhouMin";
 							}else {
@@ -237,9 +239,11 @@ public class OvertimeFormAPI {
 					String url = "/TFMobile/webpage/overtime/supplementForm.html?supplementId="+supplementId;
 					String touser = "";
 					if("质量控制部".equals(departmentName)) {
-						touser = "WangWei";
+						touser = "YanFang";
 					}else if("品质保障部".equals(departmentName)) {
 						touser = "ZhangYin";
+					}else if("体系管理部".equals(departmentName)) {
+						touser = "WangWei";
 					}else if("供应品质管理部".equals(departmentName)) {
 						touser = "ZhouMin";
 					}else {
@@ -567,10 +571,13 @@ public class OvertimeFormAPI {
 				touser = getDepartmentManagerAndAssistantInfo(department)[1];
 			}else if("质量控制部".equals(departmentName)) {
 				department = "[5]";
-				touser = "WangWei|"+getDepartmentAssistantInfo(department)[1];
+				touser = "YanFang|"+getDepartmentAssistantInfo(department)[1];
 			}else if("品质保障部".equals(departmentName)) {
 				department = "[5]";
 				touser = "ZhangYin|"+getDepartmentAssistantInfo(department)[1];
+			}else if("体系管理部".equals(departmentName)) {
+				department = "[5]";
+				touser = "WangWei|"+getDepartmentAssistantInfo(department)[1];
 			}else if("供应品质管理部".equals(departmentName)) {
 				department = "[5]";
 				touser = "ZhouMin|"+getDepartmentAssistantInfo(department)[1];
@@ -767,6 +774,8 @@ public class OvertimeFormAPI {
 			departmentName = "质量控制部";
 		}else if("[6]".equals(department)) {
 			departmentName = "品质保障部";
+		}else if("[9]".equals(department)) {
+			departmentName = "体系管理部";
 		}else if("[10]".equals(department)) {
 			departmentName = "供应品质管理部";
 		}else if("[7]".equals(department)) {
