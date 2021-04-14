@@ -75,6 +75,21 @@
 				<a class="mui-card-link" id="questionConfirm">审核确认</a>
 			</div>
 		</div>
+				
+		<!-- 供应品质部意见被驳回（IQC结果处理驳回） -->
+	 	<div class="mui-card" id="handleRefusedCard" style="display:none">
+			<div class="mui-card-header" style="background-color:#cf5753;color:#fff">IQC结果处理驳回</div>
+			<div class="mui-card-content">
+				<div class="mui-card-content-inner" style="line-height:25px;">
+					<div><span style="color: gray">驳回人：</span><span class="mui-pull-right" id="iqcHandleRefuseMan"></span></div>
+					<div><span style="color: gray">驳回时间：</span><span class="mui-pull-right" id="iqcHandleRefuseTime"></span></div>
+					<div><span style="color: gray">驳回原因：</span><span class="" id="iqcHandleRefusedReason"></span></div>					
+				</div>
+			</div>
+		<div class="mui-card-footer" id="handleRefusedCardFootDiv" style="display:none">
+			<a class="mui-card-link mui-pull-right" onclick="rehandle()">重新处理</a>
+		</div>
+		</div>
 		
 		<!-- 供应品质部意见 -->
 		<div class="mui-card" id="handleForm" style="display:none">
@@ -145,7 +160,7 @@
 			</div>
 		</div>
 		<!-- 部门会签确认-->	
-		<div class="mui-card" id="huiqianCard" style="$("#huiqianForm").attr("style","display:block");">
+		<div class="mui-card" id="huiqianCard" style="display:none">
 			<div class="mui-card-header" style="background-color:#4093C6;color:#fff">相关部门意见</div>
 				<div class="mui-card-content">
 				<div class="mui-card-content-inner">
@@ -183,7 +198,7 @@
 				<textarea id="iqcHandleDescription" rows="5" maxlength="300" placeholder="输入处理结果"></textarea>
 			</div>
 			<div class="mui-card-footer">
-				<span class="mui-card-link"></span>
+				<a class="mui-pull-left" id="iqcHandleRefuse">驳回至供应品质部处理</a>
 				<a class="mui-card-link" id="iqcHandleSubmit">立即提交</a>
 			</div>
 		</div>
@@ -225,6 +240,7 @@
 	<input type="hidden" id="qualitySignInfoHidden">
 	<input type="hidden" id="stSignInfoHidden">
 	<input type="hidden" id="rdSignInfoHidden">
+	<input type="hidden" id="iqcHandleRefusedReasonHidden">
 </body>
 <script type="text/javascript" charset="UTF-8">
 mui.init();
@@ -276,6 +292,8 @@ if(back==1){
 	$("#backBtn").attr("style","display:block");
 }
 
+var handlerMemberId, handlerUserId;//供应品质处理人信息，用于IQC结果处理驳回时使用
+
 //网页授权完成再处理其他信息
 if(memberId){
 	//获取异常问题表单信息
@@ -322,16 +340,25 @@ if(memberId){
 		}
 				
 	}else if(status==1){
-		$("#reviewFoot").attr("style","display:block");
-		var nextPerson = $("#nextPersonHidden").val();
-		if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
-			if(isExist(memberId,nextPerson)){
-				$("#handleForm").attr("style","display:block");
-			}else{
-				$("#handleTip").attr("style","display:block");
-			}				
+		var iqcHandleRefusedReason = $("#iqcHandleRefusedReasonHidden").val();
+		if(iqcHandleRefusedReason){//被驳回
+			$("#reviewFoot").attr("style","display:block");
+			$("#handleRefusedCard").attr("style","display:block");
+			if(handlerMemberId == memberId){
+				$("#handleRefusedCardFootDiv").attr("style","display:block");
+			}
 		}else{
-			mui.toast("系统出错啦！");
+			$("#reviewFoot").attr("style","display:block");
+			var nextPerson = $("#nextPersonHidden").val();
+			if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+				if(isExist(memberId,nextPerson)){
+					$("#handleForm").attr("style","display:block");
+				}else{
+					$("#handleTip").attr("style","display:block");
+				}				
+			}else{
+				mui.toast("系统出错啦！");
+			}
 		}
 	}else if(status==2){
 		$("#reviewFoot").attr("style","display:block");
@@ -615,7 +642,6 @@ function parseSignInfo(){
 	}
 }
 
-
 function findExceptionInfo(exceptionId){
 	var state = null;
 	if(exceptionId){
@@ -655,11 +681,13 @@ function findExceptionInfo(exceptionId){
 					//供应品质部意见
 					$("#handleDescriptionShow").text(result.body.exception.handleDescription);
 					$("#needSignDepartment").text(result.body.exception.needSignDepartment);
-					$("#handler").text(getInfo(result.body.exception.handler)[1]);
+					handlerMemberId = result.body.exception.handler;
+					var handler = getInfo(handlerMemberId);
+					handlerUserId = handler[0];
+					$("#handler").text(handler[1]);
 					$("#handleTime").text(getDate(result.body.exception.handleTime));
 					
 					//会签信息
-					
 					$("#needSignDepartmentShow").text(result.body.exception.needSignDepartment);
 					$("#purchaseSignInfoHidden").val(result.body.exception.purchaseSignInfo);
 					$("#engineeringSignInfoHidden").val(result.body.exception.engineeringSignInfo);
@@ -670,12 +698,17 @@ function findExceptionInfo(exceptionId){
 					
 					//IQC处理结果
 					$("#iqcHandleDescriptionShow").text(result.body.exception.iqcHandleDescription);
-					$("#iqcHandler").text(getInfo(result.body.exception.iqcHandler)[1]);
+					var iqcHandlerName = getInfo(result.body.exception.iqcHandler)[1];
+					$("#iqcHandler").text(iqcHandlerName);
 					$("#iqcHandleTime").text(getDate(result.body.exception.iqcHandleTime));
 					$("#iqcReviewer").text(getInfo(result.body.exception.iqcReviewer)[1]);
 					$("#iqcReviewTime").text(getDate(result.body.exception.iqcReviewTime));
 
-					
+					//IQC处理驳回
+					$("#iqcHandleRefuseMan").text(iqcHandlerName);
+					$("#iqcHandleRefuseTime").text(getDate(result.body.exception.iqcHandleTime));
+					$("#iqcHandleRefusedReason").text(result.body.exception.iqcHandleRefusedReason);
+					$("#iqcHandleRefusedReasonHidden").val(result.body.exception.iqcHandleRefusedReason);
 				}else{
 					mui.toast(result.message);
 				}				
@@ -1092,7 +1125,89 @@ document.getElementById('iqcHandleConfirm').addEventListener('tap',function() {
 		}
 	});
 });	
+
+//7.iQC处理驳回至供应品质部处理
+document.getElementById('iqcHandleRefuse').addEventListener('tap',function(e) {
+	//判断当前成员是否有权限处理
+	var pass = false;
+	var nextPerson = $("#nextPersonHidden").val();
+	if(nextPerson!=null && nextPerson!="" && nextPerson!="null"){
+		if(isExist(memberId,nextPerson)){
+			pass = true;
+		}				
+	}else{
+		mui.toast("系统出错啦！");
+	}	
+	if(!pass){
+		mui.toast("您暂无此操作权限！");
+		return;
+	}
 	
+	var serialNumber = $("#serialNumber").text();//从文本中获取文件序列号	
+	var inspectionNumber = $("#inspectionNumber").text();//从文本中获取检验批号	
+	var description = $("#description").text();//从文本中获取故障明细
+	var iqcHandleRefusedReason = "";
+	//填写驳回原因
+	e.detail.gesture.preventDefault(); //修复iOS 8.x平台存在的bug，使用plus.nativeUI.prompt会造成输入法闪一下又没了
+	var btnArray1 = ['取消', '确定'];
+	mui.prompt('请输入驳回原因：', '', '', btnArray1, function(e) {
+		if (e.index == 1) {
+			iqcHandleRefusedReason = e.value;
+			if(iqcHandleRefusedReason.replace(/ /g,'').trim()==""){
+				mui.toast("请输入驳回原因！");
+				return;
+			}
+					
+			var btnArray = ['取消', '确认'];
+			mui.confirm('', '确认要驳回吗？',btnArray,function(e) {
+				if(e.index == 1){
+					if(flag==false){
+						return;
+					}else{
+						flag=false;
+						mui.ajax('/TFMobile/tf-api/iqc-exception/iqcHandleRefuse', {
+							data : {
+								exceptionId : exceptionId,
+								memberId : memberId,
+								state : 1,
+								serialNumber : serialNumber,
+								inspectionNumber : inspectionNumber,
+								description : description,
+								iqcHandleRefusedReason : iqcHandleRefusedReason,
+								handlerMemberId : handlerMemberId,//驳回给该人
+								handlerUserId : handlerUserId//驳回给该人
+							},
+							dataType : 'json',//服务器返回json格式数据
+							type : 'post',//HTTP请求类型
+							async : false,
+							success : function(result) {						
+								if(result.success == true){
+									mui.toast("驳回成功！");
+									setTimeout(function(){
+										location.reload(); 
+									}, 1000);
+								}else{
+									mui.toast(result.message);
+								}				
+							},
+							error : function(xhr, type, errorThrown) {
+								mui.toast("网络出错了");						
+								flag=true;	
+							}
+						});
+					
+					}
+				}
+			});
+		} else {
+			
+		}
+	})
+});	
+
+function rehandle(){
+	$("#handleForm").attr("style","display:block");
+}
 //9.根据主键memberId获取企业成员信息
 function getInfo(memberId){
 	var userId = null;

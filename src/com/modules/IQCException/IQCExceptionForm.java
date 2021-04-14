@@ -939,7 +939,79 @@ public class IQCExceptionForm {
 	}
 	
 	/**
-	 * 8、IQC处理结果经理审核
+	 * 8、IQC处理驳回
+	 * @param exceptionId,memberId,state...
+	 * @throws WexinReqException
+	 */
+	@RequestMapping(value = "iqcHandleRefuse")
+	@Transactional
+	@ResponseBody
+	public synchronized AjaxJson iqcHandleRefuse(HttpServletRequest request) throws WexinReqException{
+		Integer memberId = Integer.parseInt(request.getParameter("memberId"));
+		Integer state = Integer.parseInt(request.getParameter("state"));
+		Integer exceptionId = Integer.parseInt(request.getParameter("exceptionId"));
+		String serialNumber = request.getParameter("serialNumber");
+		String inspectionNumber = request.getParameter("inspectionNumber");
+		Integer handlerMemberId = Integer.parseInt(request.getParameter("handlerMemberId"));
+		String handlerUserId = request.getParameter("handlerUserId");
+		String iqcHandleRefusedReason = request.getParameter("iqcHandleRefusedReason");
+		
+		AjaxJson ajax = new AjaxJson();	
+		if(exceptionId==null||"".equals(request.getParameter("exceptionId"))||memberId==null||"".equals(request.getParameter("memberId"))||state==null){
+			ajax.setSuccess(false);
+			ajax.setMessage("传入参数有误！");
+			ajax.setErrorCode("-1");
+			return ajax;
+		}
+		
+		SQLHelper sqlhe = new SQLHelper();
+		List<String> sqlist = new ArrayList<>();		
+		String updateSql = "UPDATE tf_iqc_exception SET state="+state+",nextPerson='"+handlerMemberId+"',iqcHandler ="+memberId+",iqcHandleRefusedReason = '"+iqcHandleRefusedReason+
+						  "',iqcHandleTime = now() where exceptionId = " + exceptionId;
+		sqlist.add(updateSql);
+		boolean isSuccess = sqlhe.update(sqlist);
+		
+		if(isSuccess){
+			String access_token = "";
+			try {
+				access_token = WxCommonAPI.getAccessToken(CorpID,Secret);
+				if(access_token!=null && !"".equals(access_token)) {
+					TextcardMessage textcardMessage = new TextcardMessage();
+					Textcard textcard = new Textcard();
+					textcard.setTitle("IQC处理驳回至供应品质部处理通知");
+					textcard.setUrl(serviceUrl+"/TFMobile/webpage/IQCException/exceptionForm.html?exceptionId="+exceptionId);
+					textcard.setDescription("文件序号 ："+serialNumber+"\n检验批号 ："+inspectionNumber+"\n驳回原因 ："+iqcHandleRefusedReason+"\n待您处理 ，请及时处理，点击查看详情！");		
+					textcardMessage.setTouser(handlerUserId);
+					textcardMessage.setToparty("");
+					textcardMessage.setMsgtype("textcard");
+					textcardMessage.setAgentid(Integer.parseInt(AgentId));
+					textcardMessage.setTextcard(textcard);
+					JSONObject result = WxCommonAPI.sendMssage(access_token, textcardMessage);
+					if (result.has("errcode") && result.getString("errcode").equals("0") && result.getString("errmsg").equals("ok")) {
+						ajax.setSuccess(true);
+						ajax.setMessage("成功！");
+					}else {
+						ajax.setSuccess(false);
+						ajax.setMessage("消息发送失败！");
+						ajax.setErrorCode("-1");
+					}			
+				}
+				
+			} catch (Exception e) {
+				ajax.setErrorCode("-1");
+				ajax.setSuccess(false);
+				ajax.setMessage("消息发送失败！");
+			}
+		}else{
+			ajax.setSuccess(false);
+			ajax.setMessage("数据保存失败！");
+			ajax.setErrorCode("-2");
+		}
+		return ajax;
+	}
+	
+	/**
+	 * 9、IQC处理结果经理审核
 	 * @param exceptionId,memberId,state
 	 * @throws WexinReqException
 	 */
