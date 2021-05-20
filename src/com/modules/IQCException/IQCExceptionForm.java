@@ -83,7 +83,7 @@ public class IQCExceptionForm {
 		String nextPerson = getMemberIdByUserId(touser);//获取下一流程处理者
 		//创建生成文件序列号
 		SimpleDateFormat sdf = new SimpleDateFormat("yyMM");	//获取当前年份和月份
-		String serialNumber = "QCIQC"+sdf.format(new Date());
+		String serialNumber = "SQMIQC"+sdf.format(new Date());
 		//获取系统内当前年份月份下的最后一条数据的serialNumber
 		SQLHelper sqlhe = new SQLHelper();		
 		String snSql = "select * FROM tf_iqc_exception where date_format(reportTime,'%Y-%m')=date_format(now(),'%Y-%m') order by reportTime DESC limit 1";
